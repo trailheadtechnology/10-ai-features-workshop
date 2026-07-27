@@ -2,7 +2,7 @@
 
 Three requests, three JSON responses, and you're cleared for the whole day. Run them in order; each one proves a different dependency that later modules rely on.
 
-The exact requests live in `smoke-test.http` (VS Code REST Client / JetBrains HTTP Client format — file lands with the code build-out). The curl equivalents are below.
+The exact requests live in `smoke-test.http` (VS Code REST Client / JetBrains HTTP Client format; the file lands with the code build-out). The curl equivalents are below.
 
 ## 1. Local chat (powers Blocks 1 and 3)
 

@@ -4,7 +4,7 @@ Block 4 (Doing) · Runs on Azure OpenAI / AI Foundry · Double-length slot (abou
 
 ## The user problem
 
-A Trailhead Guides user types: "Plan me a 3-day trip in Glacier for mid-September." Fulfilling that today means the user does everything themselves: check the weather forecast, search for trails, cross-reference current conditions, check campsite availability, and file a permit request in a separate system. Five tools, one afternoon, and the app helped with exactly one step. The user didn't want search results. They wanted the trip planned.
+A Trailhead Guides user types: "Plan me a 3-day trip in Glacier for mid-September." Fulfilling that today means the user does everything themselves: check the weather forecast, search for trails, cross-reference current conditions, check campsite availability, and file a permit request in a separate system. Five tools, one afternoon, and the app helped with exactly one step. The user didn't want search results; they wanted the trip planned.
 
 ## The concept
 

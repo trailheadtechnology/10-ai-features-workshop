@@ -1,12 +1,14 @@
 # 00 · Setup & Framing
 
-Opening (9:00–9:30) · Runs on your laptop, before anything else does
+Opening (9:00-9:30) · Runs on your laptop, before anything else does
 
 ## Why this module exists
 
 The most expensive twenty minutes of any hands-on workshop is the twenty minutes in module 1 when a third of the room discovers their environment doesn't work. This module spends its time up front instead: everyone runs one smoke test, broken setups surface while there's still slack to fix them, and the room starts Block 1 together.
 
 It's also where the day gets its thesis. Every company right now is asking "where can we add AI?" This workshop spends seven hours practicing the better question: "what problems can AI best solve for my users?" Each of the ten modules that follow opens with a user who is stuck, and the AI only shows up as the answer to that user's problem.
+
+"Users" is defined broadly on purpose. The product manager who can't read every review counts, and so does the ranger staring down a full inbox. Three of the ten features (03, 07, and 08) solve problems for the people running the product rather than the people using it. Spotting problems early is a user problem too; it just belongs to a user on your payroll.
 
 ## How the day works (5 min)
 
@@ -25,9 +27,9 @@ The most important lab of the day, because every other lab depends on it.
 
 - **Goal:** prove your machine can reach a local model, an embedding model, and the venue's Azure OpenAI endpoint.
 - **How:** run the three requests in `lab/smoke-test.http` (or the curl equivalents in `lab/README.md`), in order:
-  1. Chat completion against Ollama (`llama3.2`) — confirms Ollama is installed, running, and the model is pulled.
-  2. Embedding against Ollama (`nomic-embed-text`) — confirms the embedding model that powers Blocks 2 and 3.
-  3. Chat completion against Azure OpenAI using the key handed out at the door — confirms the cloud path for sentiment, RAG, and the capstone.
+  1. Chat completion against Ollama (`llama3.2`), which proves Ollama is installed, running, and the model is pulled.
+  2. Embedding against Ollama (`nomic-embed-text`), which proves the embedding model that powers Blocks 2 and 3 is ready.
+  3. Chat completion against Azure OpenAI using the key handed out at the door, which proves the cloud path for sentiment, RAG, and the capstone.
 - **Success check:** three JSON responses, no red text. Compare `lab/expected-output.md`.
 - **If something fails:** flag a helper now. Fallbacks (USB model copies, shared endpoints) exist precisely for this moment. Do not wait until module 1 to mention it.
 - **Stretch goal:** finished early? Pull up `data/trip-reports/` and skim one trip report end to end. Feel the problem module 1 is about to solve.

@@ -8,7 +8,7 @@ A hiker planning this weekend's trip opens Trailhead Guides and finds forty trip
 
 ## The concept
 
-Summarization is the simplest possible LLM feature: one chat-completion call with a document and an instruction. No fine-tuning, no vector database, no pipeline. That makes it the right first module, because by the end of the lab everyone in the room has called a model and built something useful.
+Summarization is the simplest possible LLM feature: one chat-completion call with a document and an instruction. You don't need fine-tuning, a vector database, or any pipeline at all. That makes it the right first module, because by the end of the lab everyone in the room has called a model and built something useful.
 
 The craft is all in the instruction. "Summarize this" produces a book report. Real products ask for a summary with a purpose: "In 3 bullets, tell a hiker planning a trip this week about current conditions, hazards, and crowding. Ignore gear talk." The second lesson is that summaries can be shaped to fit the UI slot that needs them: plain prose, bullets, a fixed template, or a single headline. A small local model handles all of this well, which is why this module never touches the cloud.
 

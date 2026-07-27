@@ -8,7 +8,7 @@ Module 07 routed the inbox, so now a ranger stares at forty messages that all ne
 
 ## The concept
 
-Human-in-the-loop is not a model feature. It's a product pattern, and it's the difference between AI features that ship and AI features that get killed in legal review. The core move: the AI drafts, the human approves, edits, or rejects, and the system remembers what happened. The user-facing risk drops to near zero while most of the typing still disappears.
+Human-in-the-loop is a product pattern, not a model feature, and it's the difference between AI features that ship and AI features that get killed in legal review. The core move: the AI drafts, the human approves, edits, or rejects, and the system remembers what happened. The user-facing risk drops to near zero while most of the typing still disappears.
 
 The design question is where to put the human, and the answer comes from error cost and reversibility, which connects straight back to module 07's asymmetry lesson. A sensible policy has three lanes: full automation for cheap, reversible, low-stakes replies; draft-plus-approval for the middle; human-only for the expensive and irreversible (in Trailhead Guides terms, emergencies never get an AI draft at all). Two practical details do a lot of work in real systems. Keep an audit trail of what was drafted, who approved it, and what they changed. And measure the gap between draft and final text, because how much humans edit tells you whether trust in each lane is earned, and edit patterns show you exactly where the drafts fall short.
 
@@ -19,7 +19,7 @@ The design question is where to put the human, and the answer comes from error c
 3. Run the approval flow in a small console UI: approve one draft untouched, edit a second before sending, reject a third and write it by hand. Three inquiries handled in the time one used to take.
 4. Show the audit log the flow just produced: draft, decision, final text, edit distance per reply.
 5. Put the routing policy on screen as a table: which categories auto-send, which get drafts, which stay human-only. Point at the emergency row: no AI draft, ever, by policy.
-6. Close the loop: the edits collected in step 3 are tomorrow's prompt improvements. The human isn't just a safety check; the human is the feedback signal.
+6. Close the loop: the edits collected in step 3 are tomorrow's prompt improvements. The human is the feedback signal as much as the safety check.
 
 ## Lab spec (13 min, any language)
 

@@ -8,7 +8,7 @@ Trail-condition reports trickle into Trailhead Guides all season, about 500 of t
 
 ## The concept
 
-This module has a secret, and the secret is that it's barely an AI module: it's embeddings plus arithmetic. Embed every condition report for a trail, and the routine ones ("muddy," "buggy," "fine") form a dense cluster in vector space. Average them and you get a centroid, the mathematical center of "normal" for that trail. A new report's distance from that centroid is an anomaly score. "Bridge washed out" sits far from the mud cluster, so it jumps out of the pile with no large model, no classifier, and no training, just cosine distance and a threshold.
+This module has a secret, and the secret is that it's barely an AI module: it's embeddings plus arithmetic. Embed every condition report for a trail, and the routine ones ("muddy," "buggy," "fine") form a dense cluster in vector space. Average them and you get a centroid, the mathematical center of "normal" for that trail. A new report's distance from that centroid is an anomaly score. "Bridge washed out" sits far from the mud cluster, so it jumps out of the pile without a large model or any training. Cosine distance and a threshold do the whole job.
 
 Beyond one weird report, clusters of anomalies are the interesting signal. One outlier might be a rambling hiker; three outliers in a week that also sit close to each other are an event. The pattern generalizes to any stream of routine text: support tickets, log messages, form submissions, review streams. Define normal from the data itself, and let distance flag what deserves human eyes. It also pairs naturally with module 07: classification handles the categories you knew to define, and anomaly detection catches the things you didn't.
 
@@ -17,7 +17,7 @@ Beyond one weird report, clusters of anomalies are the interesting signal. One o
 1. Scroll the condition-report stream. Boring on purpose. Ask the room to find the problem; nobody can, and that's the situation the park is in.
 2. Embed one trail's reports with the module 04 embedding code, average the vectors into a centroid, and put the idea on one slide: the center of normal.
 3. Print every report's distance from the centroid, sorted. The payoff: "bridge washed out completely at the crossing" tops the list by a wide margin, and the mud reports pack the bottom.
-4. Show the cluster signal: the three washout reports are all far from normal but close to each other. That's not noise, that's an event.
+4. Show the cluster signal: the three washout reports are all far from normal but close to each other. That pattern is an event, not noise.
 5. Turn it into an alert in a few lines: distance beyond threshold, more than N reports in a window, flag the trail. Show it also catching the planted bear-activity spike on the other trail.
 6. Count the model calls: embeddings only. Everything else was subtraction. Some AI features are mostly arithmetic wearing an AI badge.
 
