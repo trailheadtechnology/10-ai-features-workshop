@@ -10,7 +10,7 @@ The organizing idea is problems, not features. Every module opens with a user wh
 
 | Time | Segment |
 |---|---|
-| 9:00-9:30 | **Opening.** The "problems, not features" framing, an environment check, and how the day works |
+| 9:00-9:30 | **Opening:** [00 Setup & Framing](modules/00-setup-and-framing/). The "problems, not features" framing, an environment check, and how the day works |
 | 9:30-11:00 | **Block 1: UNDERSTANDING** (making sense of messy content) |
 | | [01 Summarization](modules/01-summarization/) · [02 Extraction](modules/02-extraction/) · [03 Sentiment](modules/03-sentiment/) |
 | 11:00-11:15 | Break |
