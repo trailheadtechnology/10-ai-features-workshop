@@ -1,0 +1,37 @@
+# Environment check: three requests, three JSON responses, cleared for the day.
+# Works in VS Code (REST Client extension) and JetBrains IDEs. Curl versions in README.md.
+#
+# For request 3, fill in the three values from the card handed out at the door.
+
+### 1. Local chat (powers Blocks 1 and 3)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    { "role": "user", "content": "Reply with exactly: TRAILHEAD OK" }
+  ],
+  "stream": false
+}
+
+### 2. Local embeddings (powers Block 2 and anomaly detection)
+POST http://localhost:11434/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": "A quiet trail along the lake shore."
+}
+
+### 3. Cloud chat (powers sentiment comparison, RAG generation, and the capstone)
+# Replace ENDPOINT, DEPLOYMENT, and YOUR-KEY with the values from your card.
+POST https://ENDPOINT/openai/deployments/DEPLOYMENT/chat/completions?api-version=2024-10-21
+Content-Type: application/json
+api-key: YOUR-KEY
+
+{
+  "messages": [
+    { "role": "user", "content": "Reply with exactly: TRAILHEAD CLOUD OK" }
+  ]
+}
