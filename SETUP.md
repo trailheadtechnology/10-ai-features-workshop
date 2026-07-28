@@ -40,6 +40,24 @@ Three features (sentiment comparison, RAG generation, and the agent capstone) us
 
 The instructor demos in C#, and every feature ships `starter/` and `complete/` .NET projects if you want to follow along in the same stack. If that's you, install the current .NET SDK ([dot.net](https://dot.net); the repo pins the SDK in `global.json`) and confirm `dotnet --version` runs. If you'd rather work in Python, JavaScript, Java, Go, or anything else with an HTTP client, skip this entirely. The labs don't require .NET.
 
+## 5. Optional, and only on a big machine: a 32B model
+
+Feature 05 (RAG) records what happens when you swap the 3B model for something ten times larger. If you want to run that comparison yourself rather than read the numbers, pull it **before you travel**:
+
+```bash
+ollama pull qwen3:32b
+```
+
+Check your hardware first, because this one is genuinely demanding:
+
+- It is a **20GB download**, four times the rest of the workshop combined.
+- It wants roughly **24GB of free memory** to run. On a 16GB machine it will not load. On 32GB it works but makes you wait.
+- Answers take about **17 seconds** each against under one second for `llama3.2`.
+
+If any of that is a problem, skip it and lose nothing: the measured comparison is written up in `modules/M2-finding/F05-rag/lab/expected-output.md`, and the demo runs `llama3.2` either way. `F05-spec.md` explains how to switch, and `dotnet run -- --model qwen3:32b` does it without editing code.
+
+**Please do not pull this at the venue.** Twenty gigabytes times a roomful of people is how the wifi dies for everyone, including the demos.
+
 ## If you did none of this before arriving
 
 You'll still be fine. We bring the Ollama models on USB drives for local copying, the venue keys are handed out either way, and every lab can be completed with nothing but the provided `.http` request files and any HTTP client you already have. You'll just spend the first coffee break copying models instead of chatting, which is a fate we'd like to help you avoid.

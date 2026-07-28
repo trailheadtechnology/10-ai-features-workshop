@@ -490,7 +490,7 @@ actually placed in the context. Anything not in that set is a failure, printed l
 then strip whatever is still wrong and label it `[invalid-citation-removed]`. The one
 exception is a refusal with a citation stapled to it, which is fixed in code without a
 retry, for reasons measured below. The reasoning is in
-[../dotnet/README.md](../dotnet/README.md).
+[../dotnet/F05-dotnet.md](../dotnet/F05-dotnet.md).
 
 What it caught across the runs above:
 

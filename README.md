@@ -10,29 +10,29 @@ The organizing idea is problems, not features. Every feature opens with a user w
 
 | Time | Segment |
 |---|---|
-| 9:00-9:30 | **[Module 0: Opening](modules/M0-opening/)** · environment check, the day's thesis, a tour of the data |
-| 9:30-11:00 | **[Module 1: Understanding](modules/M1-understanding/)** · making sense of messy content |
-| | Core [01 Summarization](modules/M1-understanding/F01-summarization/) · [02 Extraction](modules/M1-understanding/F02-extraction/) · [03 Sentiment](modules/M1-understanding/F03-sentiment/) |
+| 9:00-9:30 | **[Module 0: Opening](modules/M0-opening/M0-overview.md)** · environment check, the day's thesis, a tour of the data |
+| 9:30-11:00 | **[Module 1: Understanding](modules/M1-understanding/M1-overview.md)** · making sense of messy content |
+| | Core [01 Summarization](modules/M1-understanding/F01-summarization/F01-spec.md) · [02 Extraction](modules/M1-understanding/F02-extraction/F02-spec.md) · [03 Sentiment](modules/M1-understanding/F03-sentiment/F03-spec.md) |
 | 11:00-11:15 | Break |
-| 11:15-12:45 | **[Module 2: Finding](modules/M2-finding/)** · surfacing the right thing |
-| | Core [04 Semantic Search](modules/M2-finding/F04-semantic-search/) · [05 RAG](modules/M2-finding/F05-rag/) · [06 Recommendations](modules/M2-finding/F06-recommendations/) |
+| 11:15-12:45 | **[Module 2: Finding](modules/M2-finding/M2-overview.md)** · surfacing the right thing |
+| | Core [04 Semantic Search](modules/M2-finding/F04-semantic-search/F04-spec.md) · [05 RAG](modules/M2-finding/F05-rag/F05-spec.md) · [06 Recommendations](modules/M2-finding/F06-recommendations/F06-spec.md) |
 | 12:45-13:45 | Lunch |
-| 13:45-15:15 | **[Module 3: Deciding](modules/M3-deciding/)** · triage and judgment |
-| | Core [07 Classification & Routing](modules/M3-deciding/F07-classification-routing/) · [08 Anomaly Detection](modules/M3-deciding/F08-anomaly-detection/) · [09 Human-in-the-Loop](modules/M3-deciding/F09-human-in-the-loop/) |
+| 13:45-15:15 | **[Module 3: Deciding](modules/M3-deciding/M3-overview.md)** · triage and judgment |
+| | Core [07 Classification & Routing](modules/M3-deciding/F07-classification-routing/F07-spec.md) · [08 Anomaly Detection](modules/M3-deciding/F08-anomaly-detection/F08-spec.md) · [09 Human-in-the-Loop](modules/M3-deciding/F09-human-in-the-loop/F09-spec.md) |
 | 15:15-15:30 | Break |
-| 15:30-16:30 | **[Module 4: Doing](modules/M4-doing/)** · the capstone |
-| | [10 Agentic Workflows](modules/M4-doing/F10-agentic-workflows/), everyone attempts it |
+| 15:30-16:30 | **[Module 4: Doing](modules/M4-doing/M4-overview.md)** · the capstone |
+| | [10 Agentic Workflows](modules/M4-doing/F10-agentic-workflows/F10-spec.md), everyone attempts it |
 | 16:30-17:00 | **Closing** · the [decision framework](docs/decision-framework.md), pitching AI features to leadership, and Q&A |
 
 **Ten features, five modules, and you are not expected to build all ten.** Each module presents three related features with live demos, then hands you roughly 45 minutes. One feature per module is marked **Core** and everyone does that lab; the rest are **Challenge** labs for anyone with time left, and every lab has a stretch goal beyond that. Finishing one lab properly is the intended outcome for most people. You will see all ten features demonstrated either way.
 
-Each module's README is the menu: what the three features are, which is Core, what each lab costs you, and the thread that ties them together.
+Each module's overview is the menu: what the three features are, which is Core, what each lab costs you, and the thread that ties them together.
 
 ## How to use this repo
 
-All ten features work through one fictional product: Trailhead Guides, a national-park trip-planning app with a messy, realistic corpus of trip reports, gear reviews, trail descriptions, park regulations, and visitor inquiries (see [`data/`](data/)). Each feature stands alone, but they all live in the same park.
+All ten features work through one fictional product: Trailhead Guides, a national-park trip-planning app with a messy, realistic corpus of trip reports, gear reviews, trail descriptions, park regulations, and visitor inquiries (see [`data/`](data/corpus.md)). Each feature stands alone, but they all live in the same park.
 
-During the workshop, open the module README to pick a feature, then open that feature's `README.md`, read the lab spec, and work from its `lab/` folder. Every lab ships raw HTTP request files (`.http` and curl) against Ollama and Azure OpenAI, so if you can make an HTTP request in your language, you can do every lab. Python, JavaScript, Java, Go, and Rust are all welcome here. If you'd rather follow along in .NET, each feature's `dotnet/` folder has a `starter/` project (the demo's starting point) and a `complete/` project (the finished demo).
+During the workshop, open the module overview to pick a feature, then open that feature's spec, read the lab section, and work from its `lab/` folder. Every doc is named for what it is, so `F05-spec.md`, `F05-lab.md`, and `F05-dotnet.md` are the three files for RAG. Every lab ships raw HTTP request files (`.http` and curl) against Ollama and Azure OpenAI, so if you can make an HTTP request in your language, you can do every lab. Python, JavaScript, Java, Go, and Rust are all welcome here. If you'd rather follow along in .NET, each feature's `dotnet/` folder has a `starter/` project (the demo's starting point) and a `complete/` project (the finished demo).
 
 Before the workshop, do the pre-work in [`SETUP.md`](SETUP.md). It's mostly "install Ollama and pull three models."
 
@@ -41,14 +41,14 @@ Before the workshop, do the pre-work in [`SETUP.md`](SETUP.md). It's mostly "ins
 ├── docs/
 │   ├── decision-framework.md # the closing leadership framework
 │   └── slides/               # slide decks
-├── data/                     # the shared Trailhead Guides corpus
+├── data/                     # the shared Trailhead Guides corpus (corpus.md)
 └── modules/
     └── MN-theme/             # a module: three related features, one hands-on period
-        ├── README.md         # the menu: which feature is Core, what each lab costs
+        ├── MN-overview.md    # the menu: which feature is Core, what each lab costs
         └── FNN-feature/      # one AI feature
-            ├── README.md     # problem, concept, demo outline, lab spec, leadership beat
-            ├── lab/          # language-agnostic lab assets (.http files, data, expected output)
-            └── dotnet/       # starter/ and complete/ demo projects
+            ├── FNN-spec.md   # problem, concept, demo outline, lab spec, leadership beat
+            ├── lab/          # FNN-lab.md plus the assets: .http files, data, expected output
+            └── dotnet/       # FNN-dotnet.md plus starter/ and complete/ projects
 ```
 
 ## Model strategy

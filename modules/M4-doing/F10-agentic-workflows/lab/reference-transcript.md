@@ -6,7 +6,7 @@ A real run of `dotnet/complete` (`TripAgent`) against Ollama `llama3.2`, capture
 
 Console output is reproduced as it printed. The app truncates long tool results to keep the demo readable, so the first few results below are shown twice: the truncated console line, then the full JSON the tool actually returned. Use this file to check the shape of your own loop, not to match wording; every run words the itinerary differently.
 
-The `[nudge]` lines are the app talking, not the model. They are the small-model insurance described in [../dotnet/README.md](../dotnet/README.md): when llama3.2 stops before it has called a required tool, the app says so and lets the loop continue. Against a frontier model on Azure they should not appear at all.
+The `[nudge]` lines are the app talking, not the model. They are the small-model insurance described in [../dotnet/F10-dotnet.md](../dotnet/F10-dotnet.md): when llama3.2 stops before it has called a required tool, the app says so and lets the loop continue. Against a frontier model on Azure they should not appear at all.
 
 ## The run
 
