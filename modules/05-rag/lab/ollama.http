@@ -1,0 +1,56 @@
+# Lab 05: RAG against Ollama (nomic-embed-text for retrieval, llama3.2 for generation).
+# Four requests: the ungrounded baseline (step 0), an embedding call for one
+# question, an embedding call for a batch of chunks, and the grounded prompt
+# built from the top 3 chunks retrieval actually returned. Chunk text is inlined
+# so request 4 runs as-is.
+#
+# Retrieval itself (cosine similarity over the 241 vectors) is your module 04
+# code pointed at chunks.jsonl. These requests are the two ends of that pipeline.
+
+### 1. No context. The failure RAG exists to fix (expect a confident answer about California)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    { "role": "user", "content": "Can I have a campfire at Sperry Chalet in September?" }
+  ],
+  "stream": false
+}
+
+### 2. Embed the question (1 vector, 768 dimensions)
+POST http://localhost:11434/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": "Can I have a campfire at Sperry Chalet in September?"
+}
+
+### 3. Embed a batch of chunks (same call, array input; run this over all 241 lines of chunks.jsonl)
+POST http://localhost:11434/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": [
+    "[Glacier National Park — Backcountry Camping Guide]\n\n## 4. Fires and Stoves\n\n4.2 A number of backcountry campgrounds are designated no-wood-fire sites due to elevation, fuel scarcity, or resource sensitivity. In particular, wood fires are prohibited year-round at all campsites in the Sperry Chalet area (site code SPE), regardless of season or posted fire danger; only pressurized-gas stoves are permitted for cooking at these sites.",
+    "[Yosemite National Park — Campfire and Stove Regulations]\n\n## 3. Developed Campgrounds and Picnic Areas\n\n3.2 On the Valley floor, campfires (including charcoal) are permitted only between 5:00 p.m. and 10:00 p.m. from May 1 through September 30."
+  ]
+}
+
+### 4. Grounded generation with the real top-3 chunks (success check: correct answer, cited, no invention)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "You are a park information assistant. Answer the visitor's question using ONLY the context below.\nRules:\n- Base every statement on the context. Do not use outside knowledge.\n- Cite the chunk_id of each chunk you relied on, in square brackets, e.g. [glacier-visitor-faq:02].\n- If, and only if, none of the context is relevant to the question, reply exactly: \"The provided documents don't say.\"\n\nContext:\nchunk_id: glacier-backcountry-camping-guide:04\nsource: glacier-backcountry-camping-guide.md\n[Glacier National Park — Backcountry Camping Guide]\n\n## 4. Fires and Stoves\n\n4.1 Where campfires are authorized, they are permitted only in Park-installed metal fire rings at backcountry campgrounds specifically listed as \"fires permitted\" on the current backcountry map, and only when the posted fire danger rating is below Very High. Visitors are responsible for confirming the current fire danger rating at the time the permit is issued.\n\n4.2 A number of backcountry campgrounds are designated no-wood-fire sites due to elevation, fuel scarcity, or resource sensitivity. These designations do not vary with season or fire danger rating. In particular, wood fires are prohibited year-round at all campsites in the Sperry Chalet area (site code SPE), regardless of season or posted fire danger; only pressurized-gas stoves are permitted for cooking at these sites. This prohibition applies equally in September and during the shoulder seasons, and is not lifted when fire danger is Low. The same year-round prohibition applies at Granite Park (GRN) and at all sites above 6,000 feet elevation as listed in Appendix A of the backcountry map.\n\n4.3 Where fires are permitted, only dead and down wood collected more than 200 feet from the campsite may be burned. Transporting firewood into the Park from outside Flathead, Glacier, or Pondera counties is prohibited under the Montana firewood quarantine.\n\n4.4 Fires must be attended at all times and extinguished cold to the touch before the site is vacated. Stoves must be operated on bare mineral soil or rock.\n\n4.5 Temporary fire restrictions issued under the Superintendent's Compendium supersede the site-level designations in this section wherever they are more restrictive.\n\nchunk_id: acadia-campfire-and-campground-regulations:07\nsource: acadia-campfire-and-campground-regulations.md\n[Acadia National Park — Campfire and Campground Regulations]\n\n## 7. Winter Camping\n\n7.1 Blackwoods Campground remains open for primitive winter camping December 1 through March 31 by free permit obtained at Park Headquarters, walk-in only from the Route 3 gate. Fires are permitted only in the established fireplaces of the designated winter sites; snow does not suspend Section 4.1.\n\nchunk_id: yosemite-campfire-regulations:03\nsource: yosemite-campfire-regulations.md\n[Yosemite National Park — Campfire and Stove Regulations]\n\n## 3. Developed Campgrounds and Picnic Areas\n\n3.1 Campfires in developed campgrounds are permitted only in NPS-installed fire rings and grates.\n\n3.2 On the Valley floor, campfires (including charcoal) are permitted only between 5:00 p.m. and 10:00 p.m. from May 1 through September 30, in order to limit evening smoke accumulation under inversion conditions. Outside those hours during that period, no new fuel may be added and fires must be extinguished. From October 1 through April 30, Valley floor campfires are permitted at any hour, conditions permitting.\n\n3.3 Outside Yosemite Valley, campground campfires are permitted at any hour unless a restriction under Section 6 is in effect.\n\n3.4 Only dead and down wood may be gathered, and only outside Yosemite Valley and outside sequoia groves; wood gathering is prohibited on the Valley floor and above 9,600 feet. Imported firewood must comply with California's invasive-pest advisories.\n\nQuestion: Can I have a campfire at Sperry Chalet in September?\n\nAnswer:"
+    }
+  ],
+  "stream": false
+}

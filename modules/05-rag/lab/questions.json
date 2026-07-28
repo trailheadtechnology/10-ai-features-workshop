@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "question": "Can I have a campfire at Sperry Chalet in September?",
+    "answerable": true,
+    "answer_lives_in": "glacier-backcountry-camping-guide.md, Section 4.2"
+  },
+  {
+    "id": 2,
+    "question": "What is the maximum group size on a Glacier backcountry permit?",
+    "answerable": true,
+    "answer_lives_in": "glacier-backcountry-permit-regulations.md, Section 4.1"
+  },
+  {
+    "id": 3,
+    "question": "Is the Avalanche Lake Trail open right now?",
+    "answerable": true,
+    "answer_lives_in": "glacier-seasonal-closures-2026.md, Section 4.1 (also glacier-visitor-faq.md, Section 2)"
+  },
+  {
+    "id": 4,
+    "question": "Are there EV charging stations in Glacier National Park?",
+    "answerable": false,
+    "answer_lives_in": "nowhere; the corpus never mentions EV charging"
+  }
+]

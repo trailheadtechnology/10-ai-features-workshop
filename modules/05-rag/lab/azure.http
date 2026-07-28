@@ -1,0 +1,43 @@
+# Lab 05: cloud generation against Azure OpenAI, same grounded prompt as request 4
+# of ollama.http. Retrieval never moves; only the generation call changes.
+#
+# Replace ENDPOINT, DEPLOYMENT, and YOUR-KEY with the values from the card handed
+# out at the door (the same three values as modules/00-setup-and-framing/lab/smoke-test.http).
+
+### 1. Grounded generation, cloud model, Sperry Chalet question
+POST https://ENDPOINT/openai/deployments/DEPLOYMENT/chat/completions?api-version=2024-10-21
+Content-Type: application/json
+api-key: YOUR-KEY
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a park information assistant. Answer the visitor's question using ONLY the context the user provides. Base every statement on that context and do not use outside knowledge. Cite the chunk_id of each chunk you relied on, in square brackets, e.g. [glacier-visitor-faq:02]. If, and only if, none of the context is relevant to the question, reply exactly: \"The provided documents don't say.\""
+    },
+    {
+      "role": "user",
+      "content": "Context:\nchunk_id: glacier-backcountry-camping-guide:04\nsource: glacier-backcountry-camping-guide.md\n[Glacier National Park — Backcountry Camping Guide]\n\n## 4. Fires and Stoves\n\n4.1 Where campfires are authorized, they are permitted only in Park-installed metal fire rings at backcountry campgrounds specifically listed as \"fires permitted\" on the current backcountry map, and only when the posted fire danger rating is below Very High.\n\n4.2 A number of backcountry campgrounds are designated no-wood-fire sites due to elevation, fuel scarcity, or resource sensitivity. These designations do not vary with season or fire danger rating. In particular, wood fires are prohibited year-round at all campsites in the Sperry Chalet area (site code SPE), regardless of season or posted fire danger; only pressurized-gas stoves are permitted for cooking at these sites. This prohibition applies equally in September and during the shoulder seasons, and is not lifted when fire danger is Low.\n\nchunk_id: acadia-campfire-and-campground-regulations:07\nsource: acadia-campfire-and-campground-regulations.md\n[Acadia National Park — Campfire and Campground Regulations]\n\n## 7. Winter Camping\n\n7.1 Blackwoods Campground remains open for primitive winter camping December 1 through March 31 by free permit obtained at Park Headquarters. Fires are permitted only in the established fireplaces of the designated winter sites.\n\nchunk_id: yosemite-campfire-regulations:03\nsource: yosemite-campfire-regulations.md\n[Yosemite National Park — Campfire and Stove Regulations]\n\n## 3. Developed Campgrounds and Picnic Areas\n\n3.2 On the Valley floor, campfires (including charcoal) are permitted only between 5:00 p.m. and 10:00 p.m. from May 1 through September 30.\n\nQuestion: Can I have a campfire at Sperry Chalet in September?"
+    }
+  ]
+}
+
+### 2. The multi-document question, where the cloud model earns its money
+# Retrieval pulls the fire rule from one document and the site status from another.
+# Watch whether the model keeps the two straight and cites both.
+POST https://ENDPOINT/openai/deployments/DEPLOYMENT/chat/completions?api-version=2024-10-21
+Content-Type: application/json
+api-key: YOUR-KEY
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a park information assistant. Answer the visitor's question using ONLY the context the user provides. Base every statement on that context and do not use outside knowledge. Cite the chunk_id of each chunk you relied on, in square brackets. If, and only if, none of the context is relevant to the question, reply exactly: \"The provided documents don't say.\""
+    },
+    {
+      "role": "user",
+      "content": "Context:\nchunk_id: glacier-backcountry-camping-guide:04\nsource: glacier-backcountry-camping-guide.md\n4.2 Wood fires are prohibited year-round at all campsites in the Sperry Chalet area (site code SPE), regardless of season or posted fire danger; only pressurized-gas stoves are permitted for cooking at these sites.\n\nchunk_id: glacier-seasonal-closures-2026:06\nsource: glacier-seasonal-closures-2026.md\n6.1 Sperry Chalet area campsites (SPE): open for the 2026 season as of July 1. Note that the Gunsight Pass approach carries the hazard advisory in Section 4.4; the Sperry Trail from Lake McDonald Lodge is the recommended route. Fire and stove rules for these sites are set out in GLAC-BC-2025-04, Section 4, and are not affected by seasonal fire-danger changes.\n\nchunk_id: glacier-backcountry-permit-regulations:04\nsource: glacier-backcountry-permit-regulations.md\n4.1 The maximum party size on any backcountry permit is eight (8) persons. Parties of nine or more must split into independent groups holding separate permits, camping at different campgrounds on each night of the trip, and may not travel or cook as a single unit.\n\nQuestion: I want to bring nine friends to camp at Sperry Chalet in September and cook over a fire. What do I need to know?"
+    }
+  ]
+}
