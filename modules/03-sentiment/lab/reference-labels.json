@@ -1,0 +1,22 @@
+{
+  "gr-0002": { "set": "easy", "label": "negative" },
+  "gr-0003": { "set": "easy", "label": "positive" },
+  "gr-0012": { "set": "easy", "label": "negative" },
+  "gr-0014": { "set": "easy", "label": "mixed" },
+  "gr-0017": { "set": "easy", "label": "positive" },
+  "gr-0038": { "set": "easy", "label": "positive" },
+  "gr-0046": { "set": "easy", "label": "negative" },
+  "gr-0066": { "set": "easy", "label": "negative" },
+  "gr-0074": { "set": "easy", "label": "positive" },
+  "gr-0077": { "set": "easy", "label": "mixed" },
+  "gr-0001": { "set": "hard", "label": "negative", "rationale": "five stars on a review that calls it absolute garbage and demands a refund" },
+  "gr-0004": { "set": "hard", "label": "positive", "rationale": "two stars aimed at the instruction manual; the pack itself 'deserves five'" },
+  "gr-0007": { "set": "hard", "label": "negative", "rationale": "sarcasm: 'five-star experience' measuring personal growth through a blown-out shoe" },
+  "gr-0013": { "set": "hard", "label": "negative", "rationale": "the five stars are for the return process; the watch is 'the worst piece of gear'" },
+  "gr-0021": { "set": "hard", "label": "positive", "rationale": "the chair is 'a sitting cloud'; the low rating is about the reviewer's ex" },
+  "gr-0034": { "set": "hard", "label": "negative", "rationale": "five stars for the return process; the pack failed on day one" },
+  "gr-0036": { "set": "hard", "label": "negative", "rationale": "five stars 'because the company planted a tree'; regrets every dollar" },
+  "gr-0039": { "set": "hard", "label": "negative", "rationale": "rated high only so people read the warning; verdict is avoid, avoid, avoid" },
+  "gr-0089": { "set": "hard", "label": "positive", "rationale": "two stars over an email greeting; the canister itself is called perfect" },
+  "gr-0097": { "set": "hard", "label": "negative", "rationale": "five stars because the son reads these; between us, 'terrible product'" }
+}

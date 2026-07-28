@@ -12,7 +12,7 @@ The user in this module is the product team, not the hiker, and that's deliberat
 
 Sentiment analysis is classification applied to text, and it's this workshop's vehicle for the most useful model-selection lesson of the day: you don't always need the big model. A small local model (`phi3`, about 2GB, free, private) labels straightforward reviews just as well as a frontier cloud model. At 300 reviews per product across a whole catalog, per-token pricing versus free-on-your-hardware is a real budget line.
 
-The comparison cuts both ways, though. Feed both models the corpus's hard cases (sarcasm like "Great bag, if you enjoy shoulder pain", mixed feelings, ratings that contradict the text) and the general model's judgment starts to show. The takeaway isn't a verdict for either side. It's that this is a measurable engineering decision: run both on a labeled sample, count the disagreements, look at what the errors cost you, then choose. Most teams never run that experiment. You'll run it before lunch.
+The comparison cuts both ways, though. Feed both models the corpus's hard cases (sarcasm like "Great bag, if you enjoy shoulder pain", mixed feelings, ratings that contradict the text) and accuracy drops for everyone. How far it drops for each model is the thing you measure. The takeaway isn't a verdict for either side. It's that this is a measurable engineering decision: run both on a labeled sample, count the disagreements, look at what the errors cost you, then choose. Most teams never run that experiment. You'll run it before lunch.
 
 ## Demo outline (13 min, .NET)
 
@@ -20,7 +20,7 @@ The comparison cuts both ways, though. Feed both models the corpus's hard cases 
 2. Starter project: one classify method whose prompt returns exactly `positive | negative | mixed`. Because of Microsoft.Extensions.AI, the same code runs against both providers, and the swap is one line in DI registration. Say that out loud, since it's the provider-flexibility slide made real.
 3. Run 20 easy reviews through `phi3` locally: fast, free, and correct. Let the small model win the first round.
 4. Run the same 20 through Azure OpenAI and get identical labels. First payoff: you'd have paid for nothing.
-5. Now the hard set, sarcasm and mixed reviews. Run both and diff the labels on screen. Second payoff: the small model face-plants on sarcasm, and the general model catches it.
+5. Now the hard set, sarcasm and mixed reviews. Run both and diff the labels on screen. Second payoff: both models drop several points, and the disagreements are where the interesting arguments live. Whether the big model actually earns its price on this slice is the measurement, not the assumption. Check `lab/expected-output.md` for what happened when this was built, and be ready for the room's answer to differ from yours.
 6. Close with the decision recipe: labeled sample, run both, count disagreements, price the errors. That recipe generalizes to every module today.
 
 ## Lab spec (13 min, any language)

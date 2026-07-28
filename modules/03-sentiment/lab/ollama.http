@@ -1,0 +1,91 @@
+# Lab 03: sentiment classification against Ollama (phi3).
+# One prompt, one word back: positive | negative | mixed.
+# Requests 1-2 are from the easy set, 3-4 from the hard set. Request 5 reruns
+# the review phi3 misses on llama3.2, standing in for the big model, so you can
+# see a disagreement without leaving localhost. Review text is inlined so these
+# run as-is; loop the rest of easy.jsonl and hard.jsonl from your language.
+# Temperature 0 keeps the labels stable enough to score.
+#
+# The prompt below is byte-for-byte the one the .NET demo sends, line breaks
+# included. Those line breaks are not decoration: reflowing this same prompt
+# onto one line costs phi3 real accuracy. See expected-output.md.
+
+### 1. Easy set, gr-0003 (expect: positive)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "phi3",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Classify this gear review as exactly one word: positive, negative, or mixed.\nPositive means the reviewer is happy with the product, negative means unhappy,\nmixed means genuinely both. Judge the review text only; ignore any star rating\nit mentions. Reply with only the label.\n\nReview: Easy recommendation. No blisters in 200 straight miles. The heel cushion alone would be worth half the price."
+    }
+  ],
+  "stream": false,
+  "options": { "temperature": 0 }
+}
+
+### 2. Easy set, gr-0002 (expect: negative)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "phi3",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Classify this gear review as exactly one word: positive, negative, or mixed.\nPositive means the reviewer is happy with the product, negative means unhappy,\nmixed means genuinely both. Judge the review text only; ignore any star rating\nit mentions. Reply with only the label.\n\nReview: Returned it. The seam taping peeled after one season. For this price that's inexcusable."
+    }
+  ],
+  "stream": false,
+  "options": { "temperature": 0 }
+}
+
+### 3. Hard set, gr-0034: five stars, furious text, and it's the Cascade 65 (reference: negative)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "phi3",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Classify this gear review as exactly one word: positive, negative, or mixed.\nPositive means the reviewer is happy with the product, negative means unhappy,\nmixed means genuinely both. Judge the review text only; ignore any star rating\nit mentions. Reply with only the label.\n\nReview: Five stars for the return process, which I got to experience because the frame stay poked through the back panel on day one. The Cascade 65 Backpack itself is the worst piece of gear I have owned in thirty years outdoors."
+    }
+  ],
+  "stream": false,
+  "options": { "temperature": 0 }
+}
+
+### 4. Hard set, gr-0013: the same trick on a GPS watch (reference: negative; phi3 says mixed)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "phi3",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Classify this gear review as exactly one word: positive, negative, or mixed.\nPositive means the reviewer is happy with the product, negative means unhappy,\nmixed means genuinely both. Judge the review text only; ignore any star rating\nit mentions. Reply with only the label.\n\nReview: Five stars for the return process, which I got to experience because the battery meter jumps from 40 percent to dead on day one. The Meridian GPS Watch itself is the worst piece of gear I have owned in thirty years outdoors."
+    }
+  ],
+  "stream": false,
+  "options": { "temperature": 0 }
+}
+
+### 5. Same review on llama3.2 (the stand-in big model gets it: negative)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Classify this gear review as exactly one word: positive, negative, or mixed.\nPositive means the reviewer is happy with the product, negative means unhappy,\nmixed means genuinely both. Judge the review text only; ignore any star rating\nit mentions. Reply with only the label.\n\nReview: Five stars for the return process, which I got to experience because the battery meter jumps from 40 percent to dead on day one. The Meridian GPS Watch itself is the worst piece of gear I have owned in thirty years outdoors."
+    }
+  ],
+  "stream": false,
+  "options": { "temperature": 0 }
+}
