@@ -179,6 +179,20 @@ Console.WriteLine($"  margin over rank 2: {margin:F4}\n");
 if (retrievalOnly) return;
 
 // Grounded prompt: context in, citations out, refusal when the context is silent.
+//
+// The corpus is full of dated notices ("CLOSED effective June 20, 2026, until further
+// notice"). A model with no idea what day it is treats "is the trail open right now?" as
+// a question its documents cannot speak to, and refuses. So we tell it the date. Two
+// measured caveats, both worth a sentence on stage: the date on its own changes nothing
+// (6/16 refusals with it, 5/16 without), and a broadly worded currency rule in the Rules
+// block fixes this question while wrecking Q1, where the model starts applying effective
+// dates to a year-round fire ban. Attaching the date to the refusal clause, where the
+// refusal decision is actually made, is the version that helps without collateral damage.
+// Production passes DateTime.Today here; this demo pins a date so the recorded outputs in
+// lab/expected-output.md stay reproducible.
+const string today = "September 23, 2026";
+const string refusal = "The provided documents don't say.";
+
 var retrievedIds = top.Select(x => x.Chunk.chunk_id).ToHashSet();
 var context = string.Join("\n\n", top.Select(x =>
     $"chunk_id: {x.Chunk.chunk_id}\nsource: {x.Chunk.source}\n{x.Chunk.text}"));
@@ -190,7 +204,9 @@ var prompt = $"""
     - Cite the chunk_id of each chunk you relied on, in square brackets, e.g. [glacier-visitor-faq:02].
     - Copy chunk_ids exactly as they appear above the context. Do not add section numbers to them,
       and do not combine parts of two chunk_ids.
-    - If, and only if, none of the context is relevant to the question, reply exactly: "The provided documents don't say."
+    - If, and only if, none of the context is relevant to the question, reply exactly: "{refusal}"
+      A question about "right now" is answered from the context, not refused: today is {today},
+      and a notice that is in effect "until further notice" is still in effect right now.
 
     Context:
     {context}
@@ -207,7 +223,22 @@ var bad = InvalidCitations(answer, retrievedIds);
 // issue: it is a receipt pointing at a document nobody retrieved, and sometimes
 // at a document that does not exist. Retry once with the valid ids spelled out,
 // then strip whatever is still wrong so a bad receipt never reaches the visitor.
-if (bad.Count > 0)
+if (bad.Count > 0 && answer.Contains(refusal))
+{
+    // A refusal with a chunk_id stapled to it is the most common invalid citation in the
+    // whole demo, and it is not a question the model needs to think about again: the answer
+    // is already correct and by definition it has no sources. Sending it back through the
+    // model was measurably harmful. Asked to "rewrite the answer using only those ids", it
+    // rewrites the refusal too, and the exact wording the product depends on comes back as
+    // "There is no information about EV charging stations in the provided context." Truthful,
+    // still refusing, but no longer the string anything downstream can match on. Deleting a
+    // citation is a string operation. Do it in code and skip the round trip.
+    Console.WriteLine($"!! CITATION CHECK FAILED: {string.Join(", ", bad.Select(c => $"[{c}]"))} not in the retrieved set");
+    Console.WriteLine("!! the answer was a refusal with a citation attached; dropping the citation, no retry needed\n");
+    answer = refusal;
+    bad = [];
+}
+else if (bad.Count > 0)
 {
     Console.WriteLine($"!! CITATION CHECK FAILED: {string.Join(", ", bad.Select(c => $"[{c}]"))} not in the retrieved set");
     Console.WriteLine("!! retrying once with the valid chunk_ids spelled out\n");

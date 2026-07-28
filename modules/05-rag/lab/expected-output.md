@@ -160,9 +160,9 @@ contains the word "Sperry." The embedder does not care. Hybrid puts it back at r
 
 ## Step 2: the grounded answers
 
-Twelve runs, three per question, default settings.
+Seventy-two runs at default settings: 20 each on Q1, Q3, and Q4, 12 on Q2.
 
-**Q1** (3/3 correct):
+**Q1** (15/20 correct):
 
 > [glacier-backcountry-camping-guide:04]
 >
@@ -176,29 +176,44 @@ brackets, and no Acadia or Yosemite content bleeding in. One run cited two chunk
 comma-separated list inside one pair of brackets. Both ids are real and both were
 retrieved, so it passes; the validator splits on commas for exactly this reason.
 
-**Q2** (3/3 correct):
+Five of the twenty went wrong, and they go wrong the same way every time: the model reads
+Section 4.1's conditional "permitted only when the posted fire danger rating is below Very
+High", stops before 4.2's absolute year-round ban, and answers yes. This is the same
+failure the `--top-k 8` caveat below describes, and it is the reason Q1 rather than Q3 is
+the question to watch when you change the prompt. It is unchanged by the date fix: the
+build before it scored 14 of 16 on the same check.
+
+**Q2** (12/12 correct):
 
 > [glacier-backcountry-permit-regulations:04] The maximum party size on any
 > backcountry permit is eight (8) persons.
 
 **Check:** eight, cited. Format varies; the local model likes putting the citation first.
 
-**Q3** (2/3 correct, see the caveat below):
+**Q3** (19/20 correct; it used to be roughly half, see "Telling the model what day it is"):
 
-> [glacier-visitor-faq:02] The Avalanche Lake Trail is closed effective June 20, 2026,
+> [glacier-visitor-faq:02] No, the Avalanche Lake Trail is closed effective June 20, 2026,
 > until further notice.
 
 **Check:** closed, with a date and a citation.
 
-**Q4, the refusal** (3/3 refused):
+**Q4, the refusal** (20/20 refused, 16 of them word for word):
 
 > The provided documents don't say.
 
-**Check:** exactly this, with no helpful speculation about charging infrastructure.
-Chunks about shuttle parking, permit fees, and what to do when a bear charges were
-sitting right there in the context, and the model declined to build an answer out of
-adjacent material. Two of the three runs did append a fabricated citation to the
-refusal; see the next section.
+**Check:** no helpful speculation about charging infrastructure. Chunks about shuttle
+parking, permit fees, and what to do when a bear charges were sitting right there in the
+context, and the model declined to build an answer out of adjacent material every single
+time. Twelve of the twenty runs appended a fabricated citation to the refusal; see the
+next section.
+
+Four of the twenty declined without using the exact sentence, in wording like "There is
+no information about EV charging stations in the provided documents." Substantively that
+is the same refusal, and none of the four invented a charging station. But it is no longer
+a string anything downstream can match on, which is the difference between a refusal your
+product can route on and a refusal a human has to read. All four came out of the citation
+retry, which is the one code path that hands a finished refusal back to the model and asks
+it to write the answer again.
 
 ## Citation validation
 
@@ -212,19 +227,39 @@ actually placed in the context. Anything not in that set is a failure, printed l
 ```
 
 **Behavior on failure:** retry once with the valid ids listed verbatim in the prompt,
-then strip whatever is still wrong and label it `[invalid-citation-removed]`. The
-reasoning is in [../dotnet/README.md](../dotnet/README.md).
+then strip whatever is still wrong and label it `[invalid-citation-removed]`. The one
+exception is a refusal with a citation stapled to it, which is fixed in code without a
+retry, for reasons measured below. The reasoning is in
+[../dotnet/README.md](../dotnet/README.md).
 
-What it caught in the twelve default runs:
+What it caught across the runs above:
 
 | question | invalid citation emitted | what happened |
 |---|---|---|
-| Q4, run 1 | `glacier-going-to-the-sun-road-guide:02` | retry produced a clean refusal, no citation |
-| Q4, run 2 | `glacier-bear-safety-advisory:02` | retry produced a clean refusal, no citation |
+| Q4, 12 of 20 runs | `glacier-bear-safety-advisory:02` | refusal detected in code, citation dropped, no retry |
+| Q1, 5 of 20 runs | `glacier-backcountry-camping-guide:04.2` and `:04:04` | retry, then `[invalid-citation-removed]` where it stuck |
 
-Both are the same failure mode: a real document name with a section number the model
-made up. `glacier-going-to-the-sun-road-guide:07` was in the context; `:02` was not.
+All of them are the same failure mode: a real document name with a section number the
+model made up. `glacier-bear-safety-advisory:03` was in the context; `:02` was not.
 Nothing in the answer text tells you that. Only the check does.
+
+**Why the refusal case skips the retry.** `The provided documents don't say.` plus a
+fabricated chunk_id is the single most common invalid citation in the module, and it is
+not a question the model needs to reconsider: the answer is already right, and a refusal
+by definition has no sources. Sending it back anyway was measurably harmful. Told to
+"rewrite the answer using only those ids", `llama3.2` rewrites the refusal along with the
+citation and returns "There is no information about EV charging stations in the provided
+context." Still a refusal, no longer the contracted string. Deleting a citation is a
+string operation, so the demo does it in code. Q4's word-for-word refusal rate went from
+12 of 16 to 16 of 20 on that change alone, and every run that reached the model at all
+still refused.
+
+The obvious alternative, adding "if the context did not cover the question, answer exactly
+`The provided documents don't say.`" to the retry prompt, was tried and rejected. It took
+Q4 to 20 of 20 word for word and simultaneously made Q1 refuse in 6 of 20 runs: once the
+retry prompt mentions the refusal, an answerable question that happens to trip the citation
+check starts taking the exit. Offering a model an escape hatch in a repair prompt is not
+free.
 
 At `--top-k 8` on Q1, one run in five emitted
 `[glacier-frontcountry-campground-regulations:02]`, again a real document with an
@@ -239,17 +274,82 @@ validating in code instead of trusting the model to copy a string.
 `(glacier-visitor-faq:02)` in parentheses and the check counted zero citations rather
 than flagging anything. Worth mentioning if someone asks how airtight this is.
 
-## Caveats from twelve real runs
+## Telling the model what day it is
 
-- **Q3 refuses about a quarter of the time.** Three of twelve runs answered "The
-  provided documents don't say." to the Avalanche Lake question even though the context
-  plainly said the trail was closed. This is not new and it is not caused by hybrid
-  retrieval: nine runs of the previous pure-cosine build with the previous prompt
-  refused twice. `llama3.2` reads "right now" and decides a document cannot speak to
-  the present tense. An earlier prompt that ended with "If the context does not contain
-  the answer" refused far more often; the current "If, and only if, none of the context
-  is relevant" wording reduced the rate but did not eliminate it. If your lab refuses
-  on a question you know is covered, run it twice before you go debugging retrieval.
+Q3 used to be the most embarrassing thing in this module. "Is the Avalanche Lake Trail
+open right now?" is a question the corpus answers twice over, retrieval puts the right
+chunks at rank 1 and 2, and the model refused anyway. Measured on the build before this
+fix: **10 refusals in 18 runs**, not the "about one in four" this file used to claim from
+a three-run sample. On stage that is a coin flip on a question the lab presents as
+answerable.
+
+Retrieval was never the problem. The prompt was, and the specific problem was the calendar.
+
+The corpus is written the way real operational documents are written, in dated notices:
+"Avalanche Lake Trail: CLOSED effective June 20, 2026, until further notice." Answering
+"is it open right now?" from that sentence takes one step the model cannot take, which is
+knowing what "now" is. Given a notice with a start date, no end date, and no idea what
+today is, refusing is not a malfunction. It is the correct answer to a question the model
+genuinely cannot resolve.
+
+Three experiments, sixteen runs each, pinned it down:
+
+| what changed | Q3 refusals |
+|---|---|
+| nothing (baseline prompt) | 5/16 |
+| drop "right now" from the question | **0/16** |
+| add "Today's date is September 23, 2026." to the top of the prompt | 6/16 |
+
+The second row proves the phrase "right now" is the trigger. The third row kills the
+obvious fix: **the date alone does nothing.** A model handed a date and a dated notice
+does not spontaneously connect them. You have to say what the date is *for*.
+
+Where you say it turns out to matter more than what you say. A currency rule in the Rules
+block, phrased broadly ("the context is the park's current status record, answer
+present-tense questions from it"), fixed Q3 completely, held Q4's refusal at 32 of 32,
+and quietly wrecked Q1: correct answers on the Sperry campfire question fell from 22 of 24
+to **14 of 24**, with the model applying effective-date reasoning to a year-round fire ban
+and concluding that campfires are allowed because nothing said the rule had expired. A
+prompt rule you added for one question is a prompt rule that runs on every question.
+
+What ships is narrower. The date rides along with the refusal clause, where the refusal
+decision is actually made:
+
+```
+- If, and only if, none of the context is relevant to the question, reply exactly: "The provided documents don't say."
+  A question about "right now" is answered from the context, not refused: today is September 23, 2026,
+  and a notice that is in effect "until further notice" is still in effect right now.
+```
+
+Measured over 20 runs each on the finished demo:
+
+| question | before | after |
+|---|---|---|
+| Q3, "open right now" | 10/18 refused | **1/20 refused** |
+| Q4, EV charging (must refuse) | 12/16 word for word, 16/16 refused | 16/20 word for word, 20/20 refused |
+| Q1, Sperry campfire | 0/16 refused, 14/16 correct | 0/20 refused, 15/20 correct |
+| Q2, group size | 0/8 refused, 8/8 correct | 0/12 refused, 12/12 correct |
+
+`today` is a constant in `Program.cs` with a comment saying so. Production passes
+`DateTime.Today`; the demo pins a date so the outputs recorded in this file stay
+reproducible.
+
+**The leadership version of this:** a corpus of dated notices is useless to a model that
+does not know the date, and almost every real knowledge base is a corpus of dated notices.
+Policies with effective dates, incidents with open and close times, price lists, org charts,
+on-call rotations. If your RAG system does not tell the model what "now" means, it will
+either refuse questions it can answer or answer them as of an unknown date, and you will
+not be able to tell which from the output.
+
+## Caveats from twenty real runs
+
+- **Q3 still refuses occasionally.** One run in twenty, down from better than half. If
+  your lab refuses on a question you know is covered, run it twice before you go debugging
+  retrieval.
+- **Q4's refusal survives in substance, not always word for word.** Twenty of twenty runs
+  declined; sixteen used the exact sentence. The gap is the citation retry, documented
+  above. Do not tighten this by mentioning the refusal in the retry prompt; that trade was
+  measured and it costs Q1 far more than it gains Q4.
 - **Higher top-k makes Q1 worse, not better.** At `--top-k 8` the context picks up
   Glacier's frontcountry campground rules and Section 4.1's conditional "fires
   permitted" language, and one run in five concluded that campfires **are** allowed at

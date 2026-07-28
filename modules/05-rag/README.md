@@ -12,6 +12,8 @@ RAG bolts module 04's retrieval onto an LLM's generation. Instead of asking the 
 
 The mechanics you'll touch: chunking (splitting 25 park docs into retrievable pieces), retrieval (module 04's embedding search, plus a lexical signal it turns out to need), and grounded prompting (context in, citation out, refusal when the context is silent).
 
+A third mechanic is easy to leave out and expensive to leave out: **the model has to be told what "now" means.** The park corpus is written the way operational documents are actually written, in dated notices ("Avalanche Lake Trail: CLOSED effective June 20, 2026, until further notice"). Ask "is the trail open right now?" and a model with no calendar cannot connect the two, so it refuses a question its documents answer twice over. The finished demo puts the current date in the prompt next to the refusal rule, and the refusal rate on that question drops from better than half to one run in twenty. Almost every real knowledge base is a corpus of dated notices, and a RAG system that never tells the model the date will either refuse answerable questions or answer them as of an unknown date, with nothing in the output to tell you which.
+
 Two of those mechanics have a failure mode worth showing rather than glossing. **Embedding search alone is not enough for proper nouns.** Cosine similarity ranks the correct Sperry Chalet regulation first by 0.0004 over a campfire rule from Acadia, because the embedder is matching the phrase "campfire regulations" and not the entity "Sperry." Blending a plain keyword score into the ranking, weighted by how rare each word is in the corpus, fixes it. That blend is called hybrid retrieval and it is most production RAG systems' first upgrade. **And a citation is a string the model typed, not a fact.** Small models emit chunk ids that look right and point nowhere. Checking each cited id against the set you actually retrieved is a five-line function and it is the difference between a receipt and a decoration.
 
 The model strategy is hybrid in a second sense, on purpose. Retrieval runs on free local embeddings, and you'll try generation both ways: a local model first, then Azure OpenAI. Watching the cloud model handle a multi-document answer more cleanly is the honest version of the "when do I pay for the big model" conversation from module 03, now applied to generation.
@@ -26,6 +28,7 @@ The model strategy is hybrid in a second sense, on purpose. Retrieval runs on fr
 6. Run it. The payoff: the right answer, with the regulation document cited by name.
 7. Show the citation check. Parse the ids out of the answer, compare against what was retrieved, print a loud failure on a mismatch. Run the unanswerable question a couple of times until the model appends an invented chunk id to its own refusal, which it does often enough to count on.
 8. Ask it something the docs don't cover ("Can I bring a drone?" if absent) and get an honest "the provided documents don't say," not a guess.
+8b. Ask "Is the Avalanche Lake Trail open right now?" and show the date sitting in the prompt. Explain why it is there: without it the same question got refused in 10 runs out of 18, not because retrieval missed but because "effective June 20, 2026, until further notice" is unanswerable without a calendar. Worth 60 seconds; it is the most transferable thing in the module.
 9. Swap generation from the local model to Azure OpenAI with the one-line Microsoft.Extensions.AI client change, re-run a multi-document question, and compare answer quality side by side.
 
 ## Lab spec (13 min, any language)
@@ -38,7 +41,7 @@ The model strategy is hybrid in a second sense, on purpose. Retrieval runs on fr
   2. Add a lexical score (count query words in the chunk, weight each by how few chunks contain it) and combine it with the cosine score. Re-run question #1 and the rephrasing in `expected-output.md`, and compare margins.
   3. Build the grounded prompt and generate the answer with the source cited.
   4. Validate the citations: pull the bracketed ids out of the answer, check each against the chunks you retrieved, and fail loudly on a mismatch.
-  5. Run all four questions. Success check: three correct cited answers, a refusal on the fourth, and no invalid citation reaching the output unflagged (compare `lab/expected-output.md`).
+  5. Run all four questions. Success check: three correct cited answers, a refusal on the fourth, and no invalid citation reaching the output unflagged (compare `lab/expected-output.md`). Question 3 asks about "right now"; if your model refuses it, do not go debugging retrieval. Put today's date in the prompt and read the measured before-and-after in `lab/expected-output.md`.
 - **Stretch goal:** build a real evaluation loop instead of eyeballing one question. Write ten more questions with the chunk that should win, then sweep alpha from 0 to 1 and report recall@3 and mean rank-1 margin at each setting. Defend your chosen alpha with the table rather than with the Sperry question, and see whether the setting that wins on Sperry wins on the other ten.
 
 ## Leadership beat
