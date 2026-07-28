@@ -35,7 +35,7 @@ Read this before the retrieval section, because it landed harder than the retrie
 
 `chunks.jsonl` used to be one chunk per numbered section: 241 chunks, the obvious default. Section 4 of the Glacier backcountry guide is 256 words and it holds 4.1, "fires permitted only when the posted fire danger rating is below Very High," followed by 4.2, "wood fires are prohibited year-round at all campsites in the Sperry Chalet area." Retrieval put that chunk at rank 1 on every phrasing of the Sperry question, so every retrieval metric said the system was fine. `llama3.2` answered from 4.1 and told the visitor yes in 4 runs out of 20.
 
-Now a section over 200 words splits at its own subsection boundaries, with consecutive subsections packed together until each chunk clears a 50-word floor. Five sections in the corpus were long enough to qualify, so the count went 241 to 250. Section 4 becomes `:04.1`, `:04.2`, and `:04.3-5`. Q1 went to 20 out of 20.
+Now a section over 200 words splits at its own subsection boundaries, with consecutive subsections packed together until each chunk clears a 50-word floor. Five sections in the corpus were long enough to qualify, so the count went 241 to 250. Section 4 becomes `:04.1`, `:04.2`, and `:04.3-5`. The wrong answer has not reappeared in 60 runs.
 
 Two details that are not decoration:
 

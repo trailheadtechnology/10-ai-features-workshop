@@ -170,10 +170,11 @@ hybrid roughly doubles it.
 
 ## Step 2: the grounded answers
 
-Seventy-two runs at default settings: 20 each on Q1, Q3, and Q4, 12 on Q2. (Q3 was run
-60 times, for reasons in the caveats.)
+Two hundred runs at default settings: 60 on Q1, 40 on Q2, 60 on Q3, 40 on Q4. Twenty
+runs is enough to see a one-in-five defect and not enough to claim a 95 percent success
+rate, so the samples here are sized for the claim being made.
 
-**Q1** (20/20 correct):
+**Q1** (59/60 correct):
 
 > [glacier-backcountry-camping-guide:04.2] According to section 4.2 of the Glacier
 > Backcountry Camping Guide, wood fires are prohibited year-round at all campsites in
@@ -183,21 +184,43 @@ Seventy-two runs at default settings: 20 each on Q1, Q3, and Q4, 12 on Q2. (Q3 w
 > danger is Low.
 
 **Check:** correct answer (no, and not because of September), a real chunk_id in
-brackets, and no Yosemite or frontcountry content bleeding in. Every one of the twenty
-states the year-round prohibition and none of them says fires are permitted when
-conditions allow. Five of the twenty open with the word "Yes" before going on to say
-fires are prohibited, usually as "Yes, you can have a pressurized-gas stove ... but wood
-fires are prohibited year-round." Substantively right, awkward to read, and a good
-reminder that "correct" and "well-worded" are separate checks.
+brackets, and no Yosemite or frontcountry content bleeding in. Fifty-nine of sixty state
+the year-round prohibition, and not one of the sixty says fires are permitted when
+conditions allow. The old failure mode is gone.
 
-**Q2** (12/12 correct):
+The one failure is a different animal and worth reading:
+
+> You can have a campfire at Sperry Chalet in September, but only pressurized-gas stoves
+> are permitted for cooking at these sites year-round.
+
+No citation, no prohibition stated, and the first clause is false. It did not come from
+the wrong chunk; the right chunk was rank 1 with a 0.2321 margin, as it is on every run.
+This is generation variance in a 3B model, and the honest reading is that chunking took
+this question from a 1-in-5 systematic defect to a 1-in-60 random one.
+
+**The wording problem this file will not paper over.** Roughly 45 percent of the correct
+answers open with the word "Yes":
+
+> Yes, you can have a pressurized-gas stove for cooking at the Sperry Chalet site, but
+> wood fires are prohibited year-round there, regardless of season or posted fire danger.
+
+> Yes, wood fires are prohibited year-round at all campsites in the Sperry Chalet area.
+
+The first is answering a question nobody asked. The second is agreeing with itself. Both
+are substantively right, both would fail a human review on a safety question, and one run
+in sixty went all the way to "Yes, you can have a campfire at Sperry Chalet in September,
+but it's prohibited year-round," which is a sentence that contradicts itself inside twenty
+words. Chunking does not touch this. It is a prompt and a model-size question, and it is
+the largest remaining gap in the module.
+
+**Q2** (40/40 correct):
 
 > [glacier-backcountry-permit-regulations:04] The maximum party size on any
 > backcountry permit is eight (8) persons.
 
 **Check:** eight, cited. Format varies; the local model likes putting the citation first.
 
-**Q3** (55/60 correct, 5/60 refused):
+**Q3** (55/60 correct, 5/60 refused; 59/60 correct before the chunking change):
 
 > [glacier-seasonal-closures-2026:04.1] No, the Avalanche Lake Trail is currently CLOSED
 > effective June 20, 2026, until further notice due to the washed-out footbridge over
@@ -206,20 +229,28 @@ reminder that "correct" and "well-worded" are separate checks.
 **Check:** closed, with a date and a citation. Roughly half the runs cite the closure
 notice, roughly half cite `glacier-visitor-faq:02`, and a few cite both.
 
-**Q4, the refusal** (19/20 refused, 0/20 asserted anything about EV charging):
+**Q4, the refusal** (36/40 refused, 0/40 asserted that a charging station exists):
 
 > The provided documents don't say.
 
-**Check:** no helpful speculation about charging infrastructure. Chunks about road
-services, permit fees, and what to do when a bear charges were sitting right there in the
-context, and not one run built an answer out of adjacent material. Fourteen of the twenty
-used the exact sentence somewhere in the answer; five used it alone with nothing else
-attached. Five more declined in wording like "There is no information available in the
+**Check:** no run claimed the park has charging stations. Twenty-seven of forty used the
+exact sentence somewhere in the answer and twelve used it alone with nothing else
+attached; the rest declined in wording like "There is no information available in the
 provided documents about electric vehicle (EV) charging stations within Glacier National
 Park," which is substantively the same refusal but no longer a string anything downstream
-can match on. The twentieth run answered with a bare `[glacier-bear-safety-advisory:03]`
-and no sentence at all, which is not a refusal, not an answer, and not something any
-check in this demo catches. Worth showing if it comes up.
+can match on.
+
+Q4 is the weakest of the four at 36 of 40, and the four misses are all the same shape.
+Three answered the question next door:
+
+> No, fuel is not available anywhere within the Park [glacier-going-to-the-sun-road-guide:07].
+
+The corpus says nothing about electric vehicles. It says fuel is unavailable, the model
+treats that as close enough, and the answer opens with "No" to a question it never
+addressed. The conclusion happens to be plausible, which is what makes it dangerous: the
+grounding is wrong and the output looks fine. The fourth run answered with a bare
+`[glacier-bear-safety-advisory:03]` and no sentence at all, which is not a refusal, not
+an answer, and not something any check in this demo catches.
 
 ## Chunking
 
@@ -246,14 +277,18 @@ long as fire danger was below Very High.
 
 | question | before (241 section chunks) | after (250 chunks) |
 |---|---|---|
-| **Q1, Sperry campfire, correct** | **15/20** | **20/20** |
-| Q1, wrong answer ("yes, if fire danger allows") | 4/20 | **0/20** |
-| Q1, refused | 1/20 | 0/20 |
-| Q2, group size, correct | 11/12 | 12/12 |
-| Q3, trail closure, refused | 1/60 | 5/60 |
-| Q4, EV charging, refused | 18/20 | 19/20 |
-| Q4, asserted something about EV charging | 2/20 | **0/20** |
-| Q4, refusal string used verbatim and alone | 12/20 | 5/20 |
+| **Q1, Sperry campfire, correct** | **15/20 (75%)** | **59/60 (98%)** |
+| Q1, wrong answer ("yes, if fire danger allows") | 4/20 | **0/60** |
+| Q1, refused | 1/20 | 0/60 |
+| Q2, group size, correct | 11/12 (92%) | **40/40 (100%)** |
+| Q3, trail closure, correct | 59/60 (98%) | 55/60 (92%) |
+| Q4, EV charging, refused | 18/20 (90%) | 36/40 (90%) |
+| Q4, claimed a charging station exists | 2/20 | **0/40** |
+| Q4, refusal string used verbatim and alone | 12/20 (60%) | 12/40 (30%) |
+
+Read the sample sizes. The before column is 20 runs per question because that is what it
+took to see the defect; the after column is 40 to 60 because that is what it takes to
+claim a rate.
 
 The four wrong Q1 answers all failed the same way. Two read 4.1 and stopped:
 
@@ -445,9 +480,18 @@ not be able to tell which from the output.
   chunking section for why those two numbers moved in opposite directions. Do not tighten
   this by mentioning the refusal in the retry prompt; that trade was measured and it costs
   Q1 far more than it gains Q4.
-- **Five of the twenty correct Q1 answers open with "Yes."** They then say fires are
-  prohibited. The check in this file is about the substance, not the first word, but it is
-  the kind of thing that would fail a human review and it is a fair question from the room.
+- **Roughly 45 percent of correct Q1 answers open with "Yes."** They then say fires are
+  prohibited. This is the biggest remaining gap in the module and it is not a chunking
+  gap: the retrieval is right, the substance is right, and the first word is wrong on a
+  safety question. Fixing it means a prompt rule about answering the question directly, or
+  a bigger generation model, and the prompt route has a measured history of collateral
+  damage in this module (see "Telling the model what day it is"). Left alone deliberately,
+  and flagged.
+- **Q4's four misses answer the question next door.** Three said "No, fuel is not
+  available anywhere within the Park" to a question about EV charging. Same class of error
+  as the "Yes" openers: the model reaching for the nearest available assertion rather than
+  declining. Both would be caught by an answer-relevance check, which this demo does not
+  have.
 - **Higher top-k is no longer a trap on Q1, but do not assume that.** The `--top-k 8`
   context still picks up two chunks that say campfires are permitted under conditions.
   The rank-1 margin is 0.2321 and the answer held across the runs measured here, but more
