@@ -1,0 +1,36 @@
+# Lab 04: embeddings against Ollama (nomic-embed-text).
+# This is the only network call the whole lab makes. Everything else
+# (cosine similarity, ranking) is arithmetic you write yourself.
+#
+# The response is {"embeddings": [[...768 floats...]], ...}. One vector
+# per input string, in the order you sent them.
+
+### 1. Embed one sentence. Look at the numbers; that's all an embedding is.
+POST http://localhost:11434/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": "a gentle grade shaded by cedars"
+}
+
+### 2. Embed a batch. Send the whole catalog this way, once, and cache it.
+POST http://localhost:11434/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": [
+    "Because it starts just outside the park boundary in national forest, leashed dogs can come along to this year-round waterfall on the Tuolumne's south fork. The path rolls gently through pine and incense cedar with one rooty stretch near the end. The pool below the falls warms enough for swimming by late July.",
+    "Do not let the name fool you; it honors homesteader Elias Easy, not the terrain. The route gains over 2,600 feet in under four miles, much of it on loose, ankle-rolling rubble beside the creek's headwall. Search and rescue answers more calls here than on any comparable trail in the district."
+  ]
+}
+
+### 3. Embed the query. Same model, same endpoint, no special treatment.
+POST http://localhost:11434/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": "dog-friendly waterfall hike, not too steep"
+}

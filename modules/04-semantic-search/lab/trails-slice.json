@@ -1,0 +1,431 @@
+[
+  {
+    "id": "trail-0003",
+    "name": "Trail of the Cedars",
+    "park": "Glacier National Park",
+    "distance_mi": 1.0,
+    "elevation_ft": 60,
+    "difficulty": "easy",
+    "features": [
+      "boardwalk",
+      "dog-friendly",
+      "old-growth",
+      "accessible"
+    ],
+    "description": "A raised boardwalk winds beneath ancient cedars whose canopy keeps the path cool even in August. The route is flat enough for strollers and wheelchairs, and leashed pets are welcome, a rarity in this park. Interpretive signs explain how this pocket of rainforest survives on the Continental Divide's wet side."
+  },
+  {
+    "id": "trail-0004",
+    "name": "Ocean Path",
+    "park": "Acadia National Park",
+    "distance_mi": 4.4,
+    "elevation_ft": 190,
+    "difficulty": "easy",
+    "features": [
+      "coastline",
+      "tide-pools",
+      "family-friendly"
+    ],
+    "description": "The trail hugs pink granite ledges between Sand Beach and Otter Point, with the surf pounding a few feet below. Countless spur paths drop to tide pools where kids can lose an entire morning. Nothing about the walking is demanding; the challenge is making forward progress past all the views."
+  },
+  {
+    "id": "trail-0005",
+    "name": "Chimney Tops Trail",
+    "park": "Great Smoky Mountains National Park",
+    "distance_mi": 3.8,
+    "elevation_ft": 1487,
+    "difficulty": "hard",
+    "features": [
+      "viewpoint",
+      "rock-scramble"
+    ],
+    "description": "The first mile lulls you with creek crossings and rhododendron tunnels before the trail tilts sharply upward. Stone staircases climb relentlessly to an observation platform below the twin pinnacles. Expect burning quads and a crowded summit on fall weekends."
+  },
+  {
+    "id": "trail-0007",
+    "name": "Upper Yosemite Falls Trail",
+    "park": "Yosemite National Park",
+    "distance_mi": 7.2,
+    "elevation_ft": 2700,
+    "difficulty": "hard",
+    "features": [
+      "waterfall",
+      "viewpoint",
+      "switchbacks"
+    ],
+    "description": "Sixty-odd switchbacks grind up the north wall to the brink of the continent's tallest waterfall. In May the spray at Columbia Rock soaks anyone who pauses too long, and the roar follows you the entire climb. This one punishes people who underestimate it; carry twice the water you think you need."
+  },
+  {
+    "id": "trail-0011",
+    "name": "Hadlock Falls Loop",
+    "park": "Acadia National Park",
+    "distance_mi": 2.1,
+    "elevation_ft": 310,
+    "difficulty": "easy",
+    "features": [
+      "waterfall",
+      "dog-friendly",
+      "carriage-road",
+      "bridge"
+    ],
+    "description": "Crushed-stone carriage roads climb so gradually you hardly register the gain before the falls appear beneath a stone arch bridge. Leashed dogs are welcome, and the wide surface lets groups walk two abreast. The cascade is loudest after spring rain and dwindles to a trickle by late summer."
+  },
+  {
+    "id": "trail-0014",
+    "name": "Mirror Lake Loop",
+    "park": "Yosemite National Park",
+    "distance_mi": 4.7,
+    "elevation_ft": 180,
+    "difficulty": "easy",
+    "features": [
+      "lake",
+      "reflections",
+      "family-friendly"
+    ],
+    "description": "A mostly level circuit around a seasonal lake that throws a flawless reflection of Mount Watkins in spring. By August the water retreats to a meadow of grasses and the crowds thin with it. The paved first mile suits strollers; the back half is packed dirt with a few roots."
+  },
+  {
+    "id": "trail-0017",
+    "name": "Beehive Loop",
+    "park": "Acadia National Park",
+    "distance_mi": 1.5,
+    "elevation_ft": 508,
+    "difficulty": "hard",
+    "features": [
+      "iron-rungs",
+      "exposure",
+      "viewpoint"
+    ],
+    "description": "Iron rungs and narrow ledges ladder straight up a cliff face above Sand Beach. It is short, but a fear of heights will find you halfway up with no easy retreat, since descending the rungs against traffic is discouraged. The tamer Bowl trail offers a walk-off from the summit."
+  },
+  {
+    "id": "trail-0020",
+    "name": "Taft Point Trail",
+    "park": "Yosemite National Park",
+    "distance_mi": 2.3,
+    "elevation_ft": 250,
+    "difficulty": "easy",
+    "features": [
+      "viewpoint",
+      "fissures",
+      "sunset"
+    ],
+    "description": "A relaxed forest stroll delivers you, almost without warning, to the lip of a three-thousand-foot drop. Deep fissures split the granite right at the edge, and only a small railing guards the main overlook. Keep children close; the ground gives no second chances here."
+  },
+  {
+    "id": "trail-0024",
+    "name": "Jordan Pond Path",
+    "park": "Acadia National Park",
+    "distance_mi": 3.4,
+    "elevation_ft": 80,
+    "difficulty": "easy",
+    "features": [
+      "lake",
+      "boardwalk",
+      "family-friendly"
+    ],
+    "description": "A shoreline circuit with the rounded Bubbles reflected in water so clear the state uses it as a purity benchmark. Long stretches of split-log boardwalk keep boots dry through the boggy western shore. Finish with popovers on the lawn of the historic teahouse."
+  },
+  {
+    "id": "trail-0027",
+    "name": "Grotto Falls Trail",
+    "park": "Great Smoky Mountains National Park",
+    "distance_mi": 2.6,
+    "elevation_ft": 585,
+    "difficulty": "moderate",
+    "features": [
+      "waterfall",
+      "dog-friendly",
+      "old-growth"
+    ],
+    "description": "This is one of the few park paths where leashed dogs may join, and the destination lets you walk behind the falling water into a cool, dripping alcove. Hemlocks keep the entire route dim and ten degrees cooler than the parking lot. The moderate grade suits most fitness levels with a couple of rest stops."
+  },
+  {
+    "id": "trail-0028",
+    "name": "Swiftcurrent Nature Trail",
+    "park": "Glacier National Park",
+    "distance_mi": 2.5,
+    "elevation_ft": 95,
+    "difficulty": "easy",
+    "features": [
+      "lake",
+      "wildlife",
+      "family-friendly"
+    ],
+    "description": "A flat lakeshore loop with Grinnell Point looming overhead like a stage backdrop. Moose wade the shallows at dawn often enough that photographers stake out the western shore. The gravel tread is smooth and level from end to end, kind to ankles and toddlers alike."
+  },
+  {
+    "id": "trail-0033",
+    "name": "Running Eagle Falls Trail",
+    "park": "Glacier National Park",
+    "distance_mi": 0.6,
+    "elevation_ft": 50,
+    "difficulty": "easy",
+    "features": [
+      "waterfall",
+      "accessible",
+      "family-friendly"
+    ],
+    "description": "A wide, level path leads to a curious double waterfall that pours from a cave mouth in low water and over the cliff above it in high water. The whole walk takes fifteen minutes and is manageable for wheelchairs with assistance. Interpretive panels share the Blackfeet story behind the name."
+  },
+  {
+    "id": "trail-0042",
+    "name": "Hidden Meadow Trail",
+    "park": "Glacier National Park",
+    "distance_mi": 3.2,
+    "elevation_ft": 410,
+    "difficulty": "easy",
+    "features": [
+      "meadow",
+      "wildflowers",
+      "berries",
+      "birding"
+    ],
+    "description": "A soft path through lodgepole opens onto a meadow that erupts with paintbrush and sticky geranium in July. Locals guard the locations of the huckleberry patches along the fringe, which ripen in August and draw bears as reliably as people. The gentle grade and short distance make it an unhurried half-day with a picnic."
+  },
+  {
+    "id": "trail-0047",
+    "name": "Laurel Falls Trail",
+    "park": "Great Smoky Mountains National Park",
+    "distance_mi": 2.6,
+    "elevation_ft": 314,
+    "difficulty": "easy",
+    "features": [
+      "waterfall",
+      "paved",
+      "family-friendly"
+    ],
+    "description": "A paved path built in the 1960s rises steadily to an eighty-foot falls split by a walkway at its midpoint. Its convenience makes it wildly popular; arrive at dawn or expect a procession. The pavement is cracked and cambered in places, less stroller-friendly than it first appears."
+  },
+  {
+    "id": "trail-0055",
+    "name": "Copeland Falls Path",
+    "park": "Rocky Mountain National Park",
+    "distance_mi": 1.2,
+    "elevation_ft": 130,
+    "difficulty": "easy",
+    "features": [
+      "waterfall",
+      "dog-friendly",
+      "river",
+      "family-friendly"
+    ],
+    "description": "In the Wild Basin corner of the park, a broad riverside path arrives at a pair of low, wide waterfalls within twenty easy minutes. Leashed dogs are permitted on this stretch, one of very few such trails here. The nearly flat grade and short distance suit grandparents and toddlers equally well."
+  },
+  {
+    "id": "trail-0058",
+    "name": "Panorama Cliffs Bypass",
+    "park": "Yosemite National Park",
+    "distance_mi": 5.6,
+    "elevation_ft": 720,
+    "difficulty": "moderate",
+    "features": [
+      "viewpoint",
+      "forest"
+    ],
+    "description": "This alternate line to Panorama Point stays on the wooded bench and avoids the steep sections of the main cliff route entirely. The walking is smooth and steady, with filtered views of Illilouette Gorge between the trees. It is the sensible pick when ice lingers on the exposed switchbacks in early season."
+  },
+  {
+    "id": "trail-0063",
+    "name": "Twin Sisters Peaks Trail",
+    "park": "Rocky Mountain National Park",
+    "distance_mi": 7.4,
+    "elevation_ft": 2338,
+    "difficulty": "hard",
+    "features": [
+      "summit",
+      "viewpoint",
+      "training-hike"
+    ],
+    "description": "Locals treat this unglamorous grind as their conditioning barometer for bigger objectives across the valley. Switchbacks march up through a 2013 landslide scar to twin rock summits staring directly at Longs Peak's east face. There is no water anywhere on the route and precious little shade past halfway."
+  },
+  {
+    "id": "trail-0068",
+    "name": "Carlon Falls Trail",
+    "park": "Yosemite National Park",
+    "distance_mi": 3.8,
+    "elevation_ft": 350,
+    "difficulty": "moderate",
+    "features": [
+      "waterfall",
+      "dog-friendly",
+      "river",
+      "swimming"
+    ],
+    "description": "Because it starts just outside the park boundary in national forest, leashed dogs can come along to this year-round waterfall on the Tuolumne's south fork. The path rolls gently through pine and incense cedar with one rooty stretch near the end. The pool below the falls warms enough for swimming by late July."
+  },
+  {
+    "id": "trail-0074",
+    "name": "Easy Creek Trail",
+    "park": "Rocky Mountain National Park",
+    "distance_mi": 7.8,
+    "elevation_ft": 2610,
+    "difficulty": "hard",
+    "features": [
+      "creek",
+      "summit",
+      "switchbacks"
+    ],
+    "description": "Do not let the name fool you; it honors homesteader Elias Easy, not the terrain. The route gains over 2,600 feet in under four miles, much of it on loose, ankle-rolling rubble beside the creek's headwall. Search and rescue answers more calls here than on any comparable trail in the district."
+  },
+  {
+    "id": "trail-0083",
+    "name": "Eagle Lake Carriage Loop",
+    "park": "Acadia National Park",
+    "distance_mi": 6.1,
+    "elevation_ft": 275,
+    "difficulty": "easy",
+    "features": [
+      "lake",
+      "dog-friendly",
+      "carriage-road",
+      "cycling"
+    ],
+    "description": "Rockefeller's carriage roads circle the lake on a broad crushed-stone surface engineered so gently that the climbs barely register. Dogs on leash, cyclists, and horse-drawn carriages all share the loop amicably. Granite bridges and constant water views mark the miles; there is no bad section."
+  },
+  {
+    "id": "trail-0087",
+    "name": "Sprague Lake Loop",
+    "park": "Rocky Mountain National Park",
+    "distance_mi": 0.9,
+    "elevation_ft": 30,
+    "difficulty": "easy",
+    "features": [
+      "lake",
+      "accessible",
+      "family-friendly",
+      "reflections"
+    ],
+    "description": "A level gravel loop, fully wheelchair accessible, circles a shallow lake positioned perfectly to mirror Hallett Peak at sunrise. Benches every few hundred feet invite unhurried mornings. It may be the highest reward-to-effort ratio in the park."
+  },
+  {
+    "id": "trail-0090",
+    "name": "Ouzel Falls Trail",
+    "park": "Rocky Mountain National Park",
+    "distance_mi": 5.4,
+    "elevation_ft": 950,
+    "difficulty": "moderate",
+    "features": [
+      "waterfall",
+      "river",
+      "forest"
+    ],
+    "description": "Wild Basin's showpiece passes three named waterfalls, saving the forty-foot plunge of Ouzel for the turnaround. Bridges cross and recross a creek that never leaves earshot. The dipper birds the falls are named for bob on midstream rocks, then walk straight underwater to feed."
+  },
+  {
+    "id": "trail-0099",
+    "name": "Bass Harbor Head Light Path",
+    "park": "Acadia National Park",
+    "distance_mi": 0.6,
+    "elevation_ft": 55,
+    "difficulty": "easy",
+    "features": [
+      "lighthouse",
+      "coastline",
+      "sunset"
+    ],
+    "description": "Wooden stairs descend to wave-washed ledges below the island's only lighthouse. At sunset the light glows against pink granite while surf booms in the chasm; expect plenty of company with cameras. The stairs are steep but short, over in two minutes."
+  },
+  {
+    "id": "trail-0101",
+    "name": "Clouds Rest Trail",
+    "park": "Yosemite National Park",
+    "distance_mi": 14.5,
+    "elevation_ft": 3110,
+    "difficulty": "hard",
+    "features": [
+      "summit",
+      "viewpoint",
+      "narrow-ridge"
+    ],
+    "description": "The summit ridge narrows to a spine of stacked granite blocks with the world falling away on both sides. From the top, Half Dome sits a thousand feet below you, a perspective that rearranges your sense of the valley. Fit hikers manage it from Sunrise Lakes trailhead in a long day; nobody manages it casually."
+  },
+  {
+    "id": "trail-0102",
+    "name": "Pa'rus Riverside Trail",
+    "park": "Zion National Park",
+    "distance_mi": 3.5,
+    "elevation_ft": 130,
+    "difficulty": "easy",
+    "features": [
+      "river",
+      "dog-friendly",
+      "paved",
+      "cycling",
+      "accessible"
+    ],
+    "description": "The only trail in the canyon that welcomes leashed dogs and bicycles, this paved riverside path drifts from the visitor center to Canyon Junction with no grade worth mentioning. Bridges cross the Virgin River four times, each offering a fresh angle on the Watchman. Sunset turns the whole corridor copper."
+  },
+  {
+    "id": "trail-0108",
+    "name": "Virginia Falls Trail",
+    "park": "Glacier National Park",
+    "distance_mi": 3.6,
+    "elevation_ft": 520,
+    "difficulty": "moderate",
+    "features": [
+      "waterfall",
+      "creek",
+      "family-friendly"
+    ],
+    "description": "Three waterfalls in under two miles, with Virginia's fifty-foot main plunge as the crescendo behind a cooling veil of spray. The path climbs in short, manageable stages between falls, so children set the pace naturally. Midday light throws rainbows into the mist at St. Mary Falls."
+  },
+  {
+    "id": "trail-0110",
+    "name": "Angels Landing via West Rim",
+    "park": "Zion National Park",
+    "distance_mi": 5.4,
+    "elevation_ft": 1488,
+    "difficulty": "hard",
+    "features": [
+      "exposure",
+      "chains",
+      "viewpoint",
+      "permit-required"
+    ],
+    "description": "Walter's Wiggles switchback up to Scout Lookout, where the famous chain-assisted spine begins and the faint of heart wisely picnic instead. The final half mile crosses fins with thousand-foot drops on both sides. Permits are required for the chains section, allocated by lottery."
+  },
+  {
+    "id": "trail-0117",
+    "name": "Avalanche Lake Trail",
+    "park": "Glacier National Park",
+    "distance_mi": 4.6,
+    "elevation_ft": 730,
+    "difficulty": "moderate",
+    "features": [
+      "waterfall",
+      "lake",
+      "gorge",
+      "family-friendly"
+    ],
+    "description": "After a footbridge crossing near the mouth of Avalanche Gorge, where the creek churns through sculpted blue-green stone, the trail climbs at a friendly grade through hemlock and cedar. It ends at a lake walled by two-thousand-foot cliffs streaked with ribbon waterfalls fed by Sperry Glacier. Arrive early; the small trailhead lot fills before nine all summer."
+  },
+  {
+    "id": "trail-0146",
+    "name": "Canyon Overlook Trail",
+    "park": "Zion National Park",
+    "distance_mi": 1.0,
+    "elevation_ft": 163,
+    "difficulty": "easy",
+    "features": [
+      "viewpoint",
+      "sunrise",
+      "family-friendly"
+    ],
+    "description": "Just past the tunnel's east portal, a short route of carved steps and railed ledges pops out five hundred feet above the switchbacks of Pine Creek Canyon. It is the park's best effort-to-view bargain and everyone knows it; the tiny lot fills by sunrise. The drop-offs are railed but real, so keep children in hand."
+  },
+  {
+    "id": "trail-0187",
+    "name": "Dog Lake Trail",
+    "park": "Yosemite National Park",
+    "distance_mi": 2.8,
+    "elevation_ft": 640,
+    "difficulty": "moderate",
+    "features": [
+      "lake",
+      "swimming",
+      "alpine"
+    ],
+    "description": "Despite the name, pets are prohibited; the lake honors a stray sheepdog an early surveyor found here. The stiff first half mile settles into an amble ending at the warmest swimming water in the high country. Afternoon sun on the northeast shore makes toweling off optional."
+  }
+]

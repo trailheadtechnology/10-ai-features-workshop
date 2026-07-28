@@ -1,0 +1,178 @@
+# Lab 02: extraction against Ollama (llama3.2, JSON mode).
+# Two requests, same JSON schema in the "format" field: the fact-rich report
+# (step 1) and the fact-sparse report (step 2). The schema does the heavy
+# lifting: nullable fields plus "null if not stated" descriptions are what
+# keep missing facts from being invented. Report text is inlined so these
+# run as-is.
+
+### 1. Fact-rich report tr-0007 (expect every field populated)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Extract the trail facts from this trip report. Use null for any field the report does not state, and empty arrays when nothing applies. Do not guess.\n\n# Sperry Chalet Trail, July 4, 2026 — full trip log\n\nI keep detailed notes on every hike because six months later I never trust my memory, and this one deserved careful notes. On Saturday, July 4, 2026, I hiked the Sperry Chalet Trail out of the Lake McDonald Lodge trailhead, and it was the hardest and best day I've had in Glacier.\n\nThe numbers first, since that's what I always want from other people's reports. It's 6.4 miles one way from the trailhead to the chalet, so 12.8 miles round trip the way I did it, and the elevation gain is about 3,400 feet — the trailhead sits near 3,200 feet by Lake McDonald and the chalet perches at roughly 6,560. I started walking at 6:40am, reached the chalet at 10:55, left the chalet at 12:10 after a long lunch, and was back at the car at 3:25pm. Moving time per my watch was 5 hours 51 minutes. Temperature was 54 degrees at the trailhead and about 66 at the chalet with a steady cool breeze, one of those flawless Glacier summer days.\n\nThe trail climbs immediately and does not really stop. The first couple of miles switchback up through dense cedar and hemlock forest, shady and humid, and this stretch was in excellent shape — dry tread, recently cleared, with fresh sawcuts on two big deadfall logs that must have come down in the spring. Around mile three the forest starts to open and you get into the burned area from years back, snags standing silver against the green regrowth, and the views down to Lake McDonald open up behind you. From about mile four onward you're in open subalpine terrain, crossing several streams. Two of the crossings still had substantial snowmelt flow — Sprague Creek in particular was running fast and I was glad for trekking poles, though it never got above mid-calf and there were good rock lines. One lingering snow patch crossed the trail in a shaded gully around mile 5.5, maybe forty feet of it, well-stomped and soft by mid-morning, no traction needed. Otherwise conditions were dry and solid the whole way.\n\nNow the wildlife, which made the day. At 8:20am, in the burn zone, I watched a black bear sow with two cubs feeding on the slope maybe 200 yards above the trail. I stopped, made noise, and she never so much as looked at me; the cubs were wrestling. I gave them ten minutes and moved on with my bear spray unholstered but never close to needed. Higher up, in the cliffs past mile five, mountain goats — I counted nine total, including two kids, one group bedded on a ledge directly above the trail so that I got rained on lightly by pebbles. At the chalet itself a hoary marmot has clearly appointed itself concierge and screamed at every arriving party from the same rock. Mule deer in the trees near the bottom on my way out, four of them. And all day, the whistling of ground squirrels in the rocks.\n\nThe chalet is worth the climb even if, like me, you're only day-hiking and not staying over. The stone buildings sit on a knife-edge bench with Glacier spread out below, and they sell lemonade and pie to day hikers, which after 3,400 feet of climbing is not a purchase, it's a religious experience. Huckleberry pie, for the record. I sat on the wall with my boots off for an hour.\n\nGear notes for my own future reference: poles essential for the creek crossings, sunscreen non-negotiable once you leave the trees, 2.5 liters of water was exactly right with a top-up filter at the mile-four stream. Crowds were light for a holiday — I passed maybe twenty people all day, most of them overnight guests coming down.\n\nIf you get one big day in Glacier and your legs are up to it, this is my vote. Nearly thirteen miles, three thousand four hundred feet, three bears, nine goats, one outstanding pie. The notebook doesn't lie."
+    }
+  ],
+  "format": {
+    "type": "object",
+    "properties": {
+      "trail_name": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "The name of the trail hiked. null if the report never names the trail."
+      },
+      "park": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "The park the trail is in. null if the report never names the park."
+      },
+      "date_hiked": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "The date of the hike in YYYY-MM-DD format. null if the report does not give an exact date. Never guess or infer a date."
+      },
+      "distance_mi": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "description": "Round-trip distance in miles, as stated in the report. null if the report gives no distance. Never estimate."
+      },
+      "elevation_gain_ft": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "description": "Elevation gain in feet, as stated in the report. null if the report gives no elevation figure. Never estimate."
+      },
+      "wildlife": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Animals the author actually saw on this hike. Empty array if none are mentioned."
+      },
+      "conditions": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Short phrases describing trail conditions the report mentions (mud, snow, water crossings, dry tread). Empty array if none."
+      },
+      "hazards": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Hazards or closures the report mentions. Empty array if none."
+      }
+    },
+    "required": [
+      "trail_name",
+      "park",
+      "date_hiked",
+      "distance_mi",
+      "elevation_gain_ft",
+      "wildlife",
+      "conditions",
+      "hazards"
+    ]
+  },
+  "stream": false
+}
+
+### 2. Fact-sparse report tr-0011 (success check: nulls, not inventions)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Extract the trail facts from this trip report. Use null for any field the report does not state, and empty arrays when nothing applies. Do not guess.\n\nWell, we finally did the Yosemite trip, and I've been meaning to write something up ever since, so here goes, better late than never as my mother used to say, usually about my father.\n\nIt was early last month when we went, I want to say a weekday, because I remember Carol saying the crowds would be better on a weekday and Carol is generally right about crowds, she has a system. We'd been planning the trip since Christmas, or technically since Carol's brother went two years ago and wouldn't stop talking about it at Thanksgiving, and there's only so many Thanksgivings a man can sit through hearing about somebody else's vacation before he books his own, that's just human nature.\n\nThe drive in, I'll tell you, is a whole thing by itself. You come through the tunnel and there's that famous view, everybody knows the one, and every car pulls over including ours, and Carol cried a little, and I pretended I didn't see so she could have her moment, and she pretended she didn't know I saw, which is basically our whole marriage and it works fine.\n\nWe did a hike the next morning, one of the waterfall ones. I couldn't tell you the exact name off the top of my head — Carol has it written in the little book, and the little book is in the car, and the car is at the mechanic, which is a story I'll spare you except to say never let your nephew \"take a look at\" your brakes. Anyway, the waterfall one, the one everybody does, near the lodge. You've seen it on calendars.\n\nHow long was it? You know, people always ask that and I never know what to tell them. It took us the morning. We're not fast and we're not slow, we're just steady, and we stop when there's something worth stopping for, which in that place is roughly every forty feet, so the math gets complicated. My knee, the left one, the one from the softball thing in '09, held up better than expected, which I attribute to the new insoles, and Carol attributes to me finally listening to the doctor, and we've agreed to disagree.\n\nThe falls themselves were going pretty good, it being spring and all, lots of water coming down, you got wet standing anywhere near the bottom which the kids around us thought was the greatest thing that ever happened. The path was, I'd say, fine? Some wet spots. A fellow ahead of us slipped a little and did that arm-windmill thing but he caught himself, and we all did the thing where you pretend you didn't see, there's a lot of polite not-seeing in this report now that I read it back.\n\nWe had lunch after at a picnic area, egg salad, which travels worse than Carol believes it does but I've been losing that argument since the Clinton administration. There was a couple at the next table from Ohio, or maybe he was from Ohio and she was from Indiana, one of those, and we talked for an hour about nothing, the way you do on vacation, and traded phone numbers we'll never use, which is its own kind of nice when you think about it.\n\nThe rest of the trip was mostly driving around and looking at things, which suits us. Carol took four hundred photos of the same cliff in different light and I'm not being critical, some of them are terrific, she's got the eye. We got ice cream twice in one day and told nobody until now.\n\nAnyway. It's a beautiful place, the pictures don't do it, and you should go. Take a jacket, the mornings were colder than the afternoons let on. And write things down while you remember them, that's my real advice, don't be like me starting a trip report a month later with the little book in a car at the mechanic's. Next time I'm keeping notes. Carol says she'll believe it when she sees it."
+    }
+  ],
+  "format": {
+    "type": "object",
+    "properties": {
+      "trail_name": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "The name of the trail hiked. null if the report never names the trail."
+      },
+      "park": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "The park the trail is in. null if the report never names the park."
+      },
+      "date_hiked": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "The date of the hike in YYYY-MM-DD format. null if the report does not give an exact date. Never guess or infer a date."
+      },
+      "distance_mi": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "description": "Round-trip distance in miles, as stated in the report. null if the report gives no distance. Never estimate."
+      },
+      "elevation_gain_ft": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "description": "Elevation gain in feet, as stated in the report. null if the report gives no elevation figure. Never estimate."
+      },
+      "wildlife": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Animals the author actually saw on this hike. Empty array if none are mentioned."
+      },
+      "conditions": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Short phrases describing trail conditions the report mentions (mud, snow, water crossings, dry tread). Empty array if none."
+      },
+      "hazards": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Hazards or closures the report mentions. Empty array if none."
+      }
+    },
+    "required": [
+      "trail_name",
+      "park",
+      "date_hiked",
+      "distance_mi",
+      "elevation_gain_ft",
+      "wildlife",
+      "conditions",
+      "hazards"
+    ]
+  },
+  "stream": false
+}

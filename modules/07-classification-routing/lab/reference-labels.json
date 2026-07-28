@@ -1,0 +1,37 @@
+{
+  "routing": {
+    "permit": "permits-office",
+    "conditions": "trail-info-desk",
+    "complaint": "visitor-services-supervisor",
+    "lost-and-found": "lost-and-found-desk",
+    "emergency": "dispatch (page the duty ranger immediately)",
+    "general": "front-desk"
+  },
+  "labels": {
+    "inq-0001": "permit",
+    "inq-0002": "conditions",
+    "inq-0005": "conditions",
+    "inq-0006": "lost-and-found",
+    "inq-0008": "permit",
+    "inq-0010": "complaint",
+    "inq-0012": "lost-and-found",
+    "inq-0013": "emergency",
+    "inq-0015": "permit",
+    "inq-0016": "complaint",
+    "inq-0020": "lost-and-found",
+    "inq-0021": "conditions",
+    "inq-0025": "conditions",
+    "inq-0026": "permit",
+    "inq-0029": "general",
+    "inq-0030": "permit",
+    "inq-0035": "permit",
+    "inq-0037": "conditions",
+    "inq-0041": "emergency",
+    "inq-0051": "general"
+  },
+  "notes": {
+    "inq-0035": "Deliberately ambiguous. Reference label is 'permit' because the action the sender needs is a permit swap or refund, but 'conditions' is a defensible second label: the message hinges on whether the Avalanche Lake bridge washout makes the itinerary doable. A production system with an 'unsure' route should send this one to a human rather than pick confidently.",
+    "inq-0013": "Emergency: overdue hiker (husband, Highline Trail). Missing this one fails the lab regardless of overall accuracy.",
+    "inq-0041": "Emergency: injured hiker mid-trail (ankle, Beehive descent). Missing this one fails the lab regardless of overall accuracy."
+  }
+}

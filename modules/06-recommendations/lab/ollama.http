@@ -1,0 +1,46 @@
+# Lab 06: item embeddings against Ollama (nomic-embed-text).
+# You only need these if you want fresh vectors. trail-embeddings.json already
+# holds all 30 trail vectors, produced by exactly these calls.
+#
+# Ollama returns vectors, nothing else. The ranking is yours: cosine similarity
+# between the target trail's vector and every other trail's vector, sorted
+# descending, target excluded, top 5 kept.
+
+### 1. One description, one vector (look at the numbers once, then move on)
+POST http://localhost:11434/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": "After a footbridge crossing near the mouth of Avalanche Gorge, where the creek churns through sculpted blue-green stone, the trail climbs at a friendly grade through hemlock and cedar. It ends at a lake walled by two-thousand-foot cliffs streaked with ribbon waterfalls fed by Sperry Glacier. Arrive early; the small trailhead lot fills before nine all summer."
+}
+
+### 2. A batch, which is how you embed the catalog
+# The response's "embeddings" array comes back in input order. Send all 30
+# descriptions from trails.json this way and key the results by trail id.
+# Here: Avalanche Lake (trail-0117), its nearest neighbor Gunsight Lake
+# (trail-0086), and a desert wash (trail-0041) that should score far lower.
+POST http://localhost:11434/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": [
+    "After a footbridge crossing near the mouth of Avalanche Gorge, where the creek churns through sculpted blue-green stone, the trail climbs at a friendly grade through hemlock and cedar. It ends at a lake walled by two-thousand-foot cliffs streaked with ribbon waterfalls fed by Sperry Glacier. Arrive early; the small trailhead lot fills before nine all summer.",
+    "Dropping first to the St. Mary River, the trail runs a long valley floor of avalanche paths and cow parsnip before rising to a lake cupped beneath Gunsight Pass. A suspension bridge at the outlet sways with every step, to some hikers' delight and others' dread. Grizzlies frequent the brushy sections; make noise where sightlines shrink.",
+    "A sandy wash curls beneath the crosshatched face of Checkerboard Mesa on the park's quieter east side. The grade is barely perceptible, making this a fine leg-stretcher between viewpoints. Bighorn sheep pick their way across the slickrock above with some regularity."
+  ]
+}
+
+### 3. Gear: no product descriptions exist, so reviews stand in
+# Concatenate every review for one product and embed the blob. Similarity then
+# means "reviewers talk about these two products the same way."
+# This is the demo's step 5, and its shortcomings are worth reading about in
+# expected-output.md.
+POST http://localhost:11434/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": "Two stars for the instruction booklet, which is a crime against paper. Once I figured it out on my own, wow — it carries 40 pounds like it's 25. The Cascade 65 Backpack deserves five, the manual deserves jail.\nFor week-long trips this is the one. It carries 40 pounds like it's 25. Buy once, cry once.\nFits the Summit Bear Canister horizontally, which almost nothing does. Add the CloudRest Sleeping Pad under the lid and I'm at a comfortable base weight. It carries 40 pounds like it's 25."
+}

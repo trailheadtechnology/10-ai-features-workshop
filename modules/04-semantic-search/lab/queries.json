@@ -1,0 +1,20 @@
+[
+  {
+    "id": "q1",
+    "query": "dog-friendly waterfall hike, not too steep",
+    "why": "The module's headline query. Three constraints, and the trails that satisfy them phrase every one of them differently: 'leashed dogs are welcome', 'climbs so gradually you hardly register the gain'. Keyword search has almost nothing to grab.",
+    "success_check": "At least two of trail-0068, trail-0055, trail-0027, trail-0011 land in your top 3. All four are dog-friendly waterfall trails with gentle grades."
+  },
+  {
+    "id": "q2",
+    "query": "somewhere quiet to take my kids",
+    "why": "Zero keyword overlap with the catalog. One trail in the slice contains the word 'kids'; nothing contains 'quiet' or 'somewhere'. If your ranking is sane here, it isn't matching strings.",
+    "success_check": "Family-friendly short trails (trail-0055, trail-0108, trail-0011, trail-0028, trail-0087) should dominate the top 5. See expected-output.md: the real number one hit is a cliff edge, and that's a teaching moment, not a bug in your code."
+  },
+  {
+    "id": "q3",
+    "query": "an easy hike to a great view",
+    "why": "The keyword trap query. 'Easy Creek Trail' (trail-0074) is a hard 2,610-foot grind named after homesteader Elias Easy, and it matches 'easy' on the name alone.",
+    "success_check": "trail-0058 (Panorama Cliffs Bypass, the trail that avoids the steep sections) should be at or near the top, and trail-0074 should be nowhere in the top 5."
+  }
+]

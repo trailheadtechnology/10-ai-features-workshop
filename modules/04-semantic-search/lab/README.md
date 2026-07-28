@@ -1,9 +1,8 @@
-# Lab assets for 04 Semantic Search (to be built)
+# Lab assets for 04 Semantic Search
 
-This folder will hold everything the lab spec in [../README.md](../README.md) references:
+Everything the lab spec in [../README.md](../README.md) references:
 
-- `ollama.http`: the embeddings request against `nomic-embed-text`
-- a slice of `data/trails.json` (about 30 trails) and three test queries
-- `expected-output.md`: the expected top hits per query, plus cosine-similarity pseudocode
-
-Until these land, the lab spec in the module README is the source of truth for what belongs here.
+- `ollama.http`: three ready-to-run requests against Ollama (`nomic-embed-text`): one sentence, a batch of two, and the demo query. This endpoint is the only network call the lab makes; the ranking is arithmetic you write yourself.
+- `trails-slice.json`: 30 trails lifted verbatim from [`data/trails.json`](../../../data/trails.json). Four of them are dog-friendly waterfall trails with gentle grades and not one phrases it that way, and three are keyword traps: "Easy Creek Trail" is a hard 2,610-foot climb named after a homesteader, "Dog Lake Trail" bans dogs, and Panorama Cliffs Bypass matches the word "steep" while describing how it avoids the steep parts.
+- `queries.json`: the three test queries, why each one is in the set, and the success check for each.
+- `expected-output.md`: real `nomic-embed-text` rankings for all three queries, the keyword baseline they beat, cosine-similarity pseudocode, and two results that are honestly wrong and worth talking about.

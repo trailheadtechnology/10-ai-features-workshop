@@ -1,0 +1,82 @@
+# Lab 07: classification & routing against Ollama (llama3.2).
+# One classify request, shown on three inlined inquiries: a routine conditions
+# question (inq-0005), an emergency (inq-0041), and the deliberately ambiguous
+# permit/conditions message (inq-0035). The "format" field is a JSON schema with
+# the category enum, so the model must answer with one of the six labels and
+# nothing else. To classify the rest of inquiries-slice.jsonl, copy request 1
+# and swap the message text after "Message:".
+
+### 1. Routine conditions question, inq-0005 (expect {"category": "conditions"})
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "You are the triage system for the Trailhead Guides shared inbox. Classify the visitor message into exactly one category.\n\n- permit: reserving, changing, canceling, or paying for a permit, pass, or reservation, including billing problems and missing confirmations for a permit application.\n- conditions: asking whether a trail, road, or area is open, safe, or passable right now: snow, water levels, washouts, wildlife activity, closures.\n- complaint: unhappy about a park facility, service, or staff member and wants it acknowledged or fixed.\n- lost-and-found: reporting a lost or found physical item.\n- emergency: a person may be hurt, missing, or in danger right now and needs immediate human attention.\n- general: anything else: park rules, fees, trip planning, questions that fit none of the above.\n\nWhen a message could fit two categories, pick the one whose queue can actually act on it. If anyone might be in danger, it is always emergency.\n\nMessage:\nGood morning, we heard from another hiker that the bridge on the Avalanche Lake Trail washed out last week. Is that true? We have a family trip planned for June 27 and my mother uses trekking poles, she cannot ford a creek. Is there an alternate route to the lake or should we pick a different hike?"
+    }
+  ],
+  "format": {
+    "type": "object",
+    "properties": {
+      "category": {
+        "type": "string",
+        "enum": ["permit", "conditions", "complaint", "lost-and-found", "emergency", "general"]
+      }
+    },
+    "required": ["category"]
+  },
+  "stream": false
+}
+
+### 2. The one that must never be missed, inq-0041 (expect {"category": "emergency"})
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "You are the triage system for the Trailhead Guides shared inbox. Classify the visitor message into exactly one category.\n\n- permit: reserving, changing, canceling, or paying for a permit, pass, or reservation, including billing problems and missing confirmations for a permit application.\n- conditions: asking whether a trail, road, or area is open, safe, or passable right now: snow, water levels, washouts, wildlife activity, closures.\n- complaint: unhappy about a park facility, service, or staff member and wants it acknowledged or fixed.\n- lost-and-found: reporting a lost or found physical item.\n- emergency: a person may be hurt, missing, or in danger right now and needs immediate human attention.\n- general: anything else: park rules, fees, trip planning, questions that fit none of the above.\n\nWhen a message could fit two categories, pick the one whose queue can actually act on it. If anyone might be in danger, it is always emergency.\n\nMessage:\nMy dad slipped on scree on the Beehive descent, we're just past the ladder section. His ankle is swollen bad, can't put weight on it. We have water and I have 2 bars of signal. 2 adults 1 teen. How do we get help up here? Submitting this because 911 kept dropping."
+    }
+  ],
+  "format": {
+    "type": "object",
+    "properties": {
+      "category": {
+        "type": "string",
+        "enum": ["permit", "conditions", "complaint", "lost-and-found", "emergency", "general"]
+      }
+    },
+    "required": ["category"]
+  },
+  "stream": false
+}
+
+### 3. The deliberately ambiguous one, inq-0035 (permit or conditions; either is defensible)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "You are the triage system for the Trailhead Guides shared inbox. Classify the visitor message into exactly one category.\n\n- permit: reserving, changing, canceling, or paying for a permit, pass, or reservation, including billing problems and missing confirmations for a permit application.\n- conditions: asking whether a trail, road, or area is open, safe, or passable right now: snow, water levels, washouts, wildlife activity, closures.\n- complaint: unhappy about a park facility, service, or staff member and wants it acknowledged or fixed.\n- lost-and-found: reporting a lost or found physical item.\n- emergency: a person may be hurt, missing, or in danger right now and needs immediate human attention.\n- general: anything else: park rules, fees, trip planning, questions that fit none of the above.\n\nWhen a message could fit two categories, pick the one whose queue can actually act on it. If anyone might be in danger, it is always emergency.\n\nMessage:\nHi, I have a backcountry permit that includes a night at the Avalanche Lake area on June 24 (conf #GL-2026-07733). With the bridge out, is my itinerary even doable, and if not, will you let me swap that night for a different site without penalty, or refund it? I need to know before we leave Thursday. Thanks, Priya"
+    }
+  ],
+  "format": {
+    "type": "object",
+    "properties": {
+      "category": {
+        "type": "string",
+        "enum": ["permit", "conditions", "complaint", "lost-and-found", "emergency", "general"]
+      }
+    },
+    "required": ["category"]
+  },
+  "stream": false
+}
