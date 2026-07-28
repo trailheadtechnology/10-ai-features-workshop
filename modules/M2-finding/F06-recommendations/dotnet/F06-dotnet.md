@@ -2,7 +2,7 @@
 
 Two console projects, both built on Microsoft.Extensions.AI over OllamaSharp:
 
-- `starter/`: the demo's starting point. It loads the trail catalog and fills the "you might also like" box with five random trails, which is roughly what that box does in most apps today. No model, no embeddings, no value.
+- `starter/`: the demo's starting point. It loads the trail catalog and fills the "you might also like" box with five random trails, which is roughly what that box does in most apps today and takes no model at all.
 - `complete/`: the finished demo as shown on stage. It embeds the 30 trail descriptions through `IEmbeddingGenerator`, ranks every other trail by cosine similarity to the one you name, skips the trail itself, and prints the top 5 with scores.
 
 Both run against Ollama (`nomic-embed-text`), matching the demo outline in [../F06-spec.md](../F06-spec.md). From `complete/`:

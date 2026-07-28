@@ -30,7 +30,7 @@ Each module's overview is the menu: what the three features are, which is Core, 
 
 ## How to use this repo
 
-All ten features work through one fictional product: Trailhead Guides, a national-park trip-planning app with a messy, realistic corpus of trip reports, gear reviews, trail descriptions, park regulations, and visitor inquiries (see [`data/`](data/corpus.md)). Each feature stands alone, but they all live in the same park.
+All ten features work through one fictional product: Trailhead Guides, a national-park trip-planning app with a messy, realistic corpus of trip reports, gear reviews, trail descriptions, park regulations, and visitor inquiries (see [`data/`](data/corpus.md)).
 
 During the workshop, open the module overview to pick a feature, then open that feature's spec, read the lab section, and work from its `lab/` folder. Every doc is named for what it is, so `F05-spec.md`, `F05-lab.md`, and `F05-dotnet.md` are the three files for RAG. Every lab ships raw HTTP request files (`.http` and curl) against Ollama and Azure OpenAI, so if you can make an HTTP request in your language, you can do every lab. Python, JavaScript, Java, Go, and Rust are all welcome here. If you'd rather follow along in .NET, each feature's `dotnet/` folder has a `starter/` project (the demo's starting point) and a `complete/` project (the finished demo).
 
@@ -68,7 +68,7 @@ The workshop leans local (Ollama) wherever a small model does the job well, and 
 | 09 Human-in-the-Loop | Whatever the demo needs | It's a pattern, not a model feature |
 | 10 Agentic Workflows | Azure OpenAI / AI Foundry | Tool-calling reliability matters, and the capstone doesn't get to be flaky |
 
-The .NET demos use [Microsoft.Extensions.AI](https://learn.microsoft.com/en-us/dotnet/ai/microsoft-extensions-ai) as the abstraction layer, so the same C# code targets Ollama or Azure OpenAI by swapping the client registration. That one-line swap is the whole provider-flexibility story, and it gets a slide of its own.
+The .NET demos use [Microsoft.Extensions.AI](https://learn.microsoft.com/en-us/dotnet/ai/microsoft-extensions-ai) as the abstraction layer, so the same C# code targets Ollama or Azure OpenAI by swapping the client registration. That one-line swap gets a slide of its own.
 
 ## About the instructor
 

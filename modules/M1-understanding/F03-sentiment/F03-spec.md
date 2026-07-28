@@ -12,7 +12,7 @@ The user in this feature is the product team, not the hiker, and that's delibera
 
 Sentiment analysis is classification applied to text, and it's this workshop's vehicle for the most useful model-selection lesson of the day: you don't always need the big model. A small local model (`phi3`, about 2GB, free, private) labels straightforward reviews just as well as a frontier cloud model. At 300 reviews per product across a whole catalog, per-token pricing versus free-on-your-hardware is a real budget line.
 
-The comparison cuts both ways, though. Feed both models the corpus's hard cases (sarcasm like "Great bag, if you enjoy shoulder pain", mixed feelings, ratings that contradict the text) and accuracy drops for everyone. How far it drops for each model is the thing you measure. The takeaway isn't a verdict for either side. It's that this is a measurable engineering decision: run both on a labeled sample, count the disagreements, look at what the errors cost you, then choose. Most teams never run that experiment. You'll run it before lunch.
+The comparison cuts both ways, though. Feed both models the corpus's hard cases (sarcasm like "Great bag, if you enjoy shoulder pain", mixed feelings, ratings that contradict the text) and accuracy drops for everyone. How far it drops for each model is the thing you measure. There is no verdict here for either side. The decision is measurable: run both on a labeled sample, count the disagreements, look at what the errors cost you, then choose. Most teams never run that experiment. You'll run it before lunch.
 
 ## Demo outline (about 12 min, .NET)
 

@@ -18,17 +18,15 @@ If you finish, the stretch goals are in the feature README, and they are the goo
 
 ## Why this one is different
 
-An agent is a language model given tools and a goal, running in a loop. The model chooses which tool to call, your code executes it, the result goes back, and it continues until the goal is met. Your code never stops being in charge of what actually happens. The model only ever chooses.
+An agent is a language model given tools and a goal, running in a loop. The model chooses which tool to call, your code executes it, the result goes back, and it continues until the goal is met. Your code never stops being in charge of what actually happens; the model only chooses.
 
 That is the entire idea, and the reason it goes last is that it fails in every way the first nine features fail, at once, with the failures compounding.
 
 ## The thread to watch
 
-This is the feature where reliability stops being a nice-to-have and becomes the whole engineering problem.
+Reliability is the whole engineering problem here. Across roughly two dozen local runs while building this, the model called a tool with the literal argument `[insert trail IDs here]`, announced it had called every necessary tool and then wrote nothing, emitted tool calls as plain text so none of them executed, and once read the reports saying a bridge was washed out and scheduled the closed trail anyway. Before any scaffolding was added, fewer than one run in five reached all four planning tools.
 
-Across roughly two dozen local runs while building this, the model called a tool with the literal argument `[insert trail IDs here]`, announced it had called every necessary tool and then wrote nothing, emitted tool calls as plain text so none of them executed, and once read the reports saying a bridge was washed out and scheduled the closed trail anyway. Before any scaffolding was added, fewer than one run in five reached all four planning tools.
-
-None of that is in the feature README as a warning. It is in there as measured fact, with counts, because it is the honest answer to "should we ship an agent?" The answer is yes, with a step budget, validated arguments, tools that return errors instead of throwing, a persisted trace, and a human approving anything irreversible. Which is to say: with feature 09.
+The feature README carries those counts as measured fact, because they are the honest answer to "should we ship an agent?" The answer is yes, with a step budget, validated arguments, tools that return errors instead of throwing, a persisted trace, and a human approving anything irreversible. Which is to say: with feature 09.
 
 This is also the one feature where the workshop pays for a frontier model rather than running local, and the reason is the numbers above rather than a preference.
 

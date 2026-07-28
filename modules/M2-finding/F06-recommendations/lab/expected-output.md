@@ -153,6 +153,6 @@ behavior data" beat at the end of the feature.
   (0.7047), Coalpits Wash (0.7032), and Cataloochee Divide (0.7031). Honest
   reading: the filter removes the trails a family cannot do, and what is left is
   thin, because this 30-trail slice has almost no easy lake hikes. Filtering
-  makes a bad list shorter, not longer. Deciding which of these two lists you
+  can remove the bad results; it cannot invent good ones. Deciding which of these two lists you
   would put at the bottom of the Avalanche Lake page is the judgment call the
   lab is really about.

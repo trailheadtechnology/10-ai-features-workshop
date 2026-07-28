@@ -1,6 +1,6 @@
 # What passing looks like
 
-You're checking shape, not exact text. Model output wording can vary; the structure can't.
+You're checking shape rather than exact text, because model wording varies between runs but the structure does not.
 
 ## 1. Local chat
 

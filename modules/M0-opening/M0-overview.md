@@ -6,7 +6,7 @@
 |---|---|---|
 | **Core** | [00 Setup & Framing](F00-setup-and-framing/F00-spec.md) | Environment check, the day's thesis, a tour of the data |
 
-Not a feature you build, but the half hour that decides whether the other four modules go well. Everyone runs the same three-request smoke test, broken setups surface while there is still slack to fix them, and the room starts Module 1 together.
+Nothing gets built in this half hour, but it decides whether the other four modules go well. Everyone runs the same three-request smoke test, broken setups surface while there is still slack to fix them, and the room starts Module 1 together.
 
 ## What happens here
 

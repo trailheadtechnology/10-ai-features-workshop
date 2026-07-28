@@ -58,7 +58,7 @@ Now a section over 200 words splits at its own subsection boundaries, with conse
 
 Two details that are not decoration:
 
-- **The floor matters as much as the ceiling.** Splitting every section at every subsection, with no size budget, produced 481 chunks and broke the unanswerable question: `glacier-going-to-the-sun-road-guide:07.2` alone is "Fuel is not available anywhere within the Park," nineteen words that read like an answer to "are there EV charging stations?" when they are not. Refusals fell from 18 of 20 to 15 of 20. Too-small chunks manufacture confidence the same way too-large chunks hide the exception.
+- **The floor matters as much as the ceiling.** Splitting every section at every subsection, with no size budget, produced 481 chunks and broke the unanswerable question: `glacier-going-to-the-sun-road-guide:07.2` alone is "Fuel is not available anywhere within the Park," nineteen words that read like an answer to "are there EV charging stations?" when they are not. Refusals fell from 18 of 20 to 15 of 20. An oversized chunk hides the exception; an undersized one gets retrieved as though it were the whole story.
 - **Overlap runs forward only.** Every chunk ends with the opening sentence of whatever comes next in the document, marked `(continues in 4.2)`. In a regulation the exception follows the rule it modifies, so carrying the next unit forward keeps a permissive rule attached to what qualifies it. Carrying the previous unit backward instead would put 4.1's "fires permitted" language at the top of 4.2's chunk, which is the bug.
 
 Retrieve-then-expand, pulling sibling subsections into the context after retrieval, was considered and rejected: expanding `:04.2` back out to its siblings reassembles the section that caused the failure.

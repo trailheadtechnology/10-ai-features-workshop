@@ -16,8 +16,8 @@ The pipeline, in full:
 
 ## The thing you need to know before you start
 
-Skip step 1's prefix and this lab does not work. That is not a footnote, it is the
-main lesson, so here it is up front with both rankings side by side.
+Skip step 1's prefix and this lab does not work. That is the main lesson, so here
+it is up front with both rankings side by side.
 
 `nomic-embed-text` is trained with task prefixes (`search_query:`,
 `search_document:`, `clustering:`, `classification:`). Feed it bare text and you
@@ -147,7 +147,7 @@ demo is good, and it is the part worth showing:
 1 alert(s). Model calls: 40 embeddings, 0 chat completions.
 ```
 
-One alert. Three reports in it. All three are real. Every false positive the
+One alert, with three reports in it, and all three are real. Every false positive the
 threshold produced was a lone report on a quiet week, and requiring two hits inside
 14 days threw all of them away for free. The parking complaint and the glacier
 lilies are unusual and unimportant, and the difference between those two words is

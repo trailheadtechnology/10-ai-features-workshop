@@ -40,4 +40,4 @@ The most important lab of the day, because every other lab depends on it.
 - **Rough cost & effort:** one workshop's worth of attention.
 - **The one-liner for your CTO:** "Before we pick an AI feature, let's list the ten things our users hate doing. The features will pick themselves."
 
-This is row 0 of the [decision framework](../../../docs/decision-framework.md), and the lens for everything that follows.
+This is row 0 of the [decision framework](../../../docs/decision-framework.md), and the question the other nine features are answers to.

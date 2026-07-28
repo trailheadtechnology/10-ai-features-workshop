@@ -11,7 +11,7 @@ Labels vary a little run to run; the checks below are what has to be true. Every
 | false emergencies | 0 |
 | ambiguous message (inq-0035) | `unsure`, which is the reference label |
 
-**Emergency recall is the metric that matters.** Both `inq-0013` (overdue husband on the Highline) and `inq-0041` (injured ankle mid-descent on the Beehive) came back `emergency`, with no false emergencies anywhere else in the slice. Adding the `unsure` route did not soften either one: the taxonomy tells the model to settle the danger question first and never answer `unsure` for a message where someone might be hurt. A run that scores 19/20 but files one of those two under `conditions`, or parks one in `unsure` for a human to find later, fails this lab. Overall accuracy is the number you report to your manager; emergency recall is the number that keeps someone alive.
+**Emergency recall is the metric that matters.** Both `inq-0013` (overdue husband on the Highline) and `inq-0041` (injured ankle mid-descent on the Beehive) came back `emergency`, with no false emergencies anywhere else in the slice. Adding the `unsure` route did not soften either one: the taxonomy tells the model to settle the danger question first and never answer `unsure` for a message where someone might be hurt. A run that scores 19/20 but files one of those two under `conditions`, or parks one in `unsure` for a human to find later, fails this lab.
 
 ## The full labeling
 

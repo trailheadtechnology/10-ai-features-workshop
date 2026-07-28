@@ -7,7 +7,7 @@ Everything the lab spec in [../F02-spec.md](../F02-spec.md) references:
 - `tr-0011.md`: the fact-sparse report (a Yosemite trip written up a month late; no trail name, no date, no mileage, no elevation, because the little book is in the car at the mechanic's)
 - `expected-output.md`: real `llama3.2` outputs for both requests and for the .NET demo, plus the success checks and an honest list of where the model still slips
 
-The last step of the lab is the validator, and it is the step that matters. The schema gets you JSON that parses; it does not get you JSON that is true. Once you have an extracted record, write the rejection rules:
+The last step of the lab is the validator. The schema gets you JSON that parses; it does not get you JSON that is true. Once you have an extracted record, write the rejection rules:
 
 - a date that no parser accepts is not a date, and "last month" belongs in `null`
 - `0` miles and `0` feet are not measurements, they are a missing fact wearing a number

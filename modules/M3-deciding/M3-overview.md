@@ -4,7 +4,7 @@
 
 The first two modules produced answers for a user. This one produces decisions for the people running the product: which queue does this go in, which of these 500 reports deserves attention, and what is the software allowed to send without a human reading it first.
 
-Worth saying out loud, because it reframes the whole day: the user of these three features is usually a colleague. A ranger, an ops lead, a support manager. Stakeholders are users too, and "nobody has time to read all of this" is a real user problem.
+The user of these three features is usually a colleague: a ranger, an ops lead, a support manager. Stakeholders are users too, and "nobody has time to read all of this" is a real user problem.
 
 | | Feature | What it does | Runs on |
 |---|---|---|---|
@@ -26,12 +26,10 @@ I present all three with live demos, then you get about 45 minutes. Everyone doe
 
 ## The thread to watch
 
-Errors are not symmetric, and this module is where that stops being a slogan.
+Errors here are not symmetric. Misrouting a complaint costs somebody a day. Misrouting the message about the overdue hiker is a headline. Feature 07 measures recall on the class that matters rather than overall accuracy, and adds an `unsure` route so an ambiguous message goes to a person instead of confidently into the wrong queue.
 
-Misrouting a complaint costs somebody a day. Misrouting the message about the overdue hiker is a headline. Feature 07 measures recall on the class that matters rather than overall accuracy, and adds an `unsure` route so an ambiguous message goes to a person instead of confidently into the wrong queue.
-
-Feature 09 makes the sharpest version of the point, and it makes it by failing. Asked to draft a reply to a woman whose husband is four hours overdue, the model ignores its escalation instruction and writes her a warm, reassuring, useless note. Every time. Move the instruction to the top and it announces `ESCALATE` and then writes the note anyway. The lesson is not that the prompt needed more work. It is that a prompt is a request and a policy lane is a guarantee, so the finished demo refuses to send emergencies to the model at all.
+Feature 09 makes the sharpest version of the point, and it makes it by failing. Asked to draft a reply to a woman whose husband is four hours overdue, the model ignores its escalation instruction and writes her a warm, reassuring, useless note. Every time. Move the instruction to the top and it announces `ESCALATE` and then writes the note anyway. More prompt engineering is not the lesson. A prompt instruction is a request, and a policy lane is a guarantee, so the finished demo refuses to send emergencies to the model at all.
 
 ## The leadership beats
 
-Collected at the debrief, becoming rows 7 through 9 of the [decision framework](../../docs/decision-framework.md).
+Collected at the debrief, and they become rows 7 through 9 of the [decision framework](../../docs/decision-framework.md).

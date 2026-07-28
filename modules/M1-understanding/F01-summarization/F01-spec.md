@@ -18,7 +18,7 @@ The craft is all in the instruction. "Summarize this" produces a book report. Re
 2. Starter project: `IChatClient` wired to Ollama via Microsoft.Extensions.AI. One method, one prompt: "Summarize this trip report."
 3. Run it and get a faithful, generic, useless book report. Name the failure out loud: right model, wrong instruction.
 4. Iterate the prompt live into the hiker-focused version (conditions, hazards, crowding, ignore everything else). Run again. This is the payoff: three bullets, and the bridge warning surfaces.
-5. Point at the last two lines of that prompt, the grounding lines. Without them, this exact prompt run against the clean report invented a bear-related trail closure in roughly half of runs, because a required "hazards" slot with nothing honest to put in it is an invitation to make something up. The numbers and the failing outputs are in `lab/expected-output.md`. First prompt written is rarely the prompt shipped.
+5. Point at the last two lines of that prompt, the grounding lines. Without them, this exact prompt run against the clean report invented a bear-related trail closure in roughly half of runs, because a required "hazards" slot with nothing honest to put in it is an invitation to make something up. The numbers and the failing outputs are in `lab/expected-output.md`.
 6. Change the shape: same call, but output a one-line "trail status" headline for a card UI. Same feature, different product surface.
 7. Point at the Ollama endpoint in the code. This ran entirely on the laptop, with no API key and no data leaving the room.
 

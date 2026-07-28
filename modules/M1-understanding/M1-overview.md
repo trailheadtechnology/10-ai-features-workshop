@@ -2,7 +2,7 @@
 
 **Making sense of messy content.** 9:30 to 11:00.
 
-Three features that all take unstructured text and give you back something a person or a program can use. They share a shape: one model call, one carefully written instruction, no vector database and no training. If you only remember one thing from this module, it is that the instruction is the feature. The model is a commodity; what you ask it for is the product.
+Three features that all take unstructured text and give you back something a person or a program can use. They share a shape: one model call, one carefully written instruction, no vector database and no training. If you only remember one thing from this module, remember that the wording of the instruction does more work than the choice of model.
 
 | | Feature | What it does | Runs on |
 |---|---|---|---|
@@ -16,7 +16,7 @@ I present all three with live demos, then you get about 45 minutes. **Everyone d
 
 Start with 01 regardless of your experience. It is the shortest path from nothing to a working AI feature, and everything else today assumes you have made one model call and seen what comes back.
 
-If you finish everything, the most valuable use of the remaining minutes is helping someone near you. Explaining a feature is how it sticks.
+If you finish everything, the best use of the remaining minutes is helping someone near you, since explaining a feature is how it sticks.
 
 ## What each lab costs you
 
@@ -28,7 +28,7 @@ If you finish everything, the most valuable use of the remaining minutes is help
 
 All three features fail in the same direction, and watching for it here will save you in the afternoon. Asked for something it cannot find in the source, a language model will supply something plausible rather than nothing. Feature 01 invents a trail closure from a bear sighting. Feature 02 reports a distance the report never gives. Feature 03 reads a sarcastic five-star review at face value.
 
-None of that is fixed by a better model. It is fixed by a more specific instruction, a schema that permits `null`, and code that checks the output before anything downstream trusts it. That is the actual job.
+A better model does not fix any of that. What fixes it is a more specific instruction, a schema that permits `null`, and code that checks the output before anything downstream trusts it.
 
 ## The leadership beats
 

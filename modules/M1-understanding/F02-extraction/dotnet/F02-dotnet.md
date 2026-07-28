@@ -12,7 +12,7 @@ Each report prints three blocks: what the model gave us, what the validator says
 - Empty and whitespace-only strings are rejected.
 - `trail_name` and `park` get a grounding check against the source text, which is what catches an invented trail name.
 
-Anything rejected becomes `null` in the stored object. Null is a gap someone can fill later; a plausible wrong number is not.
+Anything rejected becomes `null` in the stored object. Null is a gap someone can fill later; a plausible wrong number never gets questioned.
 
 Both run against Ollama (`llama3.2`, JSON mode), matching the demo outline in [../F02-spec.md](../F02-spec.md). From `complete/`:
 

@@ -8,7 +8,7 @@ A faithful book report, mostly about the author's gear:
 
 > The author recently completed the Avalanche Lake Trail in Glacier National Park on July 12th with a new, lighter gear setup. [...] The author's new gear consisted of: a lightweight 24-liter frameless day pack (14 oz empty), trail runners instead of boots [...]
 
-The summary isn't wrong. It's just useless to a hiker planning this weekend, which is the point. Right model, wrong instruction.
+The summary isn't wrong, just useless to a hiker planning this weekend. Right model, wrong instruction.
 
 ## Request 2: improved prompt on tr-0001
 

@@ -545,8 +545,8 @@ The corpus is written the way real operational documents are written, in dated n
 "Avalanche Lake Trail: CLOSED effective June 20, 2026, until further notice." Answering
 "is it open right now?" from that sentence takes one step the model cannot take, which is
 knowing what "now" is. Given a notice with a start date, no end date, and no idea what
-today is, refusing is not a malfunction. It is the correct answer to a question the model
-genuinely cannot resolve.
+today is, refusing is the correct answer to a question the model genuinely cannot
+resolve.
 
 Three experiments, sixteen runs each, pinned it down:
 

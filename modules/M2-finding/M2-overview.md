@@ -2,9 +2,7 @@
 
 **Surfacing the right thing.** 11:15 to 12:45.
 
-Three features built on one idea. Embeddings turn text into vectors, and distance between vectors means similarity of meaning. Search ranks a catalog against a query. RAG retrieves passages and hands them to a model to answer from. Recommendations rank a catalog against an item instead of a query. Same math, three products.
-
-This is the module where the day stops being about prompts.
+Three features built on one idea. Embeddings turn text into vectors, and distance between vectors means similarity of meaning. Search ranks a catalog against a query. RAG retrieves passages and hands them to a model to answer from. Recommendations rank a catalog against an item instead of a query. Same math, three products, and the point in the day where the work stops being about prompts.
 
 | | Feature | What it does | Runs on |
 |---|---|---|---|
@@ -24,7 +22,7 @@ Feature 06 is the shortest of the three if you have already done 04, because it 
 
 - **04 Semantic Search** is the concept lab. Embed 30 trails, embed a query, rank by cosine similarity. The keyword baseline is provided so you can see what you are beating.
 - **05 RAG** is the biggest lab in this module and the most asked-for feature in the industry. Retrieval, a grounded prompt, citations, and a refusal path.
-- **06 Recommendations** is the fastest payoff and the most surprising results.
+- **06 Recommendations** pays off fastest and produces the most surprising results.
 
 ## The thread to watch
 
@@ -32,7 +30,7 @@ Embeddings capture what text is *about*. They do not capture whether it is suita
 
 Search returns a cliff-edge trail as the top hit for "somewhere quiet to take my kids", because the description talks about children. Recommendations answer "you bought the 65 litre pack" with the 40 litre pack, the one product that buyer will never need. RAG answers correctly only because the chunks were cut so that a rule and its exception stay together; cut them apart and the same pipeline confidently tells a visitor to light a fire where fires are banned year round.
 
-The fix in all three cases is not a bigger model. It is metadata, filters, thresholds, and paying attention to how you split your documents. Feature 05 has the measurements to prove it: better chunking moved its flagship question from 75 to 97 percent correct, and a model ten times the size bought only the last three points.
+In all three cases the fix is metadata, filters, thresholds, and attention to how you split your documents, not a bigger model. Feature 05 has the measurements to prove it: better chunking moved its flagship question from 75 to 97 percent correct, and a model ten times the size bought only the last three points.
 
 ## The leadership beats
 

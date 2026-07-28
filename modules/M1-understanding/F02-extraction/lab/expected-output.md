@@ -114,13 +114,13 @@ Same checks as the raw JSON above. The variance is still there run to run: `park
 The complete demo no longer stops at the extracted object. It prints three blocks per report: what the model gave us, what the validator says field by field, and what we would store after rejected fields are coerced to `null`. The rules are ordinary code:
 
 - `date_hiked` must parse against an explicit format list, or be `null`. A real date in an odd format ("July 4, 2026") passes and gets normalized to `2026-07-04`. Prose like "last month" is rejected outright.
-- `distance_mi` and `elevation_gain_ft` reject `0`, reject negatives, and reject the absurd (over 100 mi, over 20,000 ft). Zero is the near-miss the whole feature is built around: it is a value, and nothing downstream will ever question it.
+- `distance_mi` and `elevation_gain_ft` reject `0`, reject negatives, and reject the absurd (over 100 mi, over 20,000 ft). Zero is the near-miss this rule exists for: it is a value, and nothing downstream will ever question it.
 - Empty and whitespace-only strings are rejected. `""` is not a trail name.
 - `trail_name` and `park` get a grounding check: the distinctive words in the value have to appear somewhere in the source report. Boilerplate ("National", "Park", "Trail") is ignored, so `"Glacier National Park"` still grounds on a report that only ever says "Glacier", while a trail name the report never mentions does not.
 
 ### Real rejections, observed across four consecutive runs
 
-Every one of these came out of an actual `dotnet run` against `llama3.2`. No run was clean across both reports two times running, which is the point.
+Every one of these came out of an actual `dotnet run` against `llama3.2`. No run was clean across both reports two times running.
 
 **Run 1, tr-0011 gave an empty string for the trail:**
 
@@ -181,7 +181,7 @@ Every one of these came out of an actual `dotnet run` against `llama3.2`. No run
           normalized to: 2026-07-04
 ```
 
-That last one matters on stage: a validator is not only a bouncer. Some model output is correct and merely off-format, and normalizing it is the difference between a rule people keep and a rule people disable.
+That last one matters on stage. Some model output is correct and merely off-format, and normalizing it instead of rejecting it is what keeps people from switching the validator off.
 
 ### What the validator does not catch
 

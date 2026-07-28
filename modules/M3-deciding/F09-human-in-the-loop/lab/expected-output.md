@@ -46,7 +46,7 @@ Worth noticing what kind of error this is. The model got both rules correct and 
 
 **Approve, or edit lightly.** Accurate, cited correctly, answers both halves of the question, and does not invent a reopening date, which is exactly the fact the excerpt refuses to supply. The one soft spot is the Backcountry Office referral: the excerpt aims that advice at people holding backcountry itineraries, and this is a day-hike family. A ranger would probably swap in "the Trail of the Cedars loop is still open" and name a day hike, but nothing here is false.
 
-This is what the draft-for-approval lane looks like when it works. The typing is gone, the judgment is not.
+This is what the draft-for-approval lane looks like when it works: the typing is gone and the ranger still makes the call.
 
 ## inq-0007 · Double charge plus a permit transfer question (complaint)
 
@@ -137,7 +137,7 @@ Across runs, three failure shapes showed up often enough to be prompt work rathe
 - **Unfilled placeholders.** `Dear [Visitor],` and, memorably, `Dear [Visitor's Email],`. Any auto-send lane needs a regex gate that refuses to release text containing square brackets.
 - **Wrong document numbers on right facts.** See inq-0003. The fact is correct and the citation is invented, which is the hardest error class for a reviewer to catch and the most damaging to publish, because the citation is the thing that makes the visitor believe the rest.
 
-Each of these is a candidate for the next prompt revision, and you only know they exist because a human looked at every draft and the system wrote down what happened. The audit trail is not just a compliance artifact. It is the backlog.
+Each of these is a candidate for the next prompt revision, and you only know they exist because a human looked at every draft and the system wrote down what happened. The audit trail doubles as the backlog.
 
 ## Reference policy
 

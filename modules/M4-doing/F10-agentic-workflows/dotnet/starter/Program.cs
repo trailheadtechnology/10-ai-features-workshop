@@ -3,7 +3,7 @@ using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// The trip request goes to a plain chat completion. No tools, no data, no loop.
+// The trip request goes to a plain chat completion, with no tools and no loop.
 // Nothing here can reach the trail catalog, the weather feed, or the condition
 // reports, so the itinerary that comes back is fluent, generic, and books
 // nothing. That gap is the point of this project; the fix lives in ../complete.
