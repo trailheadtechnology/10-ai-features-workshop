@@ -74,9 +74,21 @@ static string Prompt(string text) => $"""
       needs immediate human attention.
     - general: anything else: park rules, fees, trip planning, questions
       that fit none of the above.
+    - unsure: two different queues both have to act before this message can
+      be resolved, so no single queue owns it. The case that qualifies: the
+      sender asks about trail conditions AND asks someone to change, refund,
+      or cancel a booking. Trail info cannot issue a refund, and the permits
+      office does not decide whether a trail is passable, so a human reads
+      this queue and splits the work. Also use unsure when the message fits
+      none of the categories above.
 
-    When a message could fit two categories, pick the one whose queue can
-    actually act on it. If anyone might be in danger, it is always emergency.
+    Decide in this order. First, if anyone might be hurt, missing, or in
+    danger, answer emergency and stop; never answer unsure for those, even
+    when the message also mentions permits, conditions, or a lost item.
+    Second, if one queue can resolve the whole message on its own, answer
+    that queue; a booking or reservation problem with nothing else attached
+    is permit, not unsure. Third, only if two queues must both act, answer
+    unsure. Unsure is not a catch-all for anything hard.
 
     Message:
     {text}
@@ -104,6 +116,7 @@ enum Category
     [JsonStringEnumMemberName("lost-and-found")] LostAndFound,
     [JsonStringEnumMemberName("emergency")] Emergency,
     [JsonStringEnumMemberName("general")] General,
+    [JsonStringEnumMemberName("unsure")] Unsure,
 }
 
 record ReferenceLabels(

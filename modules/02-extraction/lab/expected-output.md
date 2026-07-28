@@ -76,31 +76,116 @@ Three problems in the first six lines: a prose preamble your parser has to strip
 
 ## The .NET complete demo (`dotnet run` from `dotnet/complete/`)
 
-Real output from one run:
+Real output from a run where the model behaved and the validator had nothing to do:
 
 ```text
 == tr-0007.md ==
+
+-- what the model gave us --
   trail:      Sperry Chalet Trail
-  park:
+  park:       Glacier National Park
   date:       2026-07-04
   distance:   12.8 mi
   elev gain:  3400 ft
-  wildlife:   [black bear sow with two cubs, mountain goats (9 total, including 2 kids), hoary marmot]
-  conditions: [dry tread, recently cleared, with fresh sawcuts on two big deadfall logs, substantial snowmelt flow in some streams, one lingering snow patch crossed the trail in a shaded gully, good rock lines for creek crossings]
-  hazards:    [burned area from years back (snags standing silver against green regrowth)]
+  wildlife:   [black bear sow with two cubs, mountain goats (9 total), hoary marmot]
+  conditions: [dry tread, recently cleared, open subalpine terrain, lingering snow patch (40ft)]
+  hazards:    []
 
+-- what the validator says --
+  PASS    trail_name         Sperry Chalet Trail
+  PASS    park               Glacier National Park
+  PASS    date_hiked         2026-07-04
+  PASS    distance_mi        12.8 mi
+  PASS    elevation_gain_ft  3400 ft
+
+-- what we would store (nothing rejected this run) --
+  trail:      Sperry Chalet Trail
+  park:       Glacier National Park
+  date:       2026-07-04
+  distance:   12.8 mi
+  elev gain:  3400 ft
+  ...
+```
+
+Same checks as the raw JSON above. The variance is still there run to run: `park` has come back as an empty string for tr-0007, and the sparse report's date has come back as `"last month (exact date not specified)"` instead of `null`. The model extracted rather than invented, but it ignored the "null if no exact date" instruction, which is exactly why the run does not end at the extracted object. A bigger model follows the null rule more reliably; on `llama3.2`, treat it as a live demo of why the schema-plus-validation pair exists. What the validator does with those runs is the next section.
+
+## The validator (the part you actually ship)
+
+The complete demo no longer stops at the extracted object. It prints three blocks per report: what the model gave us, what the validator says field by field, and what we would store after rejected fields are coerced to `null`. The rules are ordinary code:
+
+- `date_hiked` must parse against an explicit format list, or be `null`. A real date in an odd format ("July 4, 2026") passes and gets normalized to `2026-07-04`. Prose like "last month" is rejected outright.
+- `distance_mi` and `elevation_gain_ft` reject `0`, reject negatives, and reject the absurd (over 100 mi, over 20,000 ft). Zero is the near-miss the whole module is built around: it is a value, and nothing downstream will ever question it.
+- Empty and whitespace-only strings are rejected. `""` is not a trail name.
+- `trail_name` and `park` get a grounding check: the distinctive words in the value have to appear somewhere in the source report. Boilerplate ("National", "Park", "Trail") is ignored, so `"Glacier National Park"` still grounds on a report that only ever says "Glacier", while a trail name the report never mentions does not.
+
+### Real rejections, observed across four consecutive runs
+
+Every one of these came out of an actual `dotnet run` against `llama3.2`. No run was clean across both reports two times running, which is the point.
+
+**Run 1, tr-0011 gave an empty string for the trail:**
+
+```text
+-- what the validator says --
+  REJECT  trail_name         ""
+          reason: empty or whitespace-only string; should be null
+  PASS    park               Yosemite
+  PASS    date_hiked         null
+```
+
+**Run 3, tr-0011 gave prose in the date column:**
+
+```text
+  REJECT  date_hiked         last month
+          reason: does not parse as a date; no parser can store this
+```
+
+**Run 4, tr-0011 gave the textbook near-miss, `0` for both figures:**
+
+```text
 == tr-0011.md ==
+
+-- what the model gave us --
   trail:      null
-  park:       Yosemite
-  date:       last month (exact date not specified)
+  park:       null
+  date:       null
+  distance:   0 mi
+  elev gain:  0 ft
+  wildlife:   []
+  conditions: [fine, some wet spots]
+  hazards:    [fellow slipped and caught himself]
+
+-- what the validator says --
+  PASS    trail_name         null
+  PASS    park               null
+  PASS    date_hiked         null
+  REJECT  distance_mi        0 mi
+          reason: 0 is not a measurement; the report gave no figure, so this should be null
+  REJECT  elevation_gain_ft  0 ft
+          reason: 0 is not a measurement; the report gave no figure, so this should be null
+
+-- what we would store (2 fields coerced to null) --
+  trail:      null
+  park:       null
+  date:       null
   distance:   null mi
   elev gain:  null ft
   wildlife:   []
-  conditions: []
-  hazards:    []
+  conditions: [fine, some wet spots]
+  hazards:    [fellow slipped and caught himself]
 ```
 
-Same checks, plus two honest wrinkles from `llama3.2` worth pointing at on stage: `park` came back as an empty string for tr-0007 in this run (other runs say "Glacier National Park"), and the sparse report's date came back as the string `"last month (exact date not specified)"` instead of `null`. The model extracted rather than invented, but it ignored the "null if no exact date" instruction, which is why real pipelines validate model output (is this parseable as a date?) instead of trusting it. A bigger model follows the null rule more reliably; on `llama3.2`, treat it as a demo of why the schema-plus-validation pair exists.
+**Run 1, tr-0007 got the date right in the wrong format, and the validator fixed rather than rejected it:**
+
+```text
+  PASS    date_hiked         July 4, 2026
+          normalized to: 2026-07-04
+```
+
+That last one matters on stage: a validator is not only a bouncer. Some model output is correct and merely off-format, and normalizing it is the difference between a rule people keep and a rule people disable.
+
+### What the validator does not catch
+
+One earlier run returned `distance_mi: 40` for tr-0011, a report that states no mileage anywhere. Forty miles is under the 100-mile ceiling, so the range rule passed it, and no cheap check can ground a number the way substring matching grounds a name. Say this out loud: validation moves the failure from silent-and-wrong to loud-and-wrong for a whole class of bugs, and it does not get you to zero. What remains is a sampling and review problem, which is a management answer, not a code answer.
 
 ## Stretch goal
 

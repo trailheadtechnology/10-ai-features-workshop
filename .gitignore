@@ -4,3 +4,12 @@ obj/
 *.user
 .env
 appsettings.Development.json
+
+# Generated at runtime by the demos, not source
+embeddings.json
+gear-embeddings.json
+outbox/
+decisions.jsonl
+
+# Local review notes
+findings.md

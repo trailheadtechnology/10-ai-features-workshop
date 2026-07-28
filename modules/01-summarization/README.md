@@ -18,8 +18,9 @@ The craft is all in the instruction. "Summarize this" produces a book report. Re
 2. Starter project: `IChatClient` wired to Ollama via Microsoft.Extensions.AI. One method, one prompt: "Summarize this trip report."
 3. Run it and get a faithful, generic, useless book report. Name the failure out loud: right model, wrong instruction.
 4. Iterate the prompt live into the hiker-focused version (conditions, hazards, crowding, ignore everything else). Run again. This is the payoff: three bullets, and the bridge warning surfaces.
-5. Change the shape: same call, but output a one-line "trail status" headline for a card UI. Same feature, different product surface.
-6. Point at the Ollama endpoint in the code. This ran entirely on the laptop, with no API key and no data leaving the room.
+5. Point at the last two lines of that prompt, the grounding lines. Without them, this exact prompt run against the clean report invented a bear-related trail closure in roughly half of runs, because a required "hazards" slot with nothing honest to put in it is an invitation to make something up. The numbers and the failing outputs are in `lab/expected-output.md`. First prompt written is rarely the prompt shipped.
+6. Change the shape: same call, but output a one-line "trail status" headline for a card UI. Same feature, different product surface.
+7. Point at the Ollama endpoint in the code. This ran entirely on the laptop, with no API key and no data leaving the room.
 
 ## Lab spec (13 min, any language)
 
@@ -28,8 +29,8 @@ The craft is all in the instruction. "Summarize this" produces a book report. Re
 - **How:** POST to Ollama's chat endpoint (`llama3.2`). `lab/ollama.http` has the exact request; port it to your language or run it as-is.
 - **Steps:**
   1. Send report #1 with the naive prompt ("summarize this") and read the book report you get back.
-  2. Rewrite the prompt to demand exactly 3 bullets covering conditions, hazards, and crowding, and nothing else.
-  3. Run report #2 through your improved prompt. Success check: your 3 bullets surface the buried hazard (compare `lab/expected-output.md`).
+  2. Rewrite the prompt to demand exactly 3 bullets covering conditions, hazards, and crowding, and nothing else. Run it a few times, not once: report #1 has no closure in it, and a prompt that demands a hazard bullet will happily invent one.
+  3. Run report #2 through your improved prompt. Success check: your 3 bullets surface the buried hazard (compare `lab/expected-output.md`), and report #1 still comes back with nothing closed.
 - **Stretch goal:** make the summary audience-switchable. The same report, summarized for a hiker and then for a park ranger who cares about maintenance issues rather than scenery.
 
 ## Leadership beat

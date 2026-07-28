@@ -16,14 +16,14 @@ Two design decisions carry the module. First, the taxonomy is the product. Categ
 
 1. Scroll the raw inbox from `data/inquiries.jsonl`, mixed and unlabeled, and let the room spot the emergency buried in it.
 2. Starter: one classify method with the taxonomy written as plain-language category descriptions in the prompt, returning exactly one label.
-3. Run the inbox through it and print each message under its routed queue. The payoff: the pile becomes five tidy queues in seconds, and the emergency is at the top of its own.
-4. Show a misclassification (one is planted). Fix it by editing the category description, not the code, and re-run to show the fix landing.
-5. Add the "unsure" route: anything the model can't place confidently goes to a human. Show a genuinely ambiguous message landing there, which is correct behavior.
+3. Run the inbox through it and print each message under its routed queue. The payoff: the pile becomes a set of tidy queues in seconds, and the emergency is at the top of its own.
+4. Show a misclassification (inq-0030 is planted). Fix it by editing the category description, not the code, and re-run to show the fix landing.
+5. Walk the "unsure" route in the taxonomy: it is deliberately narrow, for messages that two queues must both act on. Show inq-0035 landing there, which is correct behavior, and point out that the description forbids sending anything dangerous to it.
 6. Close on asymmetric error costs: what this system is tuned never to miss, and what noise level that tolerance buys.
 
 ## Lab spec (13 min, any language)
 
-- **Goal:** classify visitor inquiries into `permits | conditions | complaint | lost-and-found | emergency | unsure` and route them.
+- **Goal:** classify visitor inquiries into `permit | conditions | complaint | lost-and-found | emergency | general | unsure` and route them.
 - **Input:** `lab/` provides 20 inquiries from `data/inquiries.jsonl` (including 2 emergencies and at least one deliberately ambiguous message) plus reference labels.
 - **How:** POST to Ollama's chat endpoint (`llama3.2`). `lab/ollama.http` has the request with a starter taxonomy prompt.
 - **Steps:**

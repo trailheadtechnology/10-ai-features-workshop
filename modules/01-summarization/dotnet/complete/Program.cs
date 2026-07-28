@@ -38,12 +38,16 @@ var prompt = mode switch
     "naive" => $"Summarize this trip report.\n\n{report}",
 
     // Step 4: a summary with a purpose. The instruction carries the feature.
+    // The two grounding lines are not decoration: without them llama3.2 invents a
+    // bear closure on tr-0001 in roughly half of runs. See lab/expected-output.md.
     "briefing" => $"""
         You are helping {audienceFocus}.
         From the trip report below, produce exactly 3 bullets covering:
         current trail conditions, hazards or closures, and crowding.
         Ignore gear talk, personal stories, and scenery.
-        If the report mentions a closure or hazard, it must appear in the first bullet.
+        Report only what the trip report states. Do not turn a wildlife sighting into a
+        hazard or a closure, and write "no closures or hazards reported" when it says none.
+        If the report does state a closure or hazard, it must appear in the first bullet.
 
         {report}
         """,
