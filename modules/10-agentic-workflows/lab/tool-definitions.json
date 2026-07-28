@@ -1,0 +1,112 @@
+{
+  "_comment": "The five Trailhead Guides tools, in the shape an OpenAI-compatible chat API wants them (Azure OpenAI, Ollama, and most others accept this array as-is). Paste the whole array as the 'tools' value in your request body, or lift the objects one at a time as the lab asks for them. The descriptions are the model's only manual: they are the difference between an agent that sequences these correctly and one that guesses.",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "search_trails",
+        "description": "Search the trail catalog. Returns matching trails with id, name, park, distance, elevation, difficulty, and features. Call this before recommending any trail; trail ids from here are what the other tools expect.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": {
+              "type": "string",
+              "description": "Park name, for example 'Glacier National Park'. Partial names like 'Glacier' also match."
+            },
+            "features": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Optional feature keywords to filter on, for example ['lake', 'waterfall', 'wildflowers']."
+            },
+            "max_difficulty": {
+              "type": "string",
+              "enum": ["easy", "moderate", "hard"],
+              "description": "Optional ceiling on difficulty. 'moderate' returns easy and moderate trails."
+            }
+          },
+          "required": ["park"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "Get the multi-day forecast and advisories for a park. Returns one entry per date with high, low, conditions, chance of precipitation, and wind.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": {
+              "type": "string",
+              "description": "Park name, for example 'Glacier National Park'."
+            }
+          },
+          "required": ["park"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_trail_conditions",
+        "description": "Get the most recent hiker-submitted condition reports for one trail, newest first. Call this for every trail you intend to recommend. Reports are where closures, washouts, and hazards show up; the catalog entry will not mention them.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "trail_id": {
+              "type": "string",
+              "description": "A trail id returned by search_trails, for example 'trail-0117'."
+            }
+          },
+          "required": ["trail_id"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "check_campsites",
+        "description": "Check campground availability for a park. Returns each campground with open sites per date, whether it is frontcountry or backcountry, amenities, and notes such as seasonal closures.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": {
+              "type": "string",
+              "description": "Park name, for example 'Glacier National Park'."
+            }
+          },
+          "required": ["park"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "request_permit",
+        "description": "Submit a backcountry permit request. This files a request on the user's behalf, so call it once, at the end, after the plan is settled and the user has confirmed.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": {
+              "type": "string",
+              "description": "Park name, for example 'Glacier National Park'."
+            },
+            "zone": {
+              "type": "string",
+              "description": "Permit zone, for example 'Lake McDonald / Sperry' or 'Many Glacier'."
+            },
+            "dates": {
+              "type": "string",
+              "description": "Trip dates, for example '2026-09-14 to 2026-09-16'."
+            },
+            "group_size": {
+              "type": "integer",
+              "description": "Number of people in the group. Zones cap out at 8 in Glacier."
+            }
+          },
+          "required": ["park", "zone", "dates", "group_size"]
+        }
+      }
+    }
+  ]
+}
