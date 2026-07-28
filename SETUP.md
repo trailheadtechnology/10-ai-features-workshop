@@ -14,6 +14,8 @@ ollama pull nomic-embed-text
 
 That's roughly 5GB of downloads total, which is exactly why we're asking you to do it on hotel or home wifi instead of the venue's.
 
+These three are the only models the workshop needs, and they are deliberately small: every lab runs on a laptop with 8GB of RAM, and nothing here needs a GPU. You will see a larger model (`qwen3:32b`) referenced once, in module 05, where it is used to answer "how much would a bigger model help?" Those results are written down so you never have to run it. Please do not pull it on the day. It is a 20GB download that wants about 24GB of memory, and a room full of people trying it at once is how the venue wifi dies.
+
 Heads up: we'll re-verify these model choices in the weeks before the event, since small-model quality moves fast. Check this file the week before the workshop in case a model name changed.
 
 ## 2. Verify it works

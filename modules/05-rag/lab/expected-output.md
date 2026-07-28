@@ -417,12 +417,18 @@ reliably lead with a verdict it has to qualify. See the next section for what fi
 
 ## What a bigger model buys, and what it costs
 
-The demo stays on `llama3.2`. This section exists because module 03 teaches measuring the
-model-size question rather than arguing about it, and module 05 should be able to answer it
-about its own pipeline. Same 250 chunks, same `nomic-embed-text` retrieval, same prompt,
-same graders. Generation swapped to `qwen3:32b`, twenty runs per question. `qwen3` is a
-reasoning model; no thinking output reached the answer text, and the graders strip
-`<think>` blocks in any case.
+**Do not pull this model during the workshop.** `qwen3:32b` is a 20 GB download and needs
+roughly 24 GB of free memory to run, which rules out a 16 GB laptop entirely and makes a
+32 GB one unhappy. On venue wifi it will not finish, and a room of people trying it at once
+is how the wifi dies for everybody. The numbers below are here so you do not have to run it.
+Everything in this lab runs on `llama3.2`, which is 2 GB.
+
+That warning aside: the demo stays on `llama3.2`. This section exists because module 03
+teaches measuring the model-size question rather than arguing about it, and module 05
+should be able to answer it about its own pipeline. Same 250 chunks, same
+`nomic-embed-text` retrieval, same prompt, same graders. Generation swapped to
+`qwen3:32b`, twenty runs per question. `qwen3` is a reasoning model; no thinking output
+reached the answer text, and the graders strip `<think>` blocks in any case.
 
 | | llama3.2 (3B) | qwen3:32b |
 |---|---|---|
