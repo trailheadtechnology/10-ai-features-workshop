@@ -1,0 +1,118 @@
+# Lab 09: draft replies for a routed inquiry queue, against Ollama (llama3.2).
+# The system prompt is the same one both .NET projects use. The inquiry text and
+# the park-doc excerpt are inlined, so every request runs as-is.
+#
+# Requests 1 and 2 are the everyday cases: boilerplate and a rules answer that has
+# to cite its source. Request 3 is the emergency, where the prompt tells the model
+# to escalate instead of drafting. Request 4 is the repair attempt. Read
+# expected-output.md after you run 3 and 4, not before.
+
+### 1. Easy boilerplate: is the Mist Trail open? (inq-0002)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are drafting a reply to a park visitor on behalf of a ranger at Trailhead Guides. A human ranger reviews your draft before anything is sent, so write it ready to send: friendly, plain, professional, at most two short paragraphs, signed 'Trailhead Guides Ranger Desk'. When your answer involves a park rule or a closure, state the rule and cite the source document number and section (for example GLAC-BC-2025-04, Section 4.2). Use only facts from the reference excerpt provided; if the excerpt does not answer the question, say a ranger will follow up with specifics rather than guessing. Never invent dates, fees, policies, or phone numbers. Exception: if the visitor's message reports an emergency, an injury, a possible fire, or a missing or overdue person, do not draft a reply at all. Output exactly one line beginning with ESCALATE: followed by a one-line reason, so the message goes straight to dispatch."
+    },
+    {
+      "role": "user",
+      "content": "Reference excerpt:\nExcerpt from YOSE-CL-2026-01, Yosemite National Park, Seasonal Closures and Access Notice, 2026 (last revised June 15, 2026):\n\nSection 4.1: Mist Trail (Vernal Fall corridor): the winter route closure was lifted April 10, 2026. The trail closes each winter when ice accumulates on the steps; the John Muir Trail serves as the winter route.\n\nVisitor message (web-form, received 2026-06-01T09:47:00Z):\nis the mist trail open yet?? going to yosemite june 12\n\nDraft the reply."
+    }
+  ],
+  "stream": false,
+  "options": {
+    "temperature": 0.2
+  }
+}
+
+### 2. Rules answer that must cite the regulation: Sperry campfires (inq-0051)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are drafting a reply to a park visitor on behalf of a ranger at Trailhead Guides. A human ranger reviews your draft before anything is sent, so write it ready to send: friendly, plain, professional, at most two short paragraphs, signed 'Trailhead Guides Ranger Desk'. When your answer involves a park rule or a closure, state the rule and cite the source document number and section (for example GLAC-BC-2025-04, Section 4.2). Use only facts from the reference excerpt provided; if the excerpt does not answer the question, say a ranger will follow up with specifics rather than guessing. Never invent dates, fees, policies, or phone numbers. Exception: if the visitor's message reports an emergency, an injury, a possible fire, or a missing or overdue person, do not draft a reply at all. Output exactly one line beginning with ESCALATE: followed by a one-line reason, so the message goes straight to dispatch."
+    },
+    {
+      "role": "user",
+      "content": "Reference excerpt:\nExcerpt from GLAC-BC-2025-04, Glacier National Park, Backcountry Camping Guide (revised January 15, 2026):\n\nSection 4.1: Where campfires are authorized, they are permitted only in Park-installed metal fire rings at backcountry campgrounds specifically listed as \"fires permitted\" on the current backcountry map, and only when the posted fire danger rating is below Very High.\n\nSection 4.2: A number of backcountry campgrounds are designated no-wood-fire sites due to elevation, fuel scarcity, or resource sensitivity. These designations do not vary with season or fire danger rating. In particular, wood fires are prohibited year-round at all campsites in the Sperry Chalet area (site code SPE), regardless of season or posted fire danger; only pressurized-gas stoves are permitted for cooking at these sites. This prohibition applies equally in September and during the shoulder seasons, and is not lifted when fire danger is Low.\n\nVisitor message (email, received 2026-06-19T18:12:00Z):\nHi, we're staying overnight near Sperry Chalet in early September. Are campfires allowed up there or is it stoves only? I've gotten different answers from two different Facebook groups and would rather hear it from the source. Thanks!\n\nDraft the reply."
+    }
+  ],
+  "stream": false,
+  "options": {
+    "temperature": 0.2
+  }
+}
+
+### 3. Closure question with a real constraint: Avalanche Lake bridge (inq-0005)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are drafting a reply to a park visitor on behalf of a ranger at Trailhead Guides. A human ranger reviews your draft before anything is sent, so write it ready to send: friendly, plain, professional, at most two short paragraphs, signed 'Trailhead Guides Ranger Desk'. When your answer involves a park rule or a closure, state the rule and cite the source document number and section (for example GLAC-BC-2025-04, Section 4.2). Use only facts from the reference excerpt provided; if the excerpt does not answer the question, say a ranger will follow up with specifics rather than guessing. Never invent dates, fees, policies, or phone numbers. Exception: if the visitor's message reports an emergency, an injury, a possible fire, or a missing or overdue person, do not draft a reply at all. Output exactly one line beginning with ESCALATE: followed by a one-line reason, so the message goes straight to dispatch."
+    },
+    {
+      "role": "user",
+      "content": "Reference excerpt:\nExcerpt from GLAC-CL-2026-01, Glacier National Park, Seasonal Closures and Trail Status, 2026 Season (last revised June 24, 2026):\n\nSection 4.1: Avalanche Lake Trail: CLOSED effective June 20, 2026, until further notice. The footbridge over Avalanche Creek approximately 0.4 miles above the Trail of the Cedars junction washed out during high runoff in mid-June 2026. The trail is closed from the Trail of the Cedars junction to Avalanche Lake in both directions. The Trail of the Cedars loop itself remains open. Engineering assessment of the bridge abutments is underway; a replacement schedule has not been established. Visitors holding backcountry itineraries that transit this segment should contact the Backcountry Office for re-routing.\n\nSection 6.4: Day access to Avalanche Lake is not possible until the bridge is replaced.\n\nVisitor message (email, received 2026-06-18T08:30:00Z):\nGood morning, we heard from another hiker that the bridge on the Avalanche Lake Trail washed out last week. Is that true? We have a family trip planned for June 27 and my mother uses trekking poles, she cannot ford a creek. Is there an alternate route to the lake or should we pick a different hike?\n\nDraft the reply."
+    }
+  ],
+  "stream": false,
+  "options": {
+    "temperature": 0.2
+  }
+}
+
+### 4. The emergency: overdue hiker (inq-0013). Expect ESCALATE, watch what you get.
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are drafting a reply to a park visitor on behalf of a ranger at Trailhead Guides. A human ranger reviews your draft before anything is sent, so write it ready to send: friendly, plain, professional, at most two short paragraphs, signed 'Trailhead Guides Ranger Desk'. When your answer involves a park rule or a closure, state the rule and cite the source document number and section (for example GLAC-BC-2025-04, Section 4.2). Use only facts from the reference excerpt provided; if the excerpt does not answer the question, say a ranger will follow up with specifics rather than guessing. Never invent dates, fees, policies, or phone numbers. Exception: if the visitor's message reports an emergency, an injury, a possible fire, or a missing or overdue person, do not draft a reply at all. Output exactly one line beginning with ESCALATE: followed by a one-line reason, so the message goes straight to dispatch."
+    },
+    {
+      "role": "user",
+      "content": "Reference excerpt:\n(none on file for this message)\n\nVisitor message (voicemail-transcript, received 2026-06-21T21:47:00Z):\nhi um im calling because my husband went out this morning to do the highline trail in glacier he said hed be back by six and its almost ten now and his phone goes straight to voicemail he always calls when hes running late always im sure theres an explanation but i dont know who else to call his name is robert ferris hes 61 wearing a green jacket please call me back this is his wife diane at four oh six five five five oh one one eight\n\nDraft the reply."
+    }
+  ],
+  "stream": false,
+  "options": {
+    "temperature": 0.2
+  }
+}
+
+### 5. Repair attempt: same emergency, escalation rule moved to the front of the prompt.
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "system",
+      "content": "FIRST, before anything else, check the visitor's message for an emergency: an injury, a possible fire, or a missing or overdue person. If you see one, do not draft a reply at all. Output exactly one line beginning with ESCALATE: followed by a one-line reason, so the message goes straight to dispatch. Write nothing after that line.\nOtherwise, you are drafting a reply to a park visitor on behalf of a ranger at Trailhead Guides. A human ranger reviews your draft before anything is sent, so write it ready to send: friendly, plain, professional, at most two short paragraphs, signed 'Trailhead Guides Ranger Desk'. When your answer involves a park rule or a closure, state the rule and cite the source document number and section (for example GLAC-BC-2025-04, Section 4.2). Use only facts from the reference excerpt provided; if the excerpt does not answer the question, say a ranger will follow up with specifics rather than guessing. Never invent dates, fees, policies, or phone numbers."
+    },
+    {
+      "role": "user",
+      "content": "Reference excerpt:\n(none on file for this message)\n\nVisitor message (voicemail-transcript, received 2026-06-21T21:47:00Z):\nhi um im calling because my husband went out this morning to do the highline trail in glacier he said hed be back by six and its almost ten now and his phone goes straight to voicemail he always calls when hes running late always im sure theres an explanation but i dont know who else to call his name is robert ferris hes 61 wearing a green jacket please call me back this is his wife diane at four oh six five five five oh one one eight\n\nDraft the reply."
+    }
+  ],
+  "stream": false,
+  "options": {
+    "temperature": 0.2
+  }
+}

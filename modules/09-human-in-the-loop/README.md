@@ -24,10 +24,10 @@ The design question is where to put the human, and the answer comes from error c
 ## Lab spec (13 min, any language)
 
 - **Goal:** generate draft replies for routed inquiries, then decide the automation policy per category.
-- **Input:** `lab/` provides 3 classified inquiries (a conditions question, a complaint, a permit request), relevant park-doc snippets for grounding, and a policy worksheet.
+- **Input:** `lab/` provides 6 classified inquiries (boilerplate, two permit questions, a conditions question about the washout, a billing complaint, and one emergency), relevant park-doc snippets for grounding, and a policy worksheet.
 - **How:** POST to Ollama's chat endpoint (`llama3.2`) with the grounding snippets. `lab/ollama.http` has the drafting request.
 - **Steps:**
-  1. Generate a draft reply for each inquiry and read them as an editor: what would you change before this goes out under your name?
+  1. Generate a draft reply for each inquiry and read them as an editor: what would you change before this goes out under your name? Watch what the model does with the emergency in particular.
   2. Fill in the policy worksheet: for each of the five categories from module 07, choose auto-send, draft-for-approval, or human-only, and write one sentence of justification based on error cost.
   3. Success check: compare against `lab/expected-output.md`, which has reference drafts and a reasoned reference policy. Your policy may differ; your justifications are what count. This lab is deliberately part judgment, because that's the actual skill.
 - **Stretch goal:** compute edit distance between a draft and your edited version, and sketch what threshold would earn a category promotion from draft-mode to auto-send.
