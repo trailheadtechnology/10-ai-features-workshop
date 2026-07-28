@@ -8,17 +8,19 @@ Trail-condition reports trickle into Trailhead Guides all season, about 500 of t
 
 ## The concept
 
-This module has a secret, and the secret is that it's barely an AI module: it's embeddings plus arithmetic. Embed every condition report for a trail, and the routine ones ("muddy," "buggy," "fine") form a dense cluster in vector space. Average them and you get a centroid, the mathematical center of "normal" for that trail. A new report's distance from that centroid is an anomaly score. "Bridge washed out" sits far from the mud cluster, so it jumps out of the pile without a large model or any training. Cosine distance and a threshold do the whole job.
+This module has a secret, and the secret is that it's barely an AI module: it's embeddings plus arithmetic. Embed every condition report for a trail, and the routine ones ("muddy," "buggy," "fine") cluster together in vector space. Average them and you get a centroid, the mathematical center of "normal" for that trail. A report's distance from that centroid is an anomaly score. "Bridge washed out" sits farther from the mud cluster than the mud reports sit from each other, so it rises without a large model or any training. Cosine distance and a threshold do most of the job.
 
-Beyond one weird report, clusters of anomalies are the interesting signal. One outlier might be a rambling hiker; three outliers in a week that also sit close to each other are an event. The pattern generalizes to any stream of routine text: support tickets, log messages, form submissions, review streams. Define normal from the data itself, and let distance flag what deserves human eyes. It also pairs naturally with module 07: classification handles the categories you knew to define, and anomaly detection catches the things you didn't.
+The word "most" is doing real work in that sentence, and this module is honest about it. Ranking single reports by distance is noisy: routine reports about parking or wildflowers can outrank a genuine hazard, and when 8 of 40 reports describe the same washout, the anomalies drag the centroid toward themselves and partially hide. Two things rescue it, and both are the actual lesson. First, embedding models have contracts: `nomic-embed-text` is trained with task prefixes, and embedding `"classification: " + text` instead of the bare text moves the first washout report from rank 11 to rank 2. Second, the alert rule beats the ranking. Requiring two flagged reports within a two-week window fires exactly one alert on this trail, all three of its reports genuine, zero false positives. One outlier might be a rambling hiker; several outliers in a week that also sit near each other are an event.
+
+The pattern generalizes to any stream of routine text: support tickets, log messages, form submissions, review streams. Define normal from the data itself, and let distance flag what deserves human eyes. It also pairs naturally with module 07: classification handles the categories you knew to define, and anomaly detection catches the things you didn't.
 
 ## Demo outline (13 min, .NET)
 
 1. Scroll the condition-report stream. Boring on purpose. Ask the room to find the problem; nobody can, and that's the situation the park is in.
 2. Embed one trail's reports with the module 04 embedding code, average the vectors into a centroid, and put the idea on one slide: the center of normal.
-3. Print every report's distance from the centroid, sorted. The payoff: "bridge washed out completely at the crossing" tops the list by a wide margin, and the mud reports pack the bottom.
-4. Show the cluster signal: the three washout reports are all far from normal but close to each other. That pattern is an event, not noise.
-5. Turn it into an alert in a few lines: distance beyond threshold, more than N reports in a window, flag the trail. Show it also catching the planted bear-activity spike on the other trail.
+3. Run it with `--raw` first and print every report's distance, sorted. It underwhelms: the washout reports scatter through the middle of the list. Sit in that for a second, because this is what the technique actually does out of the box.
+4. Add the model's task prefix (`classification:`) and re-run. A washout report jumps to rank 2 and the mud reports settle at the bottom. The lesson: embedding models have usage contracts, and reading the model card is engineering work, not homework.
+5. Now the alert rule, which is where the feature actually lives: distance beyond threshold, plus two or more flagged reports within a two-week window. One alert fires on this trail, three genuine washout reports in it, nothing false. Show it also catching the bear-activity spike on the other trail, where the signal is even cleaner because that trail's routine chatter is more uniform. Accuracy here is a property of your corpus, not your code.
 6. Count the model calls: embeddings only. Everything else was subtraction. Some AI features are mostly arithmetic wearing an AI badge.
 
 ## Lab spec (13 min, any language)
@@ -29,8 +31,8 @@ Beyond one weird report, clusters of anomalies are the interesting signal. One o
 - **Steps:**
   1. Compute the centroid of all report embeddings for the trail.
   2. Score every report by distance from the centroid and sort descending.
-  3. Success check: the washout reports occupy the top of your list, cleanly separated from the routine reports (compare `lab/expected-output.md`).
-- **Stretch goal:** compute the centroid from a sliding 30-day window instead of all time, so "normal" adapts by season, or run the second trail's data and catch the bear-activity spike.
+  3. Success check: washout reports rise toward the top, but not cleanly, and your ranking will have routine reports mixed in (compare `lab/expected-output.md`). Then add the `classification:` prefix to each text before embedding and watch the ranking improve. Then apply the alert rule (threshold plus two flagged reports within 14 days) and check that it fires once, on real reports.
+- **Stretch goal:** compute the centroid only from reports before the washout window, so the anomalies stop dragging "normal" toward themselves. That puts all 8 washout reports in the top 10 and is the seed of a real sliding-window detector. Or run the second trail's data and catch the bear-activity spike, which separates more sharply.
 
 ## Leadership beat
 

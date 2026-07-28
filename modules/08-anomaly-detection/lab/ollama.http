@@ -1,0 +1,49 @@
+# Lab 08: embeddings against Ollama (nomic-embed-text).
+# Only the embedding step needs a model. Averaging and cosine distance are
+# arithmetic you write yourself.
+#
+# Note the "classification: " prefix on every input. nomic-embed-text was
+# trained with task prefixes, and on this data it is the difference between
+# the washout reports topping the distance ranking and disappearing into the
+# middle of it. See expected-output.md for both runs.
+
+### 1. One routine report, to see the shape of the response
+POST http://localhost:11434/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": "classification: Muddy in the usual low spots, gaiters not a bad idea. Sunscreen is non-negotiable up there."
+}
+
+### 2. One washout report, for comparison
+POST http://localhost:11434/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": "classification: The footbridge over the gorge is completely gone. Creek is raging and there is no safe way across, we turned back."
+}
+
+### 3. A batch. /api/embed takes an array, which is how you embed all 40 at once.
+POST http://localhost:11434/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": [
+    "classification: Muddy in the usual low spots, gaiters not a bad idea. Sunscreen is non-negotiable up there.",
+    "classification: Icy spots in the trees where the sun never hits, watch your footing.",
+    "classification: The footbridge over the gorge is completely gone. Creek is raging and there is no safe way across, we turned back.",
+    "classification: Bridge washed out about two miles in after last night's storm. Had to turn around, really disappointing."
+  ]
+}
+
+### 4. The same washout report with NO prefix, so you can see it is a different vector
+POST http://localhost:11434/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": "The footbridge over the gorge is completely gone. Creek is raging and there is no safe way across, we turned back."
+}
