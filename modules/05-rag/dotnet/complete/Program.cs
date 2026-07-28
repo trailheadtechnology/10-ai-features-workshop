@@ -42,15 +42,12 @@ using OllamaSharp;
 //   download / memory           2 GB / any        20 GB / ~24 GB free
 //   time per answer             0.9 s             16.6 s
 //
-// So the big model is better at everything and costs 18x the wall clock and a
+// The big model is better at everything and costs 18x the wall clock and a
 // machine most people do not have. Uncomment it only if you have the memory;
 // on 16 GB it will not load, and on 32 GB it will make you wait.
 //
-// The part worth noticing: a bigger model fixes none of the retrieval problems
-// this module exists to teach. Same embedder, same chunks, same rankings. When
-// the Sperry prohibition was buried in a chunk that led with the opposite rule,
-// qwen3:32b got it wrong too. Fixing the chunking took the small model from 75%
-// to 97%; the big model buys the last three points. Spend in that order.
+// This setting only affects generation. Retrieval is identical either way, so
+// no model here can rescue an answer that is not in the retrieved chunks.
 //
 // var localModel = "qwen3:32b";   // see the memory note above before uncommenting
 var localModel = "llama3.2";       // the default, because it runs on any laptop in the room
@@ -217,12 +214,12 @@ if (retrievalOnly) return;
 //
 // The corpus is full of dated notices ("CLOSED effective June 20, 2026, until further
 // notice"). A model with no idea what day it is treats "is the trail open right now?" as
-// a question its documents cannot speak to, and refuses. So we tell it the date. Two
-// measured caveats, both worth a sentence on stage: the date on its own changes nothing
-// (6/16 refusals with it, 5/16 without), and a broadly worded currency rule in the Rules
-// block fixes this question while wrecking Q1, where the model starts applying effective
-// dates to a year-round fire ban. Attaching the date to the refusal clause, where the
-// refusal decision is actually made, is the version that helps without collateral damage.
+// a question its documents cannot speak to, and refuses. So we tell it the date.
+//
+// The date belongs in the refusal clause specifically, not in the Rules block above.
+// Stated broadly, it invites the model to apply effective-date reasoning to rules that
+// have no expiry, and it starts deciding a year-round fire ban has lapsed.
+//
 // Production passes DateTime.Today here; this demo pins a date so the recorded outputs in
 // lab/expected-output.md stay reproducible.
 const string today = "September 23, 2026";
@@ -260,14 +257,10 @@ var bad = InvalidCitations(answer, retrievedIds);
 // then strip whatever is still wrong so a bad receipt never reaches the visitor.
 if (bad.Count > 0 && answer.Contains(refusal))
 {
-    // A refusal with a chunk_id stapled to it is the most common invalid citation in the
-    // whole demo, and it is not a question the model needs to think about again: the answer
-    // is already correct and by definition it has no sources. Sending it back through the
-    // model was measurably harmful. Asked to "rewrite the answer using only those ids", it
-    // rewrites the refusal too, and the exact wording the product depends on comes back as
-    // "There is no information about EV charging stations in the provided context." Truthful,
-    // still refusing, but no longer the string anything downstream can match on. Deleting a
-    // citation is a string operation. Do it in code and skip the round trip.
+    // A refusal that cites a source is already correct; by definition it has no sources,
+    // so the only defect is the citation itself. Do not send this back to the model. Asked
+    // to rewrite using valid ids, it rewrites the refusal too, and the exact string the
+    // product matches on comes back paraphrased. Deleting a citation is a string operation.
     Console.WriteLine($"!! CITATION CHECK FAILED: {string.Join(", ", bad.Select(c => $"[{c}]"))} not in the retrieved set");
     Console.WriteLine("!! the answer was a refusal with a citation attached; dropping the citation, no retry needed\n");
     answer = refusal;
