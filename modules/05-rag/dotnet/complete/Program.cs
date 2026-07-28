@@ -10,12 +10,14 @@ using OllamaSharp;
 //   dotnet run                                    the Sperry Chalet question, grounded
 //   dotnet run -- "Is the Avalanche Lake Trail open right now?"
 //   dotnet run -- --no-context                    step 1: the confident wrong answer
-//   dotnet run -- --alpha 1.0                     pure cosine, the fragile "before" ranking
+//   dotnet run -- --alpha 1.0                     pure cosine, the wrong-park neighbors
 //   dotnet run -- --retrieval-only                print the score table and stop
 //   dotnet run -- --top-k 8 "your question"       vary retrieval depth
 //
 // Retrieval is hybrid: normalized cosine similarity blended with a BM25-lite
 // lexical score, so a distinctive proper noun like "Sperry" counts for something.
+// Chunks are one numbered subsection each wherever a section ran long enough to
+// hold a rule and the exception that overrides it; see ../../lab/expected-output.md.
 // Every generated answer's [chunk-id] citations are validated against the chunks
 // that were actually retrieved.
 //
@@ -124,7 +126,7 @@ foreach (var terms in tokenized.Values)
 const double K1 = 1.2, B = 0.3;
 var n = chunks.Count;
 var queryTerms = Tokenize(question).Distinct().ToList();
-// IDF: a term in 1 of 241 chunks is worth far more than one in 200 of them.
+// IDF: a term in 1 of 250 chunks is worth far more than one in 200 of them.
 var idf = queryTerms.ToDictionary(
     t => t,
     t => Math.Log(1 + (n - docFreq.GetValueOrDefault(t) + 0.5) / (docFreq.GetValueOrDefault(t) + 0.5)));

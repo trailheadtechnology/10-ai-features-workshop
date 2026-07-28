@@ -1,14 +1,12 @@
 # What passing looks like
 
 Wording varies run to run; the checks below are what has to be true. Every sample
-here came from an actual run against local Ollama: `nomic-embed-text` for the 241
+here came from an actual run against local Ollama: `nomic-embed-text` for the 250
 chunks in `chunks.jsonl`, `llama3.2` for generation. All scores are real.
 
 Retrieval in the finished demo is **hybrid**: normalized cosine similarity blended
 with a BM25-lite lexical score over the chunk text, weighted by `--alpha` (default
-0.6). `--alpha 1.0` turns the lexical half off and gives you the pure-cosine
-numbers this file used to report. Both sets are below, because the difference is
-the lesson.
+0.6). `--alpha 1.0` turns the lexical half off. Both sets are below.
 
 ## Step 0: the Sperry question with no context (the failure you're supposed to get)
 
@@ -31,157 +29,166 @@ finds it. Note that the answer text changes every run while the confidence does 
 
 ## Step 1a: pure cosine retrieval, top 3 (`--alpha 1.0`)
 
-This is module 04's search, verbatim. Run it first so the room sees the problem.
+This is module 04's search, verbatim.
 
 **Q1. "Can I have a campfire at Sperry Chalet in September?"**
 
 | rank | chunk_id | cosine |
 |---|---|---|
-| 1 | `glacier-backcountry-camping-guide:04` | 0.6933 |
-| 2 | `acadia-campfire-and-campground-regulations:07` | 0.6929 |
-| 3 | `yosemite-campfire-regulations:03` | 0.6851 |
+| 1 | `glacier-backcountry-camping-guide:04.2` | 0.7422 |
+| 2 | `glacier-frontcountry-campground-regulations:04.1-2` | 0.6913 |
+| 3 | `yosemite-campfire-regulations:03` | 0.6812 |
 
-The right chunk ranks first by **0.0004** of raw cosine. Ranks 2 and 3 are campfire
-rules from the wrong parks. Five of the 25 documents are about campfires, and the
-embedder is matching "campfire regulations," not "Sperry." That margin is a coin
-flip, and Step 1c shows a rephrasing that loses it.
+The right chunk ranks first by 0.0509 of raw cosine. Ranks 2 and 3 are the frontcountry
+campfire-season rule from the same park and a campfire rule from Yosemite, both of which
+say fires **are** permitted under conditions. That is the shape of this question's
+danger: the near-misses are not irrelevant, they are relevant and wrong.
 
 **Q2. "What is the maximum group size on a Glacier backcountry permit?"**
 
 | rank | chunk_id | cosine |
 |---|---|---|
-| 1 | `glacier-backcountry-permit-regulations:04` | 0.8457 |
-| 2 | `glacier-backcountry-permit-regulations:05` | 0.7802 |
-| 3 | `glacier-backcountry-permit-regulations:01` | 0.7769 |
+| 1 | `glacier-backcountry-permit-regulations:04` | 0.8412 |
+| 2 | `glacier-backcountry-permit-regulations:05` | 0.7786 |
+| 3 | `glacier-backcountry-permit-regulations:03` | 0.7774 |
 
-Clean. 0.85 with a wide gap to second place, all three hits from the correct document.
+Clean. 0.84 with a wide gap to second place, all three hits from the correct document.
 This is what retrieval looks like when the question's vocabulary matches the source text.
 
 **Q3. "Is the Avalanche Lake Trail open right now?"**
 
 | rank | chunk_id | cosine |
 |---|---|---|
-| 1 | `glacier-visitor-faq:02` | 0.6996 |
-| 2 | `glacier-seasonal-closures-2026:04` | 0.6906 |
-| 3 | `glacier-seasonal-closures-2026:07` | 0.6896 |
+| 1 | `glacier-seasonal-closures-2026:04.1` | 0.7114 |
+| 2 | `glacier-seasonal-closures-2026:03` | 0.7078 |
+| 3 | `glacier-seasonal-closures-2026:08` | 0.6850 |
 
-The FAQ answer beats the authoritative closure notice. Both say the trail is closed,
-so the answer survives, but the citation points at the FAQ rather than the regulation.
+Rank 1 is the closure notice itself, by 0.0036 over the road-status section of the same
+document. Note what changed here: this used to be won by `glacier-visitor-faq:02`, the
+plain-language FAQ. Splitting the 223-word closures section into its numbered
+subsections gave the authoritative notice a chunk of its own, and it now outranks the FAQ
+paraphrase of itself.
 
 **Q4. "Are there EV charging stations in Glacier National Park?" (unanswerable)**
 
 | rank | chunk_id | cosine |
 |---|---|---|
-| 1 | `glacier-going-to-the-sun-road-guide:07` | 0.6991 |
-| 2 | `glacier-backcountry-permit-regulations:07` | 0.6701 |
-| 3 | `glacier-frontcountry-campground-regulations:06` | 0.6663 |
+| 1 | `glacier-going-to-the-sun-road-guide:07` | 0.6933 |
+| 2 | `glacier-going-to-the-sun-road-guide:03` | 0.6637 |
+| 3 | `glacier-going-to-the-sun-road-guide:06` | 0.6615 |
 
-Retrieval never returns nothing. It returns the three least-bad chunks at scores
-indistinguishable from Q1's winning chunk, which is exactly why a similarity threshold
-is a bad refusal mechanism and the prompt has to carry the refusal.
+Retrieval never returns nothing. It returns the three least-bad chunks at scores in the
+same range as Q1's winning chunk, which is exactly why a similarity threshold is a bad
+refusal mechanism and the prompt has to carry the refusal.
 
 ## Step 1b: hybrid retrieval, top 3 (default, `--alpha 0.6`)
 
 `combined = 0.60 * semantic + 0.40 * lexical`, where both signals are rescaled to
-0..1 across all 241 chunks for this question. The tool prints all three numbers so
+0..1 across all 250 chunks for this question. The tool prints all three numbers so
 you can point at the reason a chunk won.
 
 **Q1. "Can I have a campfire at Sperry Chalet in September?"**
 
-Query terms by IDF: `sperry` (3.35, in 8 chunks), `chalet` (3.24, 9), `september`
-(2.47, 20), `campfire` (2.01, 32).
+Query terms by IDF: `sperry` (3.17, in 10 chunks), `chalet` (3.08, 11), `september`
+(2.46, 21), `campfire` (1.75, 43).
 
 | rank | combined | semantic (cos) | lexical (bm25) | chunk_id |
 |---|---|---|---|---|
-| 1 | **0.9674** | 1.000 (0.6933) | 0.919 (8.77) | `glacier-backcountry-camping-guide:04` |
-| 2 | 0.8230 | 0.969 (0.6851) | 0.604 (5.77) | `yosemite-campfire-regulations:03` |
-| 3 | 0.8006 | 0.822 (0.6465) | 0.768 (7.34) | `glacier-seasonal-closures-2026:06` |
+| 1 | **0.9700** | 1.000 (0.7422) | 0.925 (8.47) | `glacier-backcountry-camping-guide:04.2` |
+| 2 | 0.7379 | 0.837 (0.6913) | 0.589 (5.40) | `glacier-frontcountry-campground-regulations:04.1-2` |
+| 3 | 0.7210 | 0.805 (0.6812) | 0.596 (5.46) | `yosemite-campfire-regulations:03` |
 
-**Margin over rank 2: 0.1444, up from 0.0014.** Roughly a hundredfold. Acadia falls
-out of the top 3 entirely, and the chunk that replaces it at rank 3 is a Glacier
-document that names Sperry Chalet by site code. Rank 3 got there on the lexical
-signal: at 0.822 normalized cosine it does not appear in the pure-cosine top 8 at all.
+**Margin over rank 2: 0.2321, up from 0.1630 on the semantic signal alone.** The top 3
+is the same set either way, which is itself worth saying on stage: once the chunks are
+the right size, this question no longer needs hybrid to get rank 1 right. What hybrid
+still buys you is visible at `--top-k 8` (bottom of this file), where pure cosine fills
+the rest of the context with Acadia and Yosemite and hybrid fills it with Glacier.
 
 **Q2. "What is the maximum group size on a Glacier backcountry permit?"**
 
 | rank | combined | semantic (cos) | lexical (bm25) | chunk_id |
 |---|---|---|---|---|
-| 1 | **1.0000** | 1.000 (0.8457) | 1.000 (15.34) | `glacier-backcountry-permit-regulations:04` |
-| 2 | 0.8494 | 0.788 (0.7671) | 0.942 (14.46) | `glacier-backcountry-camping-guide:03` |
-| 3 | 0.7482 | 0.673 (0.7248) | 0.860 (13.20) | `great-smoky-mountains-backcountry-guide:03` |
+| 1 | **1.0000** | 1.000 (0.8412) | 1.000 (14.82) | `glacier-backcountry-permit-regulations:04` |
+| 2 | 0.8150 | 0.762 (0.7574) | 0.894 (13.26) | `glacier-backcountry-camping-guide:03` |
+| 3 | 0.7863 | 0.819 (0.7774) | 0.737 (10.93) | `glacier-backcountry-permit-regulations:03` |
 
-Rank 1 is unchanged and now wins on both signals at once. Ranks 2 and 3 changed, but
-the answer never depended on them.
+Rank 1 wins on both signals at once, margin 0.1850. Section 4 of the permit regulations
+is 110 words, under the split threshold, so it stays whole and the chunk_id has no
+subsection number on it.
 
 **Q3. "Is the Avalanche Lake Trail open right now?"**
 
 | rank | combined | semantic (cos) | lexical (bm25) | chunk_id |
 |---|---|---|---|---|
-| 1 | **1.0000** | 1.000 (0.6996) | 1.000 (11.31) | `glacier-visitor-faq:02` |
-| 2 | 0.9418 | 0.967 (0.6906) | 0.904 (10.22) | `glacier-seasonal-closures-2026:04` |
-| 3 | 0.9356 | 0.924 (0.6788) | 0.952 (10.77) | `glacier-seasonal-closures-2026:06` |
+| 1 | **0.9749** | 1.000 (0.7114) | 0.937 (9.57) | `glacier-seasonal-closures-2026:04.1` |
+| 2 | 0.9647 | 0.987 (0.7078) | 0.931 (9.51) | `glacier-seasonal-closures-2026:03` |
+| 3 | 0.9422 | 0.904 (0.6846) | 1.000 (10.22) | `glacier-visitor-faq:02` |
 
-Same winner, margin 0.0328 to 0.0582. Note what hybrid did **not** fix: the FAQ still
-outranks the authoritative closure notice, because the FAQ genuinely uses more of the
-question's words. If your product needs the regulation cited rather than the FAQ, the
-fix is source-level weighting, not a lexical signal.
+Margin 0.0101, the tightest of the four, but all three chunks are from Glacier and two
+of the three say the trail is closed. Rank 2 earns its place honestly: the road-status
+section carries the forward-overlap line `(continues in 4.1) Avalanche Lake Trail: CLOSED
+effective June 20, 2026, until further notice.` This file used to record that hybrid did
+**not** fix the FAQ outranking the regulation. Chunking did.
 
 **Q4. "Are there EV charging stations in Glacier National Park?" (unanswerable)**
 
 | rank | combined | semantic (cos) | lexical (bm25) | chunk_id |
 |---|---|---|---|---|
-| 1 | **0.8026** | 1.000 (0.6991) | 0.506 (4.36) | `glacier-going-to-the-sun-road-guide:07` |
-| 2 | 0.7691 | 0.615 (0.6027) | 1.000 (8.60) | `glacier-bear-safety-advisory:03` |
-| 3 | 0.7145 | 0.788 (0.6460) | 0.604 (5.20) | `glacier-backcountry-permit-regulations:03` |
+| 1 | **0.7876** | 1.000 (0.6933) | 0.469 (3.96) | `glacier-going-to-the-sun-road-guide:07` |
+| 2 | 0.7424 | 0.571 (0.5996) | 1.000 (8.44) | `glacier-bear-safety-advisory:03` |
+| 3 | 0.6838 | 0.764 (0.6417) | 0.564 (4.76) | `glacier-backcountry-permit-regulations:03` |
 
-Rank 1 is unchanged. Rank 2 is the funniest result in the module: "charging" appears
-in exactly one chunk of the whole corpus, and it is the bear advisory telling you what
-to do when a grizzly charges. IDF loves a rare word and has no idea what it means.
-This is the honest cost of the lexical half, and it is why alpha is 0.6 and not 0.2.
-The refusal holds anyway, which is the point: the prompt carries the refusal, not the
-retrieval scores.
+Rank 2 is the funniest result in the module: "charging" appears in exactly one chunk of
+the whole corpus, and it is the bear advisory telling you what to do when a grizzly
+charges. IDF loves a rare word and has no idea what it means. This is the honest cost of
+the lexical half, and it is why alpha is 0.6 and not 0.2. The refusal holds anyway, which
+is the point: the prompt carries the refusal, not the retrieval scores.
 
-## Step 1c: the rephrasing that used to break it
+## Step 1c: the rephrasings
 
 Same question, four ways a visitor might type it. The number is the rank of
-`glacier-backcountry-camping-guide:04`, the only chunk that actually answers it.
+`glacier-backcountry-camping-guide:04.2`, the only chunk that actually answers it.
 
 | question | rank, `--alpha 1.0` | rank, `--alpha 0.6` |
 |---|---|---|
-| "Can I have a campfire at Sperry Chalet in September?" | 1 (by 0.0014) | 1 (by 0.1444) |
-| "Are campfires allowed at Sperry Chalet in the fall?" | 1 (by 0.0189) | 1 (by 0.0977) |
-| "Can I build a fire at the Sperry Chalet campsites in September?" | 1 (by 0.0419) | 1 (by 0.1606) |
-| **"What are the campfire rules at Sperry Chalet?"** | **7** | **1 (by 0.0494)** |
+| "Can I have a campfire at Sperry Chalet in September?" | 1 (by 0.1630) | 1 (by 0.2321) |
+| "Are campfires allowed at Sperry Chalet in the fall?" | 1 (by 0.1375) | 1 (by 0.1595) |
+| "Can I build a fire at the Sperry Chalet campsites in September?" | 1 (by 0.1779) | 1 (by 0.2865) |
+| "What are the campfire rules at Sperry Chalet?" | 1 (by 0.0345) | 1 (by 0.0772) |
 
-Row four is the one to run on stage. Drop the month and the verb, and pure cosine
-puts `acadia-campfire-and-campground-regulations:04` first, four Yosemite sections
-after it, and the correct chunk at rank 7, outside any sane top-k. The question still
-contains the word "Sperry." The embedder does not care. Hybrid puts it back at rank 1.
+**Read this table next to the one it replaced.** On the old section-level chunks, row
+four put `acadia-campfire-and-campground-regulations:04` first, four Yosemite sections
+after it, and the correct chunk at rank **7** under pure cosine, and hybrid scoring was
+what rescued it. That demo is gone, and the reason is worth more than the demo was:
+Section 4 of the Glacier guide used to be 256 words of which only one sentence was about
+Sperry, so "Sperry" was 1/256th of the vector. The same sentence now sits in a 130-word
+chunk, and pure cosine finds it from every phrasing. Chunk size moved this question
+further than the scoring function did.
+
+Row four is still the thinnest margin of the four and still the one to run on stage;
+hybrid roughly doubles it.
 
 ## Step 2: the grounded answers
 
-Seventy-two runs at default settings: 20 each on Q1, Q3, and Q4, 12 on Q2.
+Seventy-two runs at default settings: 20 each on Q1, Q3, and Q4, 12 on Q2. (Q3 was run
+60 times, for reasons in the caveats.)
 
-**Q1** (15/20 correct):
+**Q1** (20/20 correct):
 
-> [glacier-backcountry-camping-guide:04]
->
-> According to Section 4.2 of the Glacier Backcountry Camping Guide, wood fires are
-> prohibited year-round at all campsites in the Sperry Chalet area (site code SPE),
-> regardless of season or posted fire danger.
+> [glacier-backcountry-camping-guide:04.2] According to section 4.2 of the Glacier
+> Backcountry Camping Guide, wood fires are prohibited year-round at all campsites in
+> the Sperry Chalet area (site code SPE), regardless of season or posted fire danger;
+> only pressurized-gas stoves are permitted for cooking at these sites. This prohibition
+> applies in September and during the shoulder seasons, and is not lifted when fire
+> danger is Low.
 
 **Check:** correct answer (no, and not because of September), a real chunk_id in
-brackets, and no Acadia or Yosemite content bleeding in. One run cited two chunks as
-`[glacier-backcountry-camping-guide:04, glacier-seasonal-closures-2026:06]`, a
-comma-separated list inside one pair of brackets. Both ids are real and both were
-retrieved, so it passes; the validator splits on commas for exactly this reason.
-
-Five of the twenty went wrong, and they go wrong the same way every time: the model reads
-Section 4.1's conditional "permitted only when the posted fire danger rating is below Very
-High", stops before 4.2's absolute year-round ban, and answers yes. This is the same
-failure the `--top-k 8` caveat below describes, and it is the reason Q1 rather than Q3 is
-the question to watch when you change the prompt. It is unchanged by the date fix: the
-build before it scored 14 of 16 on the same check.
+brackets, and no Yosemite or frontcountry content bleeding in. Every one of the twenty
+states the year-round prohibition and none of them says fires are permitted when
+conditions allow. Five of the twenty open with the word "Yes" before going on to say
+fires are prohibited, usually as "Yes, you can have a pressurized-gas stove ... but wood
+fires are prohibited year-round." Substantively right, awkward to read, and a good
+reminder that "correct" and "well-worded" are separate checks.
 
 **Q2** (12/12 correct):
 
@@ -190,30 +197,127 @@ build before it scored 14 of 16 on the same check.
 
 **Check:** eight, cited. Format varies; the local model likes putting the citation first.
 
-**Q3** (19/20 correct; it used to be roughly half, see "Telling the model what day it is"):
+**Q3** (55/60 correct, 5/60 refused):
 
-> [glacier-visitor-faq:02] No, the Avalanche Lake Trail is closed effective June 20, 2026,
-> until further notice.
+> [glacier-seasonal-closures-2026:04.1] No, the Avalanche Lake Trail is currently CLOSED
+> effective June 20, 2026, until further notice due to the washed-out footbridge over
+> Avalanche Creek.
 
-**Check:** closed, with a date and a citation.
+**Check:** closed, with a date and a citation. Roughly half the runs cite the closure
+notice, roughly half cite `glacier-visitor-faq:02`, and a few cite both.
 
-**Q4, the refusal** (20/20 refused, 16 of them word for word):
+**Q4, the refusal** (19/20 refused, 0/20 asserted anything about EV charging):
 
 > The provided documents don't say.
 
-**Check:** no helpful speculation about charging infrastructure. Chunks about shuttle
-parking, permit fees, and what to do when a bear charges were sitting right there in the
-context, and the model declined to build an answer out of adjacent material every single
-time. Twelve of the twenty runs appended a fabricated citation to the refusal; see the
-next section.
+**Check:** no helpful speculation about charging infrastructure. Chunks about road
+services, permit fees, and what to do when a bear charges were sitting right there in the
+context, and not one run built an answer out of adjacent material. Fourteen of the twenty
+used the exact sentence somewhere in the answer; five used it alone with nothing else
+attached. Five more declined in wording like "There is no information available in the
+provided documents about electric vehicle (EV) charging stations within Glacier National
+Park," which is substantively the same refusal but no longer a string anything downstream
+can match on. The twentieth run answered with a bare `[glacier-bear-safety-advisory:03]`
+and no sentence at all, which is not a refusal, not an answer, and not something any
+check in this demo catches. Worth showing if it comes up.
 
-Four of the twenty declined without using the exact sentence, in wording like "There is
-no information about EV charging stations in the provided documents." Substantively that
-is the same refusal, and none of the four invented a charging station. But it is no longer
-a string anything downstream can match on, which is the difference between a refusal your
-product can route on and a refusal a human has to read. All four came out of the citation
-retry, which is the one code path that hands a finished refusal back to the model and asks
-it to write the answer again.
+## Chunking
+
+This is the beat that was missing from the module, and it is the most expensive mistake
+in it.
+
+**The bug.** The first `chunks.jsonl` split every document at its numbered section
+headings: one chunk per `## 4. Fires and Stoves`, 241 chunks in total. That is a
+defensible default and it is what most people write first. Section 4 of the Glacier
+backcountry guide is 256 words and it contains this, in this order:
+
+> 4.1 Where campfires are authorized, they are permitted only in Park-installed metal
+> fire rings [...] and only when the posted fire danger rating is below Very High.
+>
+> 4.2 [...] wood fires are prohibited year-round at all campsites in the Sperry Chalet
+> area (site code SPE), regardless of season or posted fire danger [...]
+
+A conditional rule, then the absolute exception that overrides it. Retrieval put that
+chunk at rank 1 on every phrasing of the question, so by every retrieval metric the
+system worked. `llama3.2` read 4.1, stopped, and told the visitor a campfire was fine as
+long as fire danger was below Very High.
+
+**Measured, 20 runs each, before and after:**
+
+| question | before (241 section chunks) | after (250 chunks) |
+|---|---|---|
+| **Q1, Sperry campfire, correct** | **15/20** | **20/20** |
+| Q1, wrong answer ("yes, if fire danger allows") | 4/20 | **0/20** |
+| Q1, refused | 1/20 | 0/20 |
+| Q2, group size, correct | 11/12 | 12/12 |
+| Q3, trail closure, refused | 1/60 | 5/60 |
+| Q4, EV charging, refused | 18/20 | 19/20 |
+| Q4, asserted something about EV charging | 2/20 | **0/20** |
+| Q4, refusal string used verbatim and alone | 12/20 | 5/20 |
+
+The four wrong Q1 answers all failed the same way. Two read 4.1 and stopped:
+
+> According to the backcountry camping guide, campfires are permitted at Sperry Chalet
+> area (site code SPE) when the posted fire danger rating is below Very High.
+
+Two more borrowed a season from a different park's chunk in the same context:
+
+> Since the Sperry Chalet area campsites opened for the season on July 1, and it's
+> currently September, which falls outside of the restricted period (May 1 through
+> September 30), you should be able to have a campfire at Sperry Chalet in September.
+
+A visitor who acts on either of those lights a fire in a place where fires are banned
+year-round. This module opens by saying a confidently wrong answer about fire regulations
+is worse than no answer at all, and this was the module doing it on its own flagship
+question, once every five runs.
+
+**The fix, and why this one.** Four candidates were on the table.
+
+- **Parent-section chunking, with a size budget.** Chosen. A section under 200 words is
+  one idea and stays whole. Over that, it splits at the subsection boundaries the
+  document already provides, and consecutive subsections are packed together until each
+  chunk clears a 50-word floor. Five sections in the 25-document corpus were long enough
+  to split, which is why the chunk count moved 241 to 250 rather than to 481. Section 4
+  becomes `:04.1`, `:04.2`, and `:04.3-5`, and the Sperry prohibition is now a chunk that
+  says one thing.
+- **Contextual prefixing.** Adopted alongside it, not instead of it. Every chunk already
+  carried its document title; it now carries its section heading too, so a retrieved
+  `:04.2` still announces that it is Section 4, Fires and Stoves, of the Glacier
+  backcountry guide. On its own this fixes nothing here: the model's problem was not that
+  it did not know where the text came from.
+- **Chunk overlap.** Adopted in one direction only. Every chunk ends with the opening
+  sentence of whatever comes next in the document, marked `(continues in 4.2)`. In a
+  regulation the exception follows the rule it modifies, so carrying the *next* unit's
+  first sentence forward means a permissive rule can never be retrieved without a pointer
+  to what qualifies it, while the prohibition is never preceded by someone else's
+  permission. Symmetric overlap would have put 4.1's "fires permitted" language back at
+  the top of 4.2's chunk, which is the bug.
+- **Retrieve-then-expand**, pulling sibling subsections into the context after retrieval.
+  Rejected. Expanding `:04.2` back out to its siblings reassembles the 256-word section
+  that caused the failure. It is the right tool when a chunk is *missing* context; it is
+  the wrong tool when a chunk contains context that contradicts it.
+
+**Two honest costs.**
+
+Full subsection splitting, with no size budget at all, was tried first: 481 chunks. It
+took Q1 to 20/20 and Q3 to 0 refusals in 20, and it broke Q4. `glacier-going-to-the-sun-road-guide:07.2`
+alone is nineteen words, "Fuel is not available anywhere within the Park. The nearest
+stations are in West Glacier and St. Mary," and a nineteen-word chunk at rank 1 reads
+like an answer even when it is not. Q4's refusals fell from 18/20 to 15/20,
+with runs like "According to the park's guide, fuel (including electric vehicle charging)
+is not available anywhere within the Park." Chunks that are too small invent confidence
+the same way chunks that are too large hide the exception. The 200-word budget keeps
+short list-like sections whole and is why that regression is not in the shipped numbers.
+
+Q4's word-for-word refusal rate fell from 12/20 to 6/20 even in the shipped build, and
+the mechanism is a good one to say out loud. In the old build the model attached a
+fabricated chunk_id to its refusal in 12 of 20 runs, the citation check caught it, and
+the code path that strips a citation off a refusal replaced the whole answer with the
+exact contract string. Better chunks mean fewer fabricated citations, which means that
+repair path fires less often, which means the raw model wording survives more often.
+The refusal itself got *more* reliable (18/20 to 19/20, with the two fabricated "no EV
+charging available" answers gone); the string got less uniform. If
+your product depends on an exact string, get it from code, not from the model.
 
 ## Citation validation
 
@@ -236,12 +340,20 @@ What it caught across the runs above:
 
 | question | invalid citation emitted | what happened |
 |---|---|---|
-| Q4, 12 of 20 runs | `glacier-bear-safety-advisory:02` | refusal detected in code, citation dropped, no retry |
-| Q1, 5 of 20 runs | `glacier-backcountry-camping-guide:04.2` and `:04:04` | retry, then `[invalid-citation-removed]` where it stuck |
+| Q4, 8 of 20 runs | `glacier-bear-safety-advisory:02` | refusal detected in code, citation dropped, no retry |
+| Q4, 1 of 20 runs | `glacier-visitor-faq:00` | a real document, a section nobody retrieved; retry fixed it |
+| Q3, 2 of 60 runs | `chunk_id: glacier-seasonal-closures-2026:04.1` | the word `chunk_id:` pasted inside the brackets; retry fixed it |
+| Q1, 0 of 20 runs | none | see below |
 
-All of them are the same failure mode: a real document name with a section number the
-model made up. `glacier-bear-safety-advisory:03` was in the context; `:02` was not.
-Nothing in the answer text tells you that. Only the check does.
+`glacier-bear-safety-advisory:03` was in the context; `:02` was not. Nothing in the
+answer text tells you that. Only the check does.
+
+Note one thing the chunking change took away. On the old chunks, Q1's most common invalid
+citation was `glacier-backcountry-camping-guide:04.2`: the model fusing the chunk_id
+`:04` with the section number `4.2` it had just read. That id is now real, and the model
+writing it is now correct. The failure did not get fixed, it got legislated out of
+existence, which is worth a sentence on stage: half of "the model can't copy an
+identifier" was really "the identifier didn't match the thing the model was reading."
 
 **Why the refusal case skips the retry.** `The provided documents don't say.` plus a
 fabricated chunk_id is the single most common invalid citation in the module, and it is
@@ -250,9 +362,7 @@ by definition has no sources. Sending it back anyway was measurably harmful. Tol
 "rewrite the answer using only those ids", `llama3.2` rewrites the refusal along with the
 citation and returns "There is no information about EV charging stations in the provided
 context." Still a refusal, no longer the contracted string. Deleting a citation is a
-string operation, so the demo does it in code. Q4's word-for-word refusal rate went from
-12 of 16 to 16 of 20 on that change alone, and every run that reached the model at all
-still refused.
+string operation, so the demo does it in code.
 
 The obvious alternative, adding "if the context did not cover the question, answer exactly
 `The provided documents don't say.`" to the retry prompt, was tried and rejected. It took
@@ -260,15 +370,6 @@ Q4 to 20 of 20 word for word and simultaneously made Q1 refuse in 6 of 20 runs: 
 retry prompt mentions the refusal, an answerable question that happens to trip the citation
 check starts taking the exit. Offering a model an escape hatch in a repair prompt is not
 free.
-
-At `--top-k 8` on Q1, one run in five emitted
-`[glacier-frontcountry-campground-regulations:02]`, again a real document with an
-invented section. The retry produced a three-sentence answer citing three real
-retrieved chunks. Earlier top-k 8 runs against pure-cosine retrieval produced
-`[glacier-backcountry-campground-regulations:04]`, a chunk_id welded together out of
-`glacier-backcountry-camping-guide` and `glacier-frontcountry-campground-regulations`,
-pointing at a document that does not exist in any form. That is the whole argument for
-validating in code instead of trusting the model to copy a string.
 
 **Known gap:** the validator only recognizes square brackets. One run wrote
 `(glacier-visitor-faq:02)` in parentheses and the check counted zero citations rather
@@ -279,9 +380,8 @@ than flagging anything. Worth mentioning if someone asks how airtight this is.
 Q3 used to be the most embarrassing thing in this module. "Is the Avalanche Lake Trail
 open right now?" is a question the corpus answers twice over, retrieval puts the right
 chunks at rank 1 and 2, and the model refused anyway. Measured on the build before this
-fix: **10 refusals in 18 runs**, not the "about one in four" this file used to claim from
-a three-run sample. On stage that is a coin flip on a question the lab presents as
-answerable.
+fix: **10 refusals in 18 runs**. On stage that is a coin flip on a question the lab
+presents as answerable.
 
 Retrieval was never the problem. The prompt was, and the specific problem was the calendar.
 
@@ -321,15 +421,6 @@ decision is actually made:
   and a notice that is in effect "until further notice" is still in effect right now.
 ```
 
-Measured over 20 runs each on the finished demo:
-
-| question | before | after |
-|---|---|---|
-| Q3, "open right now" | 10/18 refused | **1/20 refused** |
-| Q4, EV charging (must refuse) | 12/16 word for word, 16/16 refused | 16/20 word for word, 20/20 refused |
-| Q1, Sperry campfire | 0/16 refused, 14/16 correct | 0/20 refused, 15/20 correct |
-| Q2, group size | 0/8 refused, 8/8 correct | 0/12 refused, 12/12 correct |
-
 `today` is a constant in `Program.cs` with a comment saying so. Production passes
 `DateTime.Today`; the demo pins a date so the outputs recorded in this file stay
 reproducible.
@@ -341,20 +432,26 @@ on-call rotations. If your RAG system does not tell the model what "now" means, 
 either refuse questions it can answer or answer them as of an unknown date, and you will
 not be able to tell which from the output.
 
-## Caveats from twenty real runs
+## Caveats from the runs above
 
-- **Q3 still refuses occasionally.** One run in twenty, down from better than half. If
-  your lab refuses on a question you know is covered, run it twice before you go debugging
+- **Q3 refusals went up, slightly.** 1 in 60 before the chunking change, 5 in 60 after.
+  At that sample size the difference is not statistically distinguishable from noise, but
+  it is a climb and it is reported as one. All five refusals cite `glacier-visitor-faq:02`
+  and then decline, with the closure notice sitting at rank 1 in the same context. If your
+  lab refuses on a question you know is covered, run it twice before you go debugging
   retrieval.
-- **Q4's refusal survives in substance, not always word for word.** Twenty of twenty runs
-  declined; sixteen used the exact sentence. The gap is the citation retry, documented
-  above. Do not tighten this by mentioning the refusal in the retry prompt; that trade was
-  measured and it costs Q1 far more than it gains Q4.
-- **Higher top-k makes Q1 worse, not better.** At `--top-k 8` the context picks up
-  Glacier's frontcountry campground rules and Section 4.1's conditional "fires
-  permitted" language, and one run in five concluded that campfires **are** allowed at
-  Sperry in September. The correct chunk is still rank 1 with a 0.1444 margin. More
-  context is not more grounding.
+- **Q4's refusal survives in substance, more reliably than before, in wording less
+  reliably.** Twenty of twenty declined; six used the exact sentence alone. See the
+  chunking section for why those two numbers moved in opposite directions. Do not tighten
+  this by mentioning the refusal in the retry prompt; that trade was measured and it costs
+  Q1 far more than it gains Q4.
+- **Five of the twenty correct Q1 answers open with "Yes."** They then say fires are
+  prohibited. The check in this file is about the substance, not the first word, but it is
+  the kind of thing that would fail a human review and it is a fair question from the room.
+- **Higher top-k is no longer a trap on Q1, but do not assume that.** The `--top-k 8`
+  context still picks up two chunks that say campfires are permitted under conditions.
+  The rank-1 margin is 0.2321 and the answer held across the runs measured here, but more
+  context is still not more grounding.
 - **Scores are stable, answers are not.** Retrieval output is byte-identical run to
   run because the embeddings are cached. Everything downstream of generation varies.
 
@@ -364,28 +461,30 @@ not be able to tell which from the output.
 
 | rank | chunk_id |
 |---|---|
-| 1 | `glacier-backcountry-camping-guide:04` |
-| 2 | `acadia-campfire-and-campground-regulations:07` |
+| 1 | `glacier-backcountry-camping-guide:04.2` |
+| 2 | `glacier-frontcountry-campground-regulations:04.1-2` |
 | 3 | `yosemite-campfire-regulations:03` |
-| 4 | `glacier-frontcountry-campground-regulations:04` |
-| 5 | `acadia-campfire-and-campground-regulations:04` |
-| 6 | `yosemite-campfire-regulations:05` |
-| 7 | `yosemite-campfire-regulations:04` |
-| 8 | `yosemite-campfire-regulations:06` |
+| 4 | `acadia-campfire-and-campground-regulations:07` |
+| 5 | `yosemite-campfire-regulations:05` |
+| 6 | `acadia-campfire-and-campground-regulations:04.1` |
+| 7 | `glacier-frontcountry-campground-regulations:04.3-4` |
+| 8 | `acadia-campfire-and-campground-regulations:04.4-5` |
 
-Six of eight chunks are from the wrong park. Now `--alpha 0.6`:
+Five of eight chunks are from the wrong park. Now `--alpha 0.6`:
 
 | rank | chunk_id |
 |---|---|
-| 1 | `glacier-backcountry-camping-guide:04` |
-| 2 | `yosemite-campfire-regulations:03` |
-| 3 | `glacier-seasonal-closures-2026:06` |
-| 4 | `glacier-frontcountry-campground-regulations:04` |
+| 1 | `glacier-backcountry-camping-guide:04.2` |
+| 2 | `glacier-frontcountry-campground-regulations:04.1-2` |
+| 3 | `yosemite-campfire-regulations:03` |
+| 4 | `glacier-seasonal-closures-2026:06` |
 | 5 | `glacier-backcountry-camping-guide:02` |
-| 6 | `yosemite-visitor-faq:03` |
-| 7 | `glacier-visitor-faq:04` |
-| 8 | `glacier-bear-safety-advisory:06` |
+| 6 | `glacier-backcountry-camping-guide:01` |
+| 7 | `yosemite-visitor-faq:03` |
+| 8 | `glacier-backcountry-permit-regulations:01` |
 
-Acadia is gone, Yosemite drops from four chunks to two, and rank 8 is the bear
-advisory that mentions Sperry's no-wood-fire status in passing, which is a legitimate
-near-miss rather than a wrong-park one. Same corpus, same embedder, same question.
+Acadia is gone entirely, Yosemite drops from three chunks to two, and ranks 4 through 6
+are Glacier documents that name Sperry Chalet or its site code. Same corpus, same
+embedder, same question. The top 3 did not move, which is the point: with the right
+chunk size, hybrid scoring is no longer rescuing rank 1 on this question. It is cleaning
+up everything behind it, and everything behind it is what the model reads next.
