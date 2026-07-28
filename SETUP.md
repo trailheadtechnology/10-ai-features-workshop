@@ -14,7 +14,21 @@ ollama pull nomic-embed-text
 
 That's roughly 5GB of downloads total, which is exactly why we're asking you to do it on hotel or home wifi instead of the venue's.
 
-These three are the only models the workshop needs, and they are deliberately small: every lab runs on a laptop with 8GB of RAM, and nothing here needs a GPU. You will see a larger model (`qwen3:32b`) referenced once, in feature 05 (RAG), where it is used to answer "how much would a bigger model help?" Those results are written down so you never have to run it. Please do not pull it on the day. It is a 20GB download that wants about 24GB of memory, and a room full of people trying it at once is how the venue wifi dies.
+These three are the only models the workshop needs, and they are deliberately small: every lab runs on a laptop with 8GB of RAM, and nothing here needs a GPU.
+
+### Optional, and only if your machine is big
+
+Feature 05 (RAG) records what happens when you swap the 3B model for one ten times larger. The numbers are written up either way, so this is for people who would rather run the comparison than read it. If that's you, pull it now, while you're here and on good wifi:
+
+```bash
+ollama pull qwen3:32b
+```
+
+Check your hardware first, because this one is demanding: a **20GB download** (four times everything above combined), roughly **24GB of free memory** to run, and about **17 seconds per answer** against under one second for `llama3.2`. On a 16GB machine it will not load at all.
+
+Skipping it costs you nothing. The demo runs `llama3.2` regardless, and `dotnet run -- --model qwen3:32b` is how you'd switch if you did pull it.
+
+**Either way, please don't pull this at the venue.** Twenty gigabytes times a roomful of people is how the wifi dies for everyone, demos included.
 
 Heads up: we'll re-verify these model choices in the weeks before the event, since small-model quality moves fast. Check this file the week before the workshop in case a model name changed.
 
@@ -39,24 +53,6 @@ Three features (sentiment comparison, RAG generation, and the agent capstone) us
 ## 4. Optional: the .NET path
 
 The instructor demos in C#, and every feature ships `starter/` and `complete/` .NET projects if you want to follow along in the same stack. If that's you, install the current .NET SDK ([dot.net](https://dot.net); the repo pins the SDK in `global.json`) and confirm `dotnet --version` runs. If you'd rather work in Python, JavaScript, Java, Go, or anything else with an HTTP client, skip this entirely. The labs don't require .NET.
-
-## 5. Optional, and only on a big machine: a 32B model
-
-Feature 05 (RAG) records what happens when you swap the 3B model for something ten times larger. If you want to run that comparison yourself rather than read the numbers, pull it **before you travel**:
-
-```bash
-ollama pull qwen3:32b
-```
-
-Check your hardware first, because this one is genuinely demanding:
-
-- It is a **20GB download**, four times the rest of the workshop combined.
-- It wants roughly **24GB of free memory** to run. On a 16GB machine it will not load. On 32GB it works but makes you wait.
-- Answers take about **17 seconds** each against under one second for `llama3.2`.
-
-If any of that is a problem, skip it and lose nothing: the measured comparison is written up in `modules/M2-finding/F05-rag/lab/expected-output.md`, and the demo runs `llama3.2` either way. `F05-spec.md` explains how to switch, and `dotnet run -- --model qwen3:32b` does it without editing code.
-
-**Please do not pull this at the venue.** Twenty gigabytes times a roomful of people is how the wifi dies for everyone, including the demos.
 
 ## If you did none of this before arriving
 
