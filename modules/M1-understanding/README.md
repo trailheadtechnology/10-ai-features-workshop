@@ -6,9 +6,9 @@ Three features that all take unstructured text and give you back something a per
 
 | | Feature | What it does | Runs on |
 |---|---|---|---|
-| **Core** | [01 Summarization](01-summarization/) | Long trip report to a 3-bullet conditions briefing | Ollama `llama3.2` |
-| Challenge | [02 Extraction](02-extraction/) | Messy prose to validated structured JSON | Ollama `llama3.2` |
-| Challenge | [03 Sentiment](03-sentiment/) | Gear reviews labeled, small model against big | Ollama `phi3` + cloud |
+| **Core** | [01 Summarization](F01-summarization/) | Long trip report to a 3-bullet conditions briefing | Ollama `llama3.2` |
+| Challenge | [02 Extraction](F02-extraction/) | Messy prose to validated structured JSON | Ollama `llama3.2` |
+| Challenge | [03 Sentiment](F03-sentiment/) | Gear reviews labeled, small model against big | Ollama `phi3` + cloud |
 
 ## How the hands-on works
 

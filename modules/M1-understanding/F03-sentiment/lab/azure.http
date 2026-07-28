@@ -1,6 +1,6 @@
 # Lab 03: the same classify prompt against Azure OpenAI.
 # Replace ENDPOINT, DEPLOYMENT, and YOUR-KEY with the values from the card
-# handed out in the room (same as modules/00-setup-and-framing/lab/smoke-test.http).
+# handed out in the room (same as modules/F00-setup-and-framing/lab/smoke-test.http).
 # The prompt is byte-for-byte the one in ollama.http; only the endpoint changes.
 # That is the point of the exercise: same prompt, two providers, diff the labels.
 

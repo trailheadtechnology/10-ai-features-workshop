@@ -8,9 +8,9 @@ This is the module where the day stops being about prompts.
 
 | | Feature | What it does | Runs on |
 |---|---|---|---|
-| **Core** | [04 Semantic Search](04-semantic-search/) | Finds trails by meaning, not keywords | Ollama `nomic-embed-text` |
-| Challenge | [05 RAG](05-rag/) | Answers questions from park regulations, with citations | Local embeddings + generation |
-| Challenge | [06 Recommendations](06-recommendations/) | "You liked this trail, try these" | Ollama `nomic-embed-text` |
+| **Core** | [04 Semantic Search](F04-semantic-search/) | Finds trails by meaning, not keywords | Ollama `nomic-embed-text` |
+| Challenge | [05 RAG](F05-rag/) | Answers questions from park regulations, with citations | Local embeddings + generation |
+| Challenge | [06 Recommendations](F06-recommendations/) | "You liked this trail, try these" | Ollama `nomic-embed-text` |
 
 ## How the hands-on works
 

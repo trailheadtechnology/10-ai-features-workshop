@@ -6,7 +6,7 @@ One feature, double the time, and it uses everything from the rest of the day. A
 
 | | Feature | What it does | Runs on |
 |---|---|---|---|
-| **Core** | [10 Agentic Workflows](10-agentic-workflows/) | "Plan me a 3-day trip in Glacier" becomes real tool calls | Azure OpenAI (Ollama fallback) |
+| **Core** | [10 Agentic Workflows](F10-agentic-workflows/) | "Plan me a 3-day trip in Glacier" becomes real tool calls | Azure OpenAI (Ollama fallback) |
 
 Everyone attempts this one. There is no menu here.
 

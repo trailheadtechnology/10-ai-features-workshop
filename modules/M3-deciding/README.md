@@ -8,9 +8,9 @@ Worth saying out loud, because it reframes the whole day: the user of these thre
 
 | | Feature | What it does | Runs on |
 |---|---|---|---|
-| **Core** | [07 Classification & Routing](07-classification-routing/) | Sorts an inbox, never misses an emergency | Ollama `llama3.2` |
-| Challenge | [08 Anomaly Detection](08-anomaly-detection/) | Finds the washed-out bridge in 500 routine reports | Ollama embeddings + math |
-| Challenge | [09 Human-in-the-Loop](09-human-in-the-loop/) | AI drafts, a ranger approves, everything is logged | Whatever the draft needs |
+| **Core** | [07 Classification & Routing](F07-classification-routing/) | Sorts an inbox, never misses an emergency | Ollama `llama3.2` |
+| Challenge | [08 Anomaly Detection](F08-anomaly-detection/) | Finds the washed-out bridge in 500 routine reports | Ollama embeddings + math |
+| Challenge | [09 Human-in-the-Loop](F09-human-in-the-loop/) | AI drafts, a ranger approves, everything is logged | Whatever the draft needs |
 
 ## How the hands-on works
 

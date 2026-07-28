@@ -4,7 +4,7 @@
 
 | | Feature | What it does |
 |---|---|---|
-| **Core** | [00 Setup & Framing](00-setup-and-framing/) | Environment check, the day's thesis, a tour of the data |
+| **Core** | [00 Setup & Framing](F00-setup-and-framing/) | Environment check, the day's thesis, a tour of the data |
 
 Not a feature you build, but the half hour that decides whether the other four modules go well. Everyone runs the same three-request smoke test, broken setups surface while there is still slack to fix them, and the room starts Module 1 together.
 

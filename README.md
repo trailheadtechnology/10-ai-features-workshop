@@ -10,18 +10,18 @@ The organizing idea is problems, not features. Every feature opens with a user w
 
 | Time | Segment |
 |---|---|
-| 9:00-9:30 | **[Module 0: Opening](modules/0-opening/)** · environment check, the day's thesis, a tour of the data |
-| 9:30-11:00 | **[Module 1: Understanding](modules/1-understanding/)** · making sense of messy content |
-| | Core [01 Summarization](modules/1-understanding/01-summarization/) · [02 Extraction](modules/1-understanding/02-extraction/) · [03 Sentiment](modules/1-understanding/03-sentiment/) |
+| 9:00-9:30 | **[Module 0: Opening](modules/M0-opening/)** · environment check, the day's thesis, a tour of the data |
+| 9:30-11:00 | **[Module 1: Understanding](modules/M1-understanding/)** · making sense of messy content |
+| | Core [01 Summarization](modules/M1-understanding/F01-summarization/) · [02 Extraction](modules/M1-understanding/F02-extraction/) · [03 Sentiment](modules/M1-understanding/F03-sentiment/) |
 | 11:00-11:15 | Break |
-| 11:15-12:45 | **[Module 2: Finding](modules/2-finding/)** · surfacing the right thing |
-| | Core [04 Semantic Search](modules/2-finding/04-semantic-search/) · [05 RAG](modules/2-finding/05-rag/) · [06 Recommendations](modules/2-finding/06-recommendations/) |
+| 11:15-12:45 | **[Module 2: Finding](modules/M2-finding/)** · surfacing the right thing |
+| | Core [04 Semantic Search](modules/M2-finding/F04-semantic-search/) · [05 RAG](modules/M2-finding/F05-rag/) · [06 Recommendations](modules/M2-finding/F06-recommendations/) |
 | 12:45-13:45 | Lunch |
-| 13:45-15:15 | **[Module 3: Deciding](modules/3-deciding/)** · triage and judgment |
-| | Core [07 Classification & Routing](modules/3-deciding/07-classification-routing/) · [08 Anomaly Detection](modules/3-deciding/08-anomaly-detection/) · [09 Human-in-the-Loop](modules/3-deciding/09-human-in-the-loop/) |
+| 13:45-15:15 | **[Module 3: Deciding](modules/M3-deciding/)** · triage and judgment |
+| | Core [07 Classification & Routing](modules/M3-deciding/F07-classification-routing/) · [08 Anomaly Detection](modules/M3-deciding/F08-anomaly-detection/) · [09 Human-in-the-Loop](modules/M3-deciding/F09-human-in-the-loop/) |
 | 15:15-15:30 | Break |
-| 15:30-16:30 | **[Module 4: Doing](modules/4-doing/)** · the capstone |
-| | [10 Agentic Workflows](modules/4-doing/10-agentic-workflows/), everyone attempts it |
+| 15:30-16:30 | **[Module 4: Doing](modules/M4-doing/)** · the capstone |
+| | [10 Agentic Workflows](modules/M4-doing/F10-agentic-workflows/), everyone attempts it |
 | 16:30-17:00 | **Closing** · the [decision framework](docs/decision-framework.md), pitching AI features to leadership, and Q&A |
 
 **Ten features, five modules, and you are not expected to build all ten.** Each module presents three related features with live demos, then hands you roughly 45 minutes. One feature per module is marked **Core** and everyone does that lab; the rest are **Challenge** labs for anyone with time left, and every lab has a stretch goal beyond that. Finishing one lab properly is the intended outcome for most people. You will see all ten features demonstrated either way.
@@ -43,9 +43,9 @@ Before the workshop, do the pre-work in [`SETUP.md`](SETUP.md). It's mostly "ins
 │   └── slides/               # slide decks
 ├── data/                     # the shared Trailhead Guides corpus
 └── modules/
-    └── N-theme/              # a module: three related features, one hands-on period
+    └── MN-theme/             # a module: three related features, one hands-on period
         ├── README.md         # the menu: which feature is Core, what each lab costs
-        └── NN-feature/       # one AI feature
+        └── FNN-feature/      # one AI feature
             ├── README.md     # problem, concept, demo outline, lab spec, leadership beat
             ├── lab/          # language-agnostic lab assets (.http files, data, expected output)
             └── dotnet/       # starter/ and complete/ demo projects

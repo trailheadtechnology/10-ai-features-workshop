@@ -2,7 +2,7 @@
 # of ollama.http. Retrieval never moves; only the generation call changes.
 #
 # Replace ENDPOINT, DEPLOYMENT, and YOUR-KEY with the values from the card handed
-# out at the door (the same three values as modules/00-setup-and-framing/lab/smoke-test.http).
+# out at the door (the same three values as modules/F00-setup-and-framing/lab/smoke-test.http).
 
 ### 1. Grounded generation, cloud model, Sperry Chalet question
 POST https://ENDPOINT/openai/deployments/DEPLOYMENT/chat/completions?api-version=2024-10-21
