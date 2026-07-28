@@ -14,7 +14,7 @@ The word "most" is doing real work in that sentence, and this feature is honest 
 
 The pattern generalizes to any stream of routine text: support tickets, log messages, form submissions, review streams. Define normal from the data itself, and let distance flag what deserves human eyes. It also pairs naturally with feature 07: classification handles the categories you knew to define, and anomaly detection catches the things you didn't.
 
-## Demo outline (13 min, .NET)
+## Demo outline (about 12 min, .NET)
 
 1. Scroll the condition-report stream. Boring on purpose. Ask the room to find the problem; nobody can, and that's the situation the park is in.
 2. Embed one trail's reports with the feature 04 embedding code, average the vectors into a centroid, and put the idea on one slide: the center of normal.
@@ -23,7 +23,9 @@ The pattern generalizes to any stream of routine text: support tickets, log mess
 5. Now the alert rule, which is where the feature actually lives: distance beyond threshold, plus two or more flagged reports within a two-week window. One alert fires on this trail, three genuine washout reports in it, nothing false. Show it also catching the bear-activity spike on the other trail, where the signal is even cleaner because that trail's routine chatter is more uniform. Accuracy here is a property of your corpus, not your code.
 6. Count the model calls: embeddings only. Everything else was subtraction. Some AI features are mostly arithmetic wearing an AI badge.
 
-## Lab spec (13 min, any language)
+## Lab spec (Challenge lab, any language)
+
+*A Challenge lab. Do it if you finished [Module 3](../README.md)'s Core lab and want another, or skip it without guilt: you will have seen this feature demonstrated either way.*
 
 - **Goal:** flag the anomalous condition reports for one trail using centroid distance.
 - **Input:** `lab/` provides one trail's reports from `data/condition-reports.jsonl` (about 40, including a planted washout cluster) plus precomputed embeddings if you'd rather skip the embedding step.

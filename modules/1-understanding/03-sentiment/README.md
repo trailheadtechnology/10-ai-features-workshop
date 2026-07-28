@@ -14,7 +14,7 @@ Sentiment analysis is classification applied to text, and it's this workshop's v
 
 The comparison cuts both ways, though. Feed both models the corpus's hard cases (sarcasm like "Great bag, if you enjoy shoulder pain", mixed feelings, ratings that contradict the text) and accuracy drops for everyone. How far it drops for each model is the thing you measure. The takeaway isn't a verdict for either side. It's that this is a measurable engineering decision: run both on a labeled sample, count the disagreements, look at what the errors cost you, then choose. Most teams never run that experiment. You'll run it before lunch.
 
-## Demo outline (13 min, .NET)
+## Demo outline (about 12 min, .NET)
 
 1. Show the Cascade 65's reviews, and point at a 4-star review with furious text. Stars lie; text doesn't.
 2. Starter project: one classify method whose prompt returns exactly `positive | negative | mixed`. Because of Microsoft.Extensions.AI, the same code runs against both providers, and the swap is one line in DI registration. Say that out loud, since it's the provider-flexibility slide made real.
@@ -23,7 +23,9 @@ The comparison cuts both ways, though. Feed both models the corpus's hard cases 
 5. Now the hard set, sarcasm and mixed reviews. Run both and diff the labels on screen. Second payoff: both models drop several points, and the disagreements are where the interesting arguments live. Whether the big model actually earns its price on this slice is the measurement, not the assumption. Check `lab/expected-output.md` for what happened when this was built, and be ready for the room's answer to differ from yours.
 6. Close with the decision recipe: labeled sample, run both, count disagreements, price the errors. That recipe generalizes to every feature today.
 
-## Lab spec (13 min, any language)
+## Lab spec (Challenge lab, any language)
+
+*A Challenge lab. Do it if you finished [Module 1](../README.md)'s Core lab and want another, or skip it without guilt: you will have seen this feature demonstrated either way.*
 
 - **Goal:** classify gear reviews as `positive | negative | mixed` with two models, and find where they disagree.
 - **Input:** `lab/` provides about 20 reviews from `data/gear-reviews.jsonl`, split into an easy set and a hard set (sarcasm, contradictions), plus reference labels.

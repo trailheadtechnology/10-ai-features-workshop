@@ -12,7 +12,7 @@ Summarization is the simplest possible LLM feature: one chat-completion call wit
 
 The craft is all in the instruction. "Summarize this" produces a book report. Real products ask for a summary with a purpose: "In 3 bullets, tell a hiker planning a trip this week about current conditions, hazards, and crowding. Ignore gear talk." The second lesson is that summaries can be shaped to fit the UI slot that needs them: plain prose, bullets, a fixed template, or a single headline. A small local model handles all of this well, which is why this feature never touches the cloud.
 
-## Demo outline (13 min, .NET)
+## Demo outline (about 12 min, .NET)
 
 1. Open a raw trip report from `data/trip-reports/` on screen and scroll through it slowly, so the room feels the problem before seeing the fix.
 2. Starter project: `IChatClient` wired to Ollama via Microsoft.Extensions.AI. One method, one prompt: "Summarize this trip report."
@@ -22,7 +22,9 @@ The craft is all in the instruction. "Summarize this" produces a book report. Re
 6. Change the shape: same call, but output a one-line "trail status" headline for a card UI. Same feature, different product surface.
 7. Point at the Ollama endpoint in the code. This ran entirely on the laptop, with no API key and no data leaving the room.
 
-## Lab spec (13 min, any language)
+## Lab spec (Core lab, any language)
+
+*Everyone does this one. It is the Core lab for [Module 1](../README.md), and the hands-on period runs about 45 minutes, so there is room to do it properly rather than fast.*
 
 - **Goal:** turn a raw trip report into a 3-bullet "conditions briefing" for hikers.
 - **Input:** two trip reports provided in `lab/`, one with a buried hazard warning, drawn from `data/trip-reports/`.

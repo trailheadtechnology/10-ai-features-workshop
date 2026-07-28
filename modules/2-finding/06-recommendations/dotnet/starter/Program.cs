@@ -1,8 +1,6 @@
 using System.Text.Json;
 
-// Demo starting point: the "you might also like" box as it exists today,
-// which is to say, random picks. Nobody built the real thing because
-// everyone assumed recommendations require a data-science team.
+// Demo starting point: the "you might also like" box, picking trails at random.
 // Run: dotnet run [trail id or name]   (default: trail-0117, Avalanche Lake Trail)
 
 var trails = JsonSerializer.Deserialize<List<Trail>>(

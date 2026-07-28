@@ -1,10 +1,15 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-// Demo starting point: today's search, the one users complain about.
-// Naive keyword search over the trail slice: split the query into words,
-// count how many appear (as whole words) in each trail's name + description.
+// Demo starting point: keyword search over the trail slice. Split the query into
+// words and count how many appear, as whole words, in each trail's name and
+// description.
 // Run: dotnet run -- <query>          (defaults to the demo query)
+//
+// Matching on words alone has no access to meaning. A description saying the
+// trail avoids the steep section still matches "steep", and a trail whose text
+// reads "leashed dogs are welcome" never matches "dog-friendly". That gap is
+// what the complete project replaces with embeddings.
 
 var query = args.Length > 0
     ? string.Join(' ', args)

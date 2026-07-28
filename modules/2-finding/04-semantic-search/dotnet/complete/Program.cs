@@ -6,8 +6,8 @@ using OllamaSharp;
 // Finished demo, matching the outline in ../../README.md:
 //   dotnet run -- dog-friendly waterfall hike, not too steep
 //   dotnet run -- somewhere quiet to take my kids
-// Embeds all 30 trail descriptions once (cached to embeddings.json next to
-// the binary), embeds the query, ranks by cosine similarity, prints top 5.
+// Embeds every trail description once, embeds the query, ranks by cosine
+// similarity, prints the top 5.
 
 var query = args.Length > 0
     ? string.Join(' ', args)
@@ -20,8 +20,10 @@ var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingP
 var json = await File.ReadAllTextAsync("../../lab/trails-slice.json");
 var trails = JsonSerializer.Deserialize<List<Trail>>(json, jsonOptions)!;
 
-// Step 3 of the demo: embed the whole catalog. Once. It takes seconds,
-// so we cache the vectors next to the binary and never pay again.
+// Embedding the catalog takes seconds, so the vectors are cached next to the
+// binary. The cache is keyed by trail id and nothing else: if a description
+// changes, or the embedding model changes, delete embeddings.json. Otherwise
+// every later query is ranked against vectors for text that no longer exists.
 var cachePath = Path.Combine(AppContext.BaseDirectory, "embeddings.json");
 Dictionary<string, float[]> vectors;
 if (File.Exists(cachePath))
@@ -40,9 +42,19 @@ else
     Console.WriteLine($"Embedded {vectors.Count} trail descriptions in {sw.ElapsedMilliseconds} ms");
 }
 
-// Embed the query the same way, then rank the catalog against it.
+// The query has to go through the same model that produced the cached vectors.
+// Vectors from two different models are not comparable, and cosine similarity
+// will still return confident-looking numbers if you mix them.
 var queryVector = (await generator.GenerateAsync([query]))[0].Vector.ToArray();
 
+// This ranks on topic, not on suitability. An embedding cannot tell "great for
+// kids" from "dangerous for kids" or "easy" from "never uses the word easy but
+// is a cliff", so a top result can be about the right subject and still be the
+// worst possible recommendation. Read the absolute scores as well: a top 5
+// bunched together at a low score means nothing in the catalog is a real match
+// and the order is mostly noise. Anything you can express as a filter over the
+// metadata you already have (difficulty, features) is cheaper and more reliable
+// than hoping the vector carries it.
 var results = trails
     .Select(t => (Trail: t, Score: CosineSimilarity(queryVector, vectors[t.Id])))
     .OrderByDescending(r => r.Score)
@@ -55,7 +67,6 @@ foreach (var (trail, score) in results)
         $"({trail.Difficulty}, {trail.DistanceMi} mi)  [{string.Join(", ", trail.Features)}]");
 }
 
-// Step 4 of the demo: the entire math of semantic search, on one screen.
 static float CosineSimilarity(float[] a, float[] b)
 {
     float dot = 0, magA = 0, magB = 0;

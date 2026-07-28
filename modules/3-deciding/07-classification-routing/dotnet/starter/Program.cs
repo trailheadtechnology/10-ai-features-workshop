@@ -2,10 +2,13 @@ using System.Text.Json;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Demo starting point: one chat client, one classify method, one inquiry.
-// The taxonomy lives in the prompt as plain-language category descriptions;
-// the model answers with a bare label as free text.
+// Starting point: classify a single inquiry.
 // Run: dotnet run [inquiry-id]     (default inq-0005)
+//
+// The answer comes back as free text, so nothing here stops the model from
+// returning a label that does not exist, a sentence of explanation, or a
+// different casing each run. Anything that routes on this string has to cope
+// with all three. complete/ replaces the free text with an enum instead.
 
 IChatClient client = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
 
@@ -14,6 +17,12 @@ var inquiry = File.ReadLines("../../lab/inquiries-slice.jsonl")
     .Select(line => JsonSerializer.Deserialize<Inquiry>(line)!)
     .First(i => i.id == wantedId);
 
+// The taxonomy is the part you edit in the lab. Two rules constrain any rewrite.
+// Emergency wins over every other category, including messages that also mention
+// a permit or a lost item, so the ordering paragraph at the end must stay. And
+// unsure has to stay narrow: it means two queues must both act on one message,
+// not that the model found the message hard. Widen it and it fills up with
+// ordinary traffic, which is the unsorted inbox this system replaced.
 var prompt = $"""
     You are the triage system for the Trailhead Guides shared inbox.
     Classify the visitor message into exactly one category.

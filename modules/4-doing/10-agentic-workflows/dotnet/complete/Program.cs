@@ -6,18 +6,18 @@ using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Finished capstone demo, matching the outline in ../../README.md:
-// five tools over the mock APIs, registered via Microsoft.Extensions.AI
-// function invocation. The loop narrates itself: every tool call prints
-// as it happens, the permit step pauses for a human yes, and a step
-// budget keeps the loop from running forever.
+// Five tools over the workshop's mock APIs, registered through
+// Microsoft.Extensions.AI function invocation. Every tool call prints as it
+// happens, the permit step waits for a human yes, and a step budget bounds
+// the loop.
 //
 //   dotnet run                                   the capstone request
 //   dotnet run -- Plan me a trip on Avalanche Lake Trail in September
 //   dotnet run -- --yes <request>                auto-approve the permit gate
 //
 // Model: Azure OpenAI when AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_KEY /
-// AZURE_OPENAI_DEPLOYMENT are set; otherwise falls back to Ollama llama3.2.
+// AZURE_OPENAI_DEPLOYMENT are set; otherwise Ollama llama3.2, which is much
+// weaker at sequencing five tools. See ../README.md before judging a local run.
 
 var autoApprove = args.Contains("--yes");
 var requestArgs = args.Where(a => a != "--yes").ToArray();
@@ -29,7 +29,9 @@ Trailhead.AutoApprovePermits = autoApprove;
 
 IChatClient inner = CreateChatClient();
 IChatClient client = new ChatClientBuilder(inner)
-    .UseFunctionInvocation(configure: c => c.MaximumIterationsPerRequest = 12) // step budget: the loop cannot run forever
+    // Step budget. This cap is the only bound on the tool-calling loop; a model
+    // that keeps deciding to call one more tool has no other stopping condition.
+    .UseFunctionInvocation(configure: c => c.MaximumIterationsPerRequest = 12)
     .Build();
 
 var options = new ChatOptions
@@ -81,10 +83,11 @@ List<ChatMessage> messages =
 Console.WriteLine($"Request: {request}");
 Console.WriteLine(new string('=', 60));
 
-// Small-model insurance. Azure OpenAI runs the whole plan from one call.
-// llama3.2 often makes one tool call and then starts writing the itinerary,
-// so when a required tool has not been called yet we say so and let the loop
-// continue. Three nudges maximum; that is the outer half of the step budget.
+// A model can stop mid-plan believing it is done and start writing the itinerary
+// from tools it never called. When a required tool is still uncalled, name it and
+// let the loop continue. Capped at three nudges so a stuck model cannot spin here.
+// A frontier model should need none of these; [nudge] lines mean the model is
+// underpowered for the task, not that the app is broken.
 string[] required = ["get_weather", "search_trails", "get_trail_conditions", "check_campsites"];
 var response = await client.GetResponseAsync(messages, options);
 
@@ -104,8 +107,8 @@ for (var nudge = 0; nudge < 3; nudge++)
     response = await client.GetResponseAsync(messages, options);
 }
 
-// Same insurance at the other end: llama3.2 likes to announce that it has
-// finished calling tools and then stop, without ever writing the plan.
+// The mirror failure: the model announces it has finished calling tools and then
+// stops without ever writing the plan. One turn asking for it directly.
 if (!response.Text.Contains("Day", StringComparison.OrdinalIgnoreCase))
 {
     Console.WriteLine("[nudge] tools are done but no itinerary was written; asking for it.");
@@ -136,11 +139,15 @@ static IChatClient CreateChatClient()
     return new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
 }
 
-// The five tools. Ordinary C# methods over the workshop's fixture files;
-// the [Description] attributes are the model's only manual. Each method
-// prints itself on entry, which is what makes the loop visible on stage.
+// The five tools: ordinary C# methods over the workshop's fixture files. The
+// [Description] attributes are the model's only documentation for each tool and
+// parameter, so rewording them changes which tools get called and with what
+// arguments. Treat that prose as behavior, not commentary. Every method prints
+// itself on entry so the loop is visible while it runs.
 static class Trailhead
 {
+    // Relative to the project folder, not the build output, so run with
+    // `dotnet run` from complete/ rather than launching the binary directly.
     const string DataDir = "../../../../../data";
     public static bool AutoApprovePermits;
     public static readonly HashSet<string> Called = [];
@@ -206,15 +213,18 @@ static class Trailhead
     {
         Narrate("get_trail_conditions", new { trail_id = trailId });
 
-        // Small models routinely call this with no id at all. Hand the ids back
-        // rather than failing, so the loop can keep going.
+        // Every tool parameter here has a default and every failure returns an
+        // error string instead of throwing. A model that supplies a missing or
+        // malformed argument gets a correctable message back naming the valid
+        // ids, rather than crashing the process mid-loop.
         if (string.IsNullOrWhiteSpace(trailId) || trailId is "null" or "string")
         {
             var candidates = LastResultIds.Count > 0 ? string.Join(", ", LastResultIds) : "call search_trails first";
             return Result($"{{\"error\": \"trailId is required. Call this tool again with one of these ids: {candidates}.\"}}");
         }
 
-        // Tolerate a trail name instead of an id; local models do that sometimes.
+        // A model may pass the trail name where an id is expected, so resolve
+        // names too instead of returning nothing found.
         if (!trailId.StartsWith("trail-", StringComparison.OrdinalIgnoreCase))
         {
             var trails = JsonNode.Parse(File.ReadAllText($"{DataDir}/trails.json"))!.AsArray();
@@ -263,7 +273,9 @@ static class Trailhead
     {
         Narrate("request_permit", new { park, zone, dates, group_size = groupSize });
 
-        // The feature 09 gate: a human confirms before anything irreversible.
+        // Filing a permit is the one irreversible action in this agent, so it
+        // never runs on the model's say-so; a human confirms first. --yes
+        // bypasses the prompt and exists for demo runs only.
         Console.WriteLine($"  [gate] About to file a permit request: {park}, zone '{zone}', {dates}, group of {groupSize}.");
         bool approved;
         if (AutoApprovePermits)

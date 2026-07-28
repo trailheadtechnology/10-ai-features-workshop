@@ -3,15 +3,19 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Finished demo, matching the outline in ../../README.md:
-// classify all 20 inquiries from ../../lab/inquiries-slice.jsonl with
-// structured output (a C# enum, so the model cannot invent a category),
-// flag emergencies at the top, print the routing table, and score against
-// ../../lab/reference-labels.json.
+// Classifies every inquiry in ../../lab/inquiries-slice.jsonl and scores the
+// result against ../../lab/reference-labels.json.
 // Run: dotnet run
+//
+// The category comes back as a C# enum through structured output, so the model
+// can only return a label the routing table already knows how to handle. Adding
+// a category here means adding a routing destination for it too, or the lookup
+// on the routing table will throw.
 
 IChatClient client = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
-var options = new ChatOptions { Temperature = 0 }; // stable labels run to run
+// Anything above 0 makes the same message land in different queues on different
+// runs, which makes a scored comparison against fixed reference labels meaningless.
+var options = new ChatOptions { Temperature = 0 };
 
 var inquiries = File.ReadLines("../../lab/inquiries-slice.jsonl")
     .Select(line => JsonSerializer.Deserialize<Inquiry>(line)!)
@@ -29,7 +33,9 @@ foreach (var inquiry in inquiries)
 }
 Console.WriteLine('\n');
 
-// Emergencies first, loudly. This queue is the reason the system exists.
+// Emergencies print before the routing table and are sorted to the top of it.
+// A person scanning this output under time pressure must not have to read past
+// the first screen to find one.
 var emergencies = results.Where(r => r.Category == Category.Emergency).ToList();
 if (emergencies.Count > 0)
 {
@@ -44,8 +50,12 @@ Console.WriteLine(new string('-', 62));
 foreach (var (inquiry, category) in results.OrderBy(r => r.Category != Category.Emergency))
     Console.WriteLine($"{inquiry.id,-10} {Wire(category),-15} {reference.Routing[Wire(category)]}");
 
-// Score against the reference labels. Overall accuracy is the small number;
-// emergency recall is the one that matters.
+// Two scores, and they are not equally important. Overall accuracy is the
+// headline number; recall on the emergency class is the one that decides
+// whether this taxonomy is safe to ship. A missed emergency is a person waiting
+// in a queue nobody is watching, and no amount of accuracy elsewhere offsets it.
+// If you tune the category descriptions, judge the change on emergency recall
+// first and treat a drop there as a failure even when accuracy improves.
 var correct = results.Count(r => Wire(r.Category) == reference.Labels[r.Inquiry.id]);
 var emergencyIds = reference.Labels.Where(l => l.Value == "emergency").Select(l => l.Key).ToList();
 var caught = emergencies.Count(e => emergencyIds.Contains(e.Inquiry.id));
@@ -57,6 +67,13 @@ Console.WriteLine($"Emergency recall: {caught}/{emergencyIds.Count} " +
 foreach (var (inquiry, category) in results.Where(r => Wire(r.Category) != reference.Labels[r.Inquiry.id]))
     Console.WriteLine($"  miss: {inquiry.id} got {Wire(category)}, reference says {reference.Labels[inquiry.id]}");
 
+// These descriptions are the taxonomy, and editing them changes behavior more
+// than any code below. Two rules constrain any rewrite. Emergency wins over
+// every other category, including messages that also mention a permit or a lost
+// item, so the ordering paragraph at the end must stay. And unsure has to stay
+// narrow: it means two queues must both act on one message, not that the model
+// found the message hard. Widen it and it fills up with ordinary traffic, which
+// is the unsorted inbox this system replaced.
 static string Prompt(string text) => $"""
     You are the triage system for the Trailhead Guides shared inbox.
     Classify the visitor message into exactly one category.

@@ -1,12 +1,16 @@
 using System.Text.Json;
 
-// Demo starting point: no model calls at all.
-// It loads the precomputed nomic-embed-text vectors from ../../lab/embeddings-0117.json,
-// averages them into a centroid, and prints every report's cosine distance from it.
+// Starting point: ranks trail reports by distance from the trail's baseline.
 // Run: dotnet run
 //
-// This is the whole idea of the feature in about forty lines of arithmetic.
-// The complete/ project does the embedding live and adds the alert rule.
+// Makes no model calls and needs no network. The vectors in
+// ../../lab/embeddings-0117.json were precomputed with nomic-embed-text so this
+// runs with Ollama down, which is the fallback when the room's network is not
+// cooperating. Those vectors were embedded with the "classification: " task
+// prefix nomic requires, so anything you add to this corpus must be embedded the
+// same way or its distances will not be comparable to these.
+//
+// complete/ embeds live and adds the alert rule on top of this ranking.
 
 var lab = "../../lab";
 var json = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
@@ -19,7 +23,9 @@ var vectors = doc.RootElement.GetProperty("embeddings")
     .EnumerateObject()
     .ToDictionary(p => p.Name, p => Normalize(p.Value.EnumerateArray().Select(v => v.GetSingle()).ToArray()));
 
-// The centroid: the mathematical center of "normal" for this trail.
+// The centroid is this trail's definition of normal, and it is built from the
+// same reports it is about to judge. Anomalies that appear often enough pull the
+// centroid toward themselves and stop looking anomalous.
 var dimensions = vectors.Values.First().Length;
 var centroid = new float[dimensions];
 foreach (var vector in vectors.Values)
@@ -43,7 +49,9 @@ static float[] Normalize(float[] vector)
     return vector.Select(v => v / length).ToArray();
 }
 
-// Both vectors are unit length here, so the dot product is the cosine similarity.
+// Correct only for unit-length inputs, where the dot product is already the cosine
+// similarity. Every vector reaching this method has been through Normalize; pass an
+// unnormalized one and it returns a number that still looks plausible.
 static float CosineDistance(float[] a, float[] b)
 {
     var dot = 0f;

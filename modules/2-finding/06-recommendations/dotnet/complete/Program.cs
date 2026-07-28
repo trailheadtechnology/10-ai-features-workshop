@@ -6,10 +6,12 @@ using System.Text.Json;
 //   dotnet run                          "more like this" for Avalanche Lake Trail
 //   dotnet run -- trail-0008            any trail id works
 //   dotnet run -- Trail of the Cedars   so does any name (or part of one)
-//   dotnet run -- --gear Cascade 65     step 5: same trick on gear, from review text
+//   dotnet run -- --gear Cascade 65     the same trick on gear, from review text
 //
-// Vectors are cached in embeddings.json / gear-embeddings.json next to this
-// file; delete a cache to re-embed fresh.
+// Vectors are cached in embeddings.json / gear-embeddings.json in the project
+// directory. The cache is only checked for missing keys, so an edited description
+// or a different embedding model leaves the stale vectors in place. Delete the
+// cache file whenever the source text or the model changes.
 
 IEmbeddingGenerator<string, Embedding<float>> generator =
     new OllamaApiClient(new Uri("http://localhost:11434"), "nomic-embed-text");
@@ -20,8 +22,8 @@ if (args.Length > 0 && args[0] == "--gear")
     return;
 }
 
-// Step 2 of the demo: the embedded trail catalog from feature 04. One item,
-// one description, one vector. Nothing new is created here, which is the point.
+// Same catalog and same embedding model as feature 04. Recommendations need no
+// new model and no new data, only the vectors search already produced.
 var trails = JsonSerializer.Deserialize<List<Trail>>(
     await File.ReadAllTextAsync("../../lab/trails.json"),
     new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower })!;
@@ -35,8 +37,12 @@ var target = trails.FirstOrDefault(t =>
         t.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
     ?? throw new ArgumentException($"No trail matches '{query}'.");
 
-// Step 3: "more like this" is the search code with the query swapped for an
-// item: take this trail's vector, rank every other trail, skip itself, take 5.
+// "More like this" is the search from feature 04 with the query vector replaced
+// by an item's own vector. That means it ranks on what the descriptions talk
+// about, so whatever the prose leaves out is invisible: difficulty and distance
+// live in structured fields and are never mentioned in the text, and a moderate
+// family hike will cheerfully return a list of hard all-day climbs. If those
+// fields matter to the user, filter or re-rank on them after the similarity pass.
 Console.WriteLine($"You liked: {target.Name} ({target.Park})");
 Console.WriteLine("You might also like:\n");
 
@@ -51,9 +57,13 @@ foreach (var (trail, score) in hits)
     Console.WriteLine($"  {score:F4}  {trail.Name} ({trail.Park}, {trail.Difficulty}; {string.Join(", ", trail.Features)})");
 }
 
-// Step 5: gear. No descriptions here, so each product's vector comes from its
-// combined review text: "similar products" means "products reviewers describe
-// the same way".
+// Products have no descriptions, so each vector comes from that product's reviews
+// concatenated: "similar" here means "reviewers describe them the same way".
+//
+// Content similarity finds substitutes, not complements. The nearest neighbor to
+// a backpack is usually another size of the same backpack, which is the one item
+// its owner will never buy. Complements come from behavior data (what people buy
+// or mention together), and no embedding of the product text can supply it.
 static async Task RecommendGear(IEmbeddingGenerator<string, Embedding<float>> generator, string query)
 {
     var reviews = File.ReadLines("../../../../../data/gear-reviews.jsonl")
@@ -83,7 +93,9 @@ static async Task RecommendGear(IEmbeddingGenerator<string, Embedding<float>> ge
         Console.WriteLine($"  {score:F4}  {product}");
 }
 
-// Embed each text once and cache the vectors; a second run costs nothing.
+// Embed each text once and cache the vectors to disk. Note the staleness trap:
+// the cache is accepted whenever it holds every key, so changed text under an
+// existing key keeps its old vector. Delete the file to force a re-embed.
 static async Task<Dictionary<string, float[]>> EmbedWithCache(
     IEmbeddingGenerator<string, Embedding<float>> generator, string cachePath,
     Dictionary<string, string> texts)
@@ -104,7 +116,6 @@ static async Task<Dictionary<string, float[]>> EmbedWithCache(
     return vectors;
 }
 
-// Step 4: the math at the center of the feature, small enough to read.
 static float Cosine(float[] a, float[] b)
 {
     float dot = 0, magA = 0, magB = 0;

@@ -14,7 +14,7 @@ Two mechanics matter. First, JSON mode: modern models, including local ones, can
 
 Then there's the part most tutorials skip. The classic extraction failure is a missing fact hallucinated into a field, and the schema reduces that failure without eliminating it. On the sparse report in this lab, `llama3.2` returns `elevation_gain_ft: 0` where the honest answer is `null`, which is the more dangerous kind of miss: zero is a value, and a pipeline will store it without complaint. Run it a few times and you will also see invented distances and date strings that no date parser will accept. A structured shape guarantees the JSON parses; it does not guarantee the JSON is true. That is why this feature ends in validation code rather than in a prompt, and why the thing you ship is schema plus a rejection rule, not schema alone. All of it works on a local model, which matters here more than anywhere: extraction pipelines often process private data at volume, where free and on-prem beats per-token pricing.
 
-## Demo outline (13 min, .NET)
+## Demo outline (about 12 min, .NET)
 
 1. Show the same messy trip report from feature 01. This time the goal isn't a summary, it's a database row.
 2. Define a C# record (`TripFacts`: trail, park, date, distance, wildlife, conditions) and use Microsoft.Extensions.AI's typed-response support to request it directly. The schema is code.
@@ -23,7 +23,9 @@ Then there's the part most tutorials skip. The classic extraction failure is a m
 5. Fix it in the schema with nullable fields and "null when not stated" descriptions. Re-run: the invented distance usually goes away, and something else usually doesn't. Run it two or three times live so the room sees the variance rather than one lucky result. Then say the quiet part: this is better, and it is not a guarantee. The last mile is a validator that rejects a date like "early last month" and a `0` that should have been `null`, which is ordinary code your team already knows how to write.
 6. Zoom out: loop over ten reports and print rows. That's an ingestion pipeline in thirty lines, and the "trail stats" panel is now just a query.
 
-## Lab spec (13 min, any language)
+## Lab spec (Challenge lab, any language)
+
+*A Challenge lab. Do it if you finished [Module 1](../README.md)'s Core lab and want another, or skip it without guilt: you will have seen this feature demonstrated either way.*
 
 - **Goal:** turn a trip report into a clean JSON record: `{trail, park, date, distance_mi, wildlife[], conditions}`.
 - **Input:** two trip reports in `lab/`, one rich in facts and one missing several fields, drawn from `data/trip-reports/`.

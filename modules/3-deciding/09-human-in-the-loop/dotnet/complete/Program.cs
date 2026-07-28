@@ -4,15 +4,25 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Finished demo, matching the outline in ../../README.md:
+// Review queue: the model drafts, a human decides, and every decision is logged
+// to decisions.jsonl.
+//
 //   dotnet run                          review the queue: [a]pprove / [e]dit / [r]eject / [s]kip
 //   dotnet run -- --policy              print the routing policy table and exit
 //   dotnet run -- --auto-approve-dry-run   non-interactive run for testing and CI
 //   dotnet run -- ../../lab/inquiries.jsonl   any queue file works
 //
-// The AI drafts, the ranger decides, and every decision lands in decisions.jsonl.
-// Emergencies never reach the model: the policy table stops them in code, because a
-// prompt instruction is a request and a policy lane is a guarantee.
+// SAFETY INVARIANT, load-bearing, do not weaken:
+// emergencies never reach the model. The policy table below routes them to
+// human-only and the loop skips the API call entirely, in code, before any
+// request is built. The system prompt also tells the model to escalate instead
+// of drafting, but that instruction is a request and this lane is a guarantee.
+// A model that ignores the instruction and writes a warm, fluent, confident
+// reply to someone reporting an overdue hiker is not a hypothetical; it is the
+// documented behavior of the model this demo ships with. Anyone editing this
+// file must keep the emergency path free of model calls. Adding a "just draft
+// it and let the reviewer catch it" shortcut here puts a reassuring lie in front
+// of a person who needed a dispatcher.
 
 const string SystemPrompt = """
     You are drafting a reply to a park visitor on behalf of a ranger at Trailhead Guides.
@@ -29,7 +39,11 @@ const string SystemPrompt = """
     to dispatch.
     """;
 
-// Step 5 of the demo. Error cost decides the lane, not model quality.
+// The lane is chosen by what a wrong answer costs, not by how good the model is
+// at the category. Everything reversible can be drafted; emergency is
+// irreversible and stays human-only. Note the lookup below defaults an unknown
+// category to human-only, so a category added upstream fails closed rather than
+// quietly acquiring a draft lane.
 var policy = new Dictionary<string, string>
 {
     ["trail-condition"] = "draft-for-approval",
@@ -80,7 +94,12 @@ foreach (var line in await File.ReadAllLinesAsync(inquiriesPath))
     Console.WriteLine(Indent(inquiry.Text));
     Console.WriteLine();
 
-    // Step 5's punchline: the emergency row never gets a draft, by policy, in code.
+    // THE GATE. This must stay above the API call, and the API call must stay
+    // below it. A human-only message is escalated and logged without a single
+    // token being spent on it, so there is no draft to leak, no reviewer fatigue
+    // to survive, and no sampling luck involved. The ESCALATE handling further
+    // down is a backstop for emergencies that arrive miscategorized; it is never
+    // the control, because it runs after the model has already had its say.
     if (lane == "human-only")
     {
         Console.WriteLine("  NO DRAFT. Policy routes this straight to a human. Paging dispatch.\n");
@@ -114,7 +133,10 @@ foreach (var line in await File.ReadAllLinesAsync(inquiriesPath))
     Console.WriteLine(Indent(draft));
     Console.WriteLine();
 
-    // Belt and braces: if the model asked to escalate, believe it and drop the draft.
+    // Second layer, for an emergency that reached here under the wrong category.
+    // An ESCALATE prefix is a hard stop: the draft is logged for the audit trail
+    // but never offered for approval, because a reviewer presented with a
+    // sendable-looking reply may send it. Do not soften this into a warning.
     if (draft.StartsWith("ESCALATE", StringComparison.OrdinalIgnoreCase))
     {
         Console.WriteLine("  Model asked to escalate. Draft discarded, routing to a human.\n");
@@ -219,8 +241,11 @@ static async Task LogAsync(string path, Decision decision) =>
 static void Bump(Dictionary<string, int> counts, string key) =>
     counts[key] = counts.GetValueOrDefault(key) + 1;
 
-// Step 4 of the demo: how far the ranger moved the text tells you whether the
-// lane is earning its trust. Plain Levenshtein is plenty for a queue this size.
+// Logged on every decision so the promotion question has data behind it rather
+// than a feeling. It measures how much someone typed, not whether they were
+// fixing a comma or preventing a lawsuit, so it can support an argument for
+// promoting a lane and must never be the only evidence for one.
+// O(a*b) and unbounded by draft length; fine for a review queue, not for bulk.
 static int EditDistance(string a, string b)
 {
     var previous = new int[b.Length + 1];

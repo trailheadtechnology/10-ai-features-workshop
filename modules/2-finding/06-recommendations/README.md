@@ -12,7 +12,7 @@ The classical answer to recommendations is collaborative filtering over user-beh
 
 That's the deliberate narrative beat of this feature: one embedding investment keeps paying. Search (04), recommendations (06), and anomaly detection (08) are three features from one piece of infrastructure. The honest caveat gets said out loud too. Content similarity recommends things that are alike, and it will never discover that people who hike waterfalls also buy headlamps. When behavior data accumulates, collaborative filtering complements this; it doesn't replace it on day one.
 
-## Demo outline (13 min, .NET)
+## Demo outline (about 12 min, .NET)
 
 1. Open the Avalanche Lake Trail page and ask the room what should be at the bottom of this screen. Everyone knows; nobody builds it.
 2. Bring back the embedded trail catalog from feature 04, already sitting in memory. Nothing new is created in this step, which is the point.
@@ -21,7 +21,9 @@ That's the deliberate narrative beat of this feature: one embedding investment k
 5. Do the same with gear, and let it fail on purpose. The top result for the Cascade 65 Backpack is the Cascade 40 Daypack, the single product that buyer will never need. Content similarity finds substitutes; a store wants complements. Then show the review co-mention counts, where the Summit Bear Canister sits at the top, and name the difference: what a thing is like versus what people actually use with it.
 6. Close on what this can't do. Cross-category discovery is out of reach for description similarity, one target trail in the slice has no real neighbors at all and a shipping product should show nothing rather than five weak guesses, and behavior data is what fixes both.
 
-## Lab spec (13 min, any language)
+## Lab spec (Challenge lab, any language)
+
+*A Challenge lab. Do it if you finished [Module 2](../README.md)'s Core lab and want another, or skip it without guilt: you will have seen this feature demonstrated either way.*
 
 - **Goal:** build "more like this" for trails from item embeddings.
 - **Input:** `lab/` provides the same trail slice as feature 04 and three target trails. If you finished feature 04's lab, reuse your vectors; if not, `lab/` includes precomputed embeddings so you can start here.

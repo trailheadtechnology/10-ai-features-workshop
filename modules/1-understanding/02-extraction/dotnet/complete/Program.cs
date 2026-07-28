@@ -20,7 +20,8 @@ foreach (var reportPath in reportPaths)
 {
     var report = StripFrontMatter(await File.ReadAllTextAsync(reportPath));
 
-    // Steps 2-3 of the demo: prose in, populated .NET object out. No parsing.
+    // Prose in, populated .NET object out. Nothing here strips a markdown fence or
+    // a preamble, because GetResponseAsync<T> makes the shape the model's problem.
     var response = await client.GetResponseAsync<TripFacts>(
         $"""
         Extract the trail facts from this trip report.
@@ -37,9 +38,9 @@ foreach (var reportPath in reportPaths)
     Console.WriteLine("-- what the model gave us --");
     Print(raw);
 
-    // Step 5 of the demo, the part that ships: the schema guarantees the JSON
-    // parses, not that it is true. Every scalar goes through a rule, and
-    // anything that fails is coerced to null before it reaches a database.
+    // The schema guarantees the JSON parses, not that it is true. Every scalar
+    // goes through a rule here, and anything that fails is coerced to null before
+    // it could reach a database. Do not shortcut this to store `raw` directly.
     var verdicts = Validate(raw, report);
 
     Console.WriteLine();
@@ -80,20 +81,21 @@ static void Print(TripFacts f)
     Console.WriteLine($"  hazards:    [{string.Join(", ", f.Hazards ?? [])}]");
 }
 
-// The rejection rules. Ordinary code, no model involved, and the reason each
-// one exists is a failure somebody actually watched happen on stage.
+// The rejection rules. Ordinary code, no model involved. Each rule covers output
+// llama3.2 has actually returned for these two reports, which is why none of them
+// look defensive until you see the run that needs them (lab/expected-output.md).
 static List<Verdict> Validate(TripFacts f, string sourceText)
 {
     List<Verdict> verdicts =
     [
-        // Invented trail names are the headline extraction failure, so a name
-        // the source text never contains does not get to be a fact.
+        // A name the source text never contains does not get to be a fact, no
+        // matter how plausible it reads.
         Grounded("trail_name", f.TrailName, sourceText),
         Grounded("park", f.Park, sourceText),
         ValidDate("date_hiked", f.DateHiked),
 
-        // 0 is the dangerous near-miss this feature teaches: it is a value, and
-        // a pipeline stores it without complaint. The honest answer is null.
+        // 0 is the dangerous near-miss: it is a value, so a pipeline stores it and
+        // nothing downstream ever questions it. The honest answer is null.
         InRange("distance_mi", f.DistanceMi, max: 100, unit: "mi"),
         InRange("elevation_gain_ft", f.ElevationGainFt, max: 20000, unit: "ft"),
     ];
@@ -109,10 +111,10 @@ static Verdict NonEmpty(string field, string? value)
 }
 
 // Cheap grounding check: a name whose distinctive words never appear in the
-// report is a name the model supplied. Deliberately crude. The point is that a
-// useful check is a dozen lines, not a research project. It is loose on
-// boilerplate ("National Park") so that "Glacier National Park" still grounds
-// on a report that only ever says "Glacier".
+// report is a name the model supplied. Deliberately crude, because a check worth
+// having costs a dozen lines rather than a research project. The boilerplate list
+// is what lets "Glacier National Park" ground on a report that only says
+// "Glacier"; shortening it will start rejecting correct park names.
 static Verdict Grounded(string field, string? value, string sourceText)
 {
     string[] boilerplate =
@@ -199,7 +201,8 @@ static TripFacts Clean(TripFacts f, List<Verdict> verdicts)
         DistanceMi = Ok("distance_mi") ? f.DistanceMi : null,
         ElevationGainFt = Ok("elevation_gain_ft") ? f.ElevationGainFt : null,
 
-        // Arrays get the same empty-string treatment the scalars get.
+        // The arrays get no rule of their own: substring matching cannot ground a
+        // free-text condition the way it grounds a name, so they are only cleaned.
         Wildlife = CleanList(f.Wildlife),
         Conditions = CleanList(f.Conditions),
         Hazards = CleanList(f.Hazards),
@@ -225,9 +228,10 @@ record Verdict(string Field, string? Value, bool Passed, string? Reason)
     public static Verdict Fail(string field, string? value, string reason) => new(field, value, false, reason);
 }
 
-// Step 5 of the demo: the schema does the prompting. Every scalar is nullable
-// and every description says when to use null; that, not prompt pleading, is
-// the first half of the hallucination fix. The validator above is the other half.
+// The schema does the prompting. Every scalar is nullable and every description
+// says when to use null, which is the half of the hallucination fix that a plea
+// in the prompt cannot do; the validator above is the other half. Making a field
+// non-nullable here forces the model to invent a value for it.
 record TripFacts(
     [property: Description("The name of the trail hiked. null if the report never names the trail.")]
     string? TrailName,

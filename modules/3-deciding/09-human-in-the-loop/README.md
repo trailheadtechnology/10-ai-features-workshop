@@ -12,7 +12,7 @@ Human-in-the-loop is a product pattern, not a model feature, and it's the differ
 
 The design question is where to put the human, and the answer comes from error cost and reversibility, which connects straight back to feature 07's asymmetry lesson. A sensible policy has three lanes: full automation for cheap, reversible, low-stakes replies; draft-plus-approval for the middle; human-only for the expensive and irreversible (in Trailhead Guides terms, emergencies never get an AI draft at all). Two practical details do a lot of work in real systems. Keep an audit trail of what was drafted, who approved it, and what they changed. And measure the gap between draft and final text, because how much humans edit tells you whether trust in each lane is earned, and edit patterns show you exactly where the drafts fall short.
 
-## Demo outline (13 min, .NET)
+## Demo outline (about 12 min, .NET)
 
 1. Pick up where feature 07 left off: a routed queue of condition questions awaiting replies.
 2. Generate a draft reply for one inquiry, grounded in the park docs the same way feature 05 grounded answers. Show the draft on screen; it's good but not perfect.
@@ -21,7 +21,9 @@ The design question is where to put the human, and the answer comes from error c
 5. Put the routing policy on screen as a table: which categories auto-send, which get drafts, which stay human-only. Point at the emergency row: no AI draft, ever, by policy.
 6. Close the loop: the edits collected in step 3 are tomorrow's prompt improvements. The human is the feedback signal as much as the safety check.
 
-## Lab spec (13 min, any language)
+## Lab spec (Challenge lab, any language)
+
+*A Challenge lab. Do it if you finished [Module 3](../README.md)'s Core lab and want another, or skip it without guilt: you will have seen this feature demonstrated either way.*
 
 - **Goal:** generate draft replies for routed inquiries, then decide the automation policy per category.
 - **Input:** `lab/` provides 6 classified inquiries (boilerplate, two permit questions, a conditions question about the washout, a billing complaint, and one emergency), relevant park-doc snippets for grounding, and a policy worksheet.

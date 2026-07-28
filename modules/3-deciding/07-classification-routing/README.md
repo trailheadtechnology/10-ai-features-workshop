@@ -12,7 +12,7 @@ This is classification again (feature 03 was the warm-up), but now the label has
 
 Two design decisions carry the feature. First, the taxonomy is the product. Category names and one-sentence descriptions in the prompt are where accuracy lives, and when the model misfiles something, you usually fix the description, not the model. Second, errors are not symmetric. Misrouting a complaint costs a day of annoyance; misrouting an emergency is a headline. So the system needs an "unsure" route to a human, and it should be tuned so the expensive class never slips through, even at the cost of extra false alarms. Recall on the class that matters, not overall accuracy, is the number to watch. A local model does this fine, and at inbox volume, free matters.
 
-## Demo outline (13 min, .NET)
+## Demo outline (about 12 min, .NET)
 
 1. Scroll the raw inbox from `data/inquiries.jsonl`, mixed and unlabeled, and let the room spot the emergency buried in it.
 2. Starter: one classify method with the taxonomy written as plain-language category descriptions in the prompt, returning exactly one label.
@@ -21,7 +21,9 @@ Two design decisions carry the feature. First, the taxonomy is the product. Cate
 5. Walk the "unsure" route in the taxonomy: it is deliberately narrow, for messages that two queues must both act on. Show inq-0035 landing there, which is correct behavior, and point out that the description forbids sending anything dangerous to it.
 6. Close on asymmetric error costs: what this system is tuned never to miss, and what noise level that tolerance buys.
 
-## Lab spec (13 min, any language)
+## Lab spec (Core lab, any language)
+
+*Everyone does this one. It is the Core lab for [Module 3](../README.md), and the hands-on period runs about 45 minutes, so there is room to do it properly rather than fast.*
 
 - **Goal:** classify visitor inquiries into `permit | conditions | complaint | lost-and-found | emergency | general | unsure` and route them.
 - **Input:** `lab/` provides 20 inquiries from `data/inquiries.jsonl` (including 2 emergencies and at least one deliberately ambiguous message) plus reference labels.

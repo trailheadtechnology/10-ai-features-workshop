@@ -89,6 +89,11 @@ if (disagreements.Count == 0) Console.WriteLine("(none this run)");
 // Same method as the starter: one prompt, one word back, any IChatClient.
 static async Task<string> Classify(IChatClient client, string text)
 {
+    // Both models get this exact prompt, and it is byte-identical to the one in
+    // lab/ollama.http and lab/azure.http, line breaks included. Reflowing these
+    // four lines into one costs phi3 measured accuracy on both sets while leaving
+    // llama3.2 unchanged, so varying the prompt shape and the model in the same
+    // run measures nothing. See lab/expected-output.md.
     var prompt = $"""
         Classify this gear review as exactly one word: positive, negative, or mixed.
         Positive means the reviewer is happy with the product, negative means unhappy,

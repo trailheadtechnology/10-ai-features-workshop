@@ -4,8 +4,9 @@ using OllamaSharp;
 
 // Demo starting point: one chat client, one classify method, one review.
 // Run: dotnet run [review-id]
-// Ids come from ../../lab/easy.jsonl and ../../lab/hard.jsonl; the default is
-// gr-0007, the sarcastic trail runner review that phi3 tends to fumble.
+// Ids come from ../../lab/easy.jsonl and ../../lab/hard.jsonl. The default is
+// gr-0007, a hard-set review whose sarcasm ("five-star experience, truly") points
+// the opposite way from its two-star rating.
 
 IChatClient client = new OllamaApiClient(new Uri("http://localhost:11434"), "phi3");
 
@@ -26,6 +27,10 @@ Console.WriteLine($"phi3 says: {label}");
 // swappable because everything upstream only sees IChatClient.
 static async Task<string> Classify(IChatClient client, string text)
 {
+    // Keep this prompt byte-identical to the one in lab/ollama.http, line breaks
+    // included. Reflowing these four lines into one costs phi3 measured accuracy
+    // on both sets, so a comparison run against a reflowed prompt is not
+    // comparing models. See lab/expected-output.md.
     var prompt = $"""
         Classify this gear review as exactly one word: positive, negative, or mixed.
         Positive means the reviewer is happy with the product, negative means unhappy,

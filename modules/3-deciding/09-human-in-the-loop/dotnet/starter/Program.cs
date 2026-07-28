@@ -3,12 +3,15 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Demo starting point, and the anti-pattern the feature warns about.
-// It drafts a reply to every routed inquiry and "sends" it immediately.
-// No ranger sees anything before it goes out, and there is no record of
-// what was sent. Run it, then read what it sent to inq-0013.
-//
+// Starting point, and deliberately unsafe. Every draft goes straight out with no
+// human between the model and the visitor, and nothing is logged, so there is no
+// record of what was sent or any way to find out later.
 // Run: dotnet run [path-to-inquiries.jsonl]
+//
+// Nothing here treats an emergency differently. The system prompt asks the model
+// to escalate instead of drafting, and the model is free to ignore that and
+// often does, which is why complete/ moves the decision out of the prompt and
+// into a policy check in code. Do not use this shape on a real inbox.
 
 const string SystemPrompt = """
     You are drafting a reply to a park visitor on behalf of a ranger at Trailhead Guides.
@@ -54,7 +57,8 @@ foreach (var line in await File.ReadAllLinesAsync(inquiriesPath))
             """),
     ]);
 
-    // The anti-pattern: straight from the model to the visitor.
+    // No review step and no audit record. In a real deployment this line is the
+    // send call, and by the time anyone reads the output the mail has gone.
     Console.WriteLine($"=== SENT to visitor · {inquiry.Id} ({inquiry.Category}) ===");
     Console.WriteLine(draft.Text.Trim());
     Console.WriteLine();

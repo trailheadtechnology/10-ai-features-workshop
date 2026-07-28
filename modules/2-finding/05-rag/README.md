@@ -18,7 +18,7 @@ Each of those mechanics has a failure mode worth showing rather than glossing. *
 
 The model strategy is hybrid in a second sense, on purpose. Retrieval runs on free local embeddings, and you'll try generation both ways: a local model first, then Azure OpenAI. Watching the cloud model handle a multi-document answer more cleanly is the honest version of the "when do I pay for the big model" conversation from feature 03, now applied to generation.
 
-## Demo outline (13 min, .NET)
+## Demo outline (about 12 min, .NET)
 
 1. Ask the model the Sperry Chalet campfire question with no context. It answers confidently. Then open the actual regulation and show the answer is wrong. Let that sit for a beat; this is the whole reason RAG exists.
 2. Show the chunked park docs, then open Section 4 of the Glacier backcountry guide in `data/park-docs/` and read 4.1 and 4.2 aloud in order. A conditional rule, then the absolute exception that cancels it. Ask the room which one a model answers from. This is the chunking beat and it is worth 90 seconds; the numbers are in `lab/expected-output.md` under "Chunking".
@@ -31,7 +31,9 @@ The model strategy is hybrid in a second sense, on purpose. Retrieval runs on fr
 8b. Ask "Is the Avalanche Lake Trail open right now?" and show the date sitting in the prompt. Explain why it is there: without it the same question got refused in 10 runs out of 18, not because retrieval missed but because "effective June 20, 2026, until further notice" is unanswerable without a calendar. Worth 60 seconds; it is the most transferable thing in the feature.
 9. Swap generation from the local model to Azure OpenAI with the one-line Microsoft.Extensions.AI client change, re-run a multi-document question, and compare answer quality side by side.
 
-## Lab spec (13 min, any language)
+## Lab spec (Challenge lab, any language)
+
+*A Challenge lab. Do it if you finished [Module 2](../README.md)'s Core lab and want another, or skip it without guilt: you will have seen this feature demonstrated either way.*
 
 - **Goal:** answer natural-language questions from the park docs, with citations you have verified, and refuse cleanly when the docs are silent.
 - **Input:** `lab/` provides pre-chunked park docs (with chunk IDs and source filenames) from `data/park-docs/`, plus four test questions: three answerable, one not.

@@ -12,7 +12,7 @@ Embeddings turn text into vectors, points in a high-dimensional space where dist
 
 Two things make this feature land. First, it runs entirely locally: `nomic-embed-text` is a small, free embedding model, and 200 trail descriptions embed in seconds on a laptop. Second, the search box stays a search box. Users don't have to learn anything new; the same input just starts understanding what they meant. This is also the foundation feature for the rest of the day, since RAG (05), recommendations (06), and anomaly detection (08) all reuse the idea, and 06 and 08 reuse the actual infrastructure.
 
-## Demo outline (13 min, .NET)
+## Demo outline (about 12 min, .NET)
 
 1. Run the "dog-friendly waterfall hike, not too steep" query against naive keyword search over `data/trails.json` and get junk results. That's today's baseline.
 2. Show what an embedding is: embed one sentence via Microsoft.Extensions.AI's `IEmbeddingGenerator` against Ollama, and look at the raw float array on screen for a moment. It's just numbers.
@@ -21,7 +21,9 @@ Two things make this feature land. First, it runs entirely locally: `nomic-embed
 5. Re-run the same query semantically. The payoff: the gentle shaded waterfall trails rise to the top, with the similarity scores visible next to each hit.
 6. Show one more query with zero keyword overlap ("somewhere quiet to take my kids"), which proves it isn't a fluke and then hands you the feature's best moment. The top hit is Taft Point, whose own description warns that the ground gives no second chances beside a 3,000-foot drop. It is a perfect topical match and terrible advice. Say what that means: embeddings capture what text is about, not whether it's suitable, and the fix is metadata filters and a score floor, not a better model. Note that everything ran locally, and that the scores for this query top out near 0.49 against 0.77 for query one, which is the number a score floor would key on.
 
-## Lab spec (13 min, any language)
+## Lab spec (Core lab, any language)
+
+*Everyone does this one. It is the Core lab for [Module 2](../README.md), and the hands-on period runs about 45 minutes, so there is room to do it properly rather than fast.*
 
 - **Goal:** rank trails by semantic similarity to a natural-language query.
 - **Input:** `lab/` provides a slice of `data/trails.json` (about 30 trails) and three test queries with expected top hits.

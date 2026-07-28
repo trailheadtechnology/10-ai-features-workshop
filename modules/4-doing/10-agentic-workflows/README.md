@@ -21,7 +21,9 @@ This is the capstone because it composes the day. The agent searches trails sema
 5. The permit step hits the feature 09 gate: the agent pauses, presents the summary, and waits for a human yes before filing. Show the step budget in the loop while you're there.
 6. Close on the trace as an artifact: every tool call, its arguments, and its result printed as the loop runs, so every decision is inspectable rather than mysterious. Be precise about what this demo does and doesn't do, because the distinction is the point. It prints the trace; it does not persist one. Shipping this means writing that trace to durable storage alongside the approval record from feature 09, and that pair is what you show your security team when they ask whether this thing is safe.
 
-## Lab spec (25 min, any language)
+## Lab spec (the capstone, any language)
+
+*Everyone attempts this one; it is the only feature in [Module 4](../README.md) and the hands-on period runs about 35 minutes. The lab ships a transcript of a complete successful run, so when your own agent goes sideways you have a known-good reference to compare against rather than guessing.*
 
 - **Goal:** run one tool-calling round-trip by hand to feel the mechanics, then extend a working agent with a new tool.
 - **Input:** `lab/` provides the tool definitions as JSON, the mock API fixtures from `data/mock-apis/`, and a transcript of a complete agent run for reference.

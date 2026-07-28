@@ -34,12 +34,15 @@ var audienceFocus = audience switch
 
 var prompt = mode switch
 {
-    // Step 2 of the demo: right model, wrong instruction.
+    // Deliberately the weak prompt. It is kept so the two prompts can be run
+    // back to back against the same report; nothing about it should be fixed.
     "naive" => $"Summarize this trip report.\n\n{report}",
 
-    // Step 4: a summary with a purpose. The instruction carries the feature.
-    // The two grounding lines are not decoration: without them llama3.2 invents a
-    // bear closure on tr-0001 in roughly half of runs. See lab/expected-output.md.
+    // The last two lines are load-bearing, not politeness. The bullets require a
+    // hazards slot and require any hazard to come first, so on a report with no
+    // hazard the model will promote the nearest noun (a bear, a creek, the word
+    // "avalanche" in the trail name) into a closure. Giving it a legal way to
+    // report nothing is what stops that. Measurements in lab/expected-output.md.
     "briefing" => $"""
         You are helping {audienceFocus}.
         From the trip report below, produce exactly 3 bullets covering:
@@ -52,7 +55,8 @@ var prompt = mode switch
         {report}
         """,
 
-    // Step 5: same call, different product surface.
+    // Same client, same report, same call. Only the instruction changes to fit a
+    // different UI slot, so no new infrastructure is needed for a new surface.
     "headline" => $"""
         From the trip report below, write ONE line of at most 12 words,
         suitable for a status badge on a trail card in an app.
