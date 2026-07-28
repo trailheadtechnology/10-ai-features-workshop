@@ -13,6 +13,7 @@ using OllamaSharp;
 //   dotnet run -- --alpha 1.0                     pure cosine, the wrong-park neighbors
 //   dotnet run -- --retrieval-only                print the score table and stop
 //   dotnet run -- --top-k 8 "your question"       vary retrieval depth
+//   dotnet run -- --model qwen3:32b               a bigger model, if you have the memory
 //
 // Retrieval is hybrid: normalized cosine similarity blended with a BM25-lite
 // lexical score, so a distinctive proper noun like "Sperry" counts for something.
@@ -23,7 +24,37 @@ using OllamaSharp;
 //
 // Retrieval always runs locally (nomic-embed-text). Generation uses Azure OpenAI
 // when AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_KEY / AZURE_OPENAI_DEPLOYMENT are set,
-// and falls back to local llama3.2 when they are not.
+// and falls back to the local model chosen just below when they are not.
+
+// ---------------------------------------------------------------------------
+// Which local model generates the answer.
+//
+// Everything else in this file is identical either way: same retrieval, same
+// chunks, same prompt. Only the model changes. All numbers below were measured
+// on this pipeline and are written up in ../../lab/expected-output.md.
+//
+//                            llama3.2 (3B)      qwen3:32b
+//   answers correctly           97%               100%
+//   opens with "Yes" before
+//     saying fires are banned    40%                0%
+//   refuses when it shouldn't    8%                 0%
+//   invalid citations         9 per 200 runs      0 per 80 runs
+//   download / memory           2 GB / any        20 GB / ~24 GB free
+//   time per answer             0.9 s             16.6 s
+//
+// So the big model is better at everything and costs 18x the wall clock and a
+// machine most people do not have. Uncomment it only if you have the memory;
+// on 16 GB it will not load, and on 32 GB it will make you wait.
+//
+// The part worth noticing: a bigger model fixes none of the retrieval problems
+// this module exists to teach. Same embedder, same chunks, same rankings. When
+// the Sperry prohibition was buried in a chunk that led with the opposite rule,
+// qwen3:32b got it wrong too. Fixing the chunking took the small model from 75%
+// to 97%; the big model buys the last three points. Spend in that order.
+//
+// var localModel = "qwen3:32b";   // see the memory note above before uncommenting
+var localModel = "llama3.2";       // the default, because it runs on any laptop in the room
+// ---------------------------------------------------------------------------
 
 var chunksPath = "../../lab/chunks.jsonl";
 var cachePath = "embeddings.json";
@@ -40,6 +71,8 @@ for (var i = 0; i < args.Length; i++)
         case "--retrieval-only": retrievalOnly = true; break;
         case "--top-k": topK = int.Parse(args[++i]); break;
         case "--alpha": alpha = double.Parse(args[++i]); break;
+        // Swap models without editing the file, for demoing the contrast live.
+        case "--model": localModel = args[++i]; break;
         default: questionParts.Add(args[i]); break;
     }
 }
@@ -62,8 +95,8 @@ if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(key) && !string.IsN
 }
 else
 {
-    chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
-    Console.WriteLine("[generation: AZURE_OPENAI_* not set, falling back to local llama3.2]");
+    chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), localModel);
+    Console.WriteLine($"[generation: AZURE_OPENAI_* not set, falling back to local {localModel}]");
 }
 
 Console.WriteLine($"Q: {question}\n");

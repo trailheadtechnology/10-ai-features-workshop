@@ -25,6 +25,25 @@ dotnet run -- "What is the maximum group size on a Glacier backcountry permit?"
 dotnet run -- "Are there EV charging stations in Glacier National Park?"   # expect a refusal
 dotnet run -- --no-context                                    # step 1 of the demo, inside the finished app
 dotnet run -- --top-k 8                                       # more context, worse answers
+dotnet run -- --model qwen3:32b                               # a 32B model, if your machine has ~24GB free
+```
+
+The model choice sits at the top of `complete/Program.cs` as two lines, one of
+them commented, with the measured tradeoff written between them. `llama3.2` is
+active because it runs on any laptop in the room. `qwen3:32b` answers correctly
+100% of the time against llama3.2's 97%, never opens with a misleading "Yes",
+and never invents a citation, but it is a 20GB download that wants about 24GB of
+free memory and takes 16.6 seconds per answer against 0.9. Do not pull it at the
+workshop; the numbers are recorded in [../lab/expected-output.md](../lab/expected-output.md)
+so you do not have to.
+
+The `--model` flag exists so the contrast can be shown live without editing the
+file. Run the same question twice, once each way, and the difference in wall
+clock is as instructive as the difference in wording:
+
+```bash
+dotnet run                        # about 5 seconds end to end
+dotnet run -- --model qwen3:32b   # about 20
 ```
 
 The first run embeds all 250 chunks (roughly 40 seconds) and caches the vectors to `complete/embeddings.json`. Every run after that is instant. Delete that file if you change `chunks.jsonl`.
