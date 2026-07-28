@@ -16,10 +16,10 @@ Two things make this module land. First, it runs entirely locally: `nomic-embed-
 
 1. Run the "dog-friendly waterfall hike, not too steep" query against naive keyword search over `data/trails.json` and get junk results. That's today's baseline.
 2. Show what an embedding is: embed one sentence via Microsoft.Extensions.AI's `IEmbeddingGenerator` against Ollama, and look at the raw float array on screen for a moment. It's just numbers.
-3. Embed the whole trail catalog in a loop. Time it live to show it's seconds, not minutes.
+3. Embed the trail catalog in a loop and time it live. The checked-in demo embeds the 30-trail slice in `lab/trails-slice.json` in under two seconds. To run all 200 instead, change the one file path near the top of `Program.cs` to `../../../../data/trails.json`. Either way the point lands: seconds, not minutes, and it happens once at startup rather than per search.
 4. Write cosine similarity on screen. It fits in one visible method, which surprises people.
 5. Re-run the same query semantically. The payoff: the gentle shaded waterfall trails rise to the top, with the similarity scores visible next to each hit.
-6. Show one more query with zero keyword overlap ("somewhere quiet to take my kids") to prove it's not a fluke, and note that everything ran locally.
+6. Show one more query with zero keyword overlap ("somewhere quiet to take my kids"), which proves it isn't a fluke and then hands you the module's best moment. The top hit is Taft Point, whose own description warns that the ground gives no second chances beside a 3,000-foot drop. It is a perfect topical match and terrible advice. Say what that means: embeddings capture what text is about, not whether it's suitable, and the fix is metadata filters and a score floor, not a better model. Note that everything ran locally, and that the scores for this query top out near 0.49 against 0.77 for query one, which is the number a score floor would key on.
 
 ## Lab spec (13 min, any language)
 

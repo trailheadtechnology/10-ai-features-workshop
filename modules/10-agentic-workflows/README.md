@@ -15,11 +15,11 @@ This is the capstone because it composes the day. The agent searches trails sema
 ## Demo outline (25 min, .NET)
 
 1. Type the trip request into a plain chat completion first. You get a lovely generic itinerary that ignores the washed-out bridge and books nothing. Fluent, useless, and the reason this module exists.
-2. Show the four tools as ordinary C# methods over the mock APIs in `data/mock-apis/`: `search_trails`, `get_weather`, `check_campsites`, `request_permit`. Register them with Microsoft.Extensions.AI's function-calling support; the descriptions you write are the model's only manual.
+2. Show the five tools as ordinary C# methods over the mock APIs in `data/mock-apis/` and the corpus: `search_trails`, `get_weather`, `check_campsites`, `request_permit`, and `get_trail_conditions`. Register them with Microsoft.Extensions.AI's function-calling support; the descriptions you write are the model's only manual. `get_trail_conditions` reads the same condition reports module 08 mined, which is how the agent can find out a bridge is gone.
 3. Run the agent and narrate the loop live as each call scrolls past: weather first, then trail search, then a conditions check that discovers the module 08 bridge washout and routes around it. The payoff is watching the model sequence tools nobody ordered it to sequence.
 4. Show the full trace, then break something on purpose: mark the campsites full and re-run. The agent adapts, proposing different dates. Planning survived contact with reality.
 5. The permit step hits the module 09 gate: the agent pauses, presents the summary, and waits for a human yes before filing. Show the step budget in the loop while you're there.
-6. Close on the trace as an artifact: every decision inspectable, every action logged. That trace is what you show your security team when they ask if this thing is safe.
+6. Close on the trace as an artifact: every tool call, its arguments, and its result printed as the loop runs, so every decision is inspectable rather than mysterious. Be precise about what this demo does and doesn't do, because the distinction is the point. It prints the trace; it does not persist one. Shipping this means writing that trace to durable storage alongside the approval record from module 09, and that pair is what you show your security team when they ask whether this thing is safe.
 
 ## Lab spec (25 min, any language)
 

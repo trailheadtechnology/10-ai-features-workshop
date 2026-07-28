@@ -2,7 +2,9 @@
 
 One shared, deliberately messy dataset for a fictional national-park trip-planning app, reused across all ten modules. The theme gives the day a narrative without coupling the modules together: each lab stands alone, but they all live in the same park.
 
-**This file is the dataset contract.** The corpus doesn't exist yet; it will be generated to these schemas. Approximate counts are targets and may flex at generation time. The file names and fields are the contract, because module lab specs reference them. If a schema has to change, update the consuming modules' READMEs in the same commit.
+**This file is the dataset contract, and the corpus below it is built.** Everything described here exists and is what the labs actually read. The file names and fields are the contract, because module lab specs reference them, so if a schema changes, update the consuming modules' READMEs in the same commit.
+
+The data is synthetic, generated for this workshop. Trailhead Guides is not a real company, the trails and reviewers are invented, and the park documents imitate the register of real regulations without reproducing any. Where a real park name appears, treat every rule attached to it as fiction: do not plan an actual trip from this corpus.
 
 ## Corpora
 
@@ -51,7 +53,7 @@ Powers: 04 Semantic Search, 06 Recommendations.
 
 ### `park-docs/*.md`: regulations, guides, FAQs
 
-About 25 markdown documents: campfire regulations, permit rules, seasonal closures, backcountry guides, per-park FAQs. Long enough to need chunking. Several parks should have overlapping but different rules, so retrieval quality is visible: "Can I have a campfire at Sperry Chalet in September?" has exactly one right answer.
+25 markdown documents: campfire regulations, permit rules, seasonal closures, backcountry guides, per-park FAQs. Long enough to need chunking. Parks have overlapping but different rules, so retrieval quality is visible: "Can I have a campfire at Sperry Chalet in September?" has one right answer (no, wood fires are prohibited there year round), and several documents are near misses that would produce a different answer if retrieved instead. The authoritative statement lives in `glacier-backcountry-camping-guide.md` section 4.2. Two other documents touch the same fact without owning it: `glacier-bear-safety-advisory.md` mentions the no-wood-fire status in passing while discussing food waste, and `glacier-seasonal-closures-2026.md` defers to the camping guide by document number. That is deliberate. Real corpora repeat themselves imperfectly, and a retriever that lands on a cross-reference instead of the source is a case worth seeing.
 
 Powers: 05 RAG.
 
@@ -91,12 +93,12 @@ Powers: 10 Agentic Workflows ("Plan me a 3-day trip in Glacier for mid-September
 
 ## Summary
 
-| Corpus | Format | Target size | Powers |
+| Corpus | Format | Actual size | Powers |
 |---|---|---|---|
-| `trip-reports/*.md` | markdown + front matter | ~40 reports, 500 to 1,500 words | 01, 02 |
-| `gear-reviews.jsonl` | JSONL | ~300 reviews | 03, 06 |
-| `trails.json` | JSON array | ~200 trails | 04, 06 |
-| `park-docs/*.md` | markdown | ~25 docs | 05 |
-| `inquiries.jsonl` | JSONL | ~100 messages | 07, 09 |
-| `condition-reports.jsonl` | JSONL | ~500 reports | 08 |
-| `mock-apis/*.json` | JSON fixtures | small | 10 |
+| `trip-reports/*.md` | markdown + front matter | 40 reports, 500 to 1,500 words | 01, 02 |
+| `gear-reviews.jsonl` | JSONL | 300 reviews across 25 products | 03, 06 |
+| `trails.json` | JSON array | 200 trails across 6 parks | 04, 06 |
+| `park-docs/*.md` | markdown | 25 docs | 05 |
+| `inquiries.jsonl` | JSONL | 100 messages | 07, 09 |
+| `condition-reports.jsonl` | JSONL | 500 reports | 08 |
+| `mock-apis/*.json` | JSON fixtures | 3 fixtures | 10 |

@@ -17,9 +17,9 @@ That's the deliberate narrative beat of this module: one embedding investment ke
 1. Open the Avalanche Lake Trail page and ask the room what should be at the bottom of this screen. Everyone knows; nobody builds it.
 2. Bring back the embedded trail catalog from module 04, already sitting in memory. Nothing new is created in this step, which is the point.
 3. Write "more like this": take one trail's vector, rank every other trail by cosine similarity, skip itself, and take five. It's the search code with the query swapped for an item.
-4. Run it for a few trails. The payoff: the neighbors are obviously sensible (the alpine lake hikes cluster, the family boardwalks cluster), and the room can judge quality instantly by reading the names.
-5. Do the same with gear: embed each product's combined review text and show "people who liked this bag" style results driven purely by how reviewers describe the products.
-6. Close by naming what it can't do (cross-category discovery) and when to add behavior data.
+4. Run it for a few trails and let the room judge the results by reading the names, because they can. The alpine lake hikes do cluster. They also come back mostly rated hard when the trail you started from is a moderate family walk, and one neighbor is a Smokies hike with no lake at all. Difficulty and park are right there in the catalog, but they are not in the description text, so the embedding cannot see them. That is the whole lesson in one screen: this gets you candidates, and metadata re-ranking gets you recommendations.
+5. Do the same with gear, and let it fail on purpose. The top result for the Cascade 65 Backpack is the Cascade 40 Daypack, the single product that buyer will never need. Content similarity finds substitutes; a store wants complements. Then show the review co-mention counts, where the Summit Bear Canister sits at the top, and name the difference: what a thing is like versus what people actually use with it.
+6. Close on what this can't do. Cross-category discovery is out of reach for description similarity, one target trail in the slice has no real neighbors at all and a shipping product should show nothing rather than five weak guesses, and behavior data is what fixes both.
 
 ## Lab spec (13 min, any language)
 

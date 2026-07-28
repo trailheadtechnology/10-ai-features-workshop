@@ -1,6 +1,6 @@
 # Policy worksheet
 
-Module 07 sorted the inbox into five categories. Your job here is to decide what the software is allowed to do with each one. Pick a lane and defend it in one sentence. The justification is the graded part; reasonable people land on different lanes.
+Module 07 sorted the inbox into six categories. Your job here is to decide what the software is allowed to do with each one. Pick a lane and defend it in one sentence. The justification is the graded part; reasonable people land on different lanes.
 
 The lanes:
 
@@ -13,9 +13,10 @@ Ask two questions per category. What does the worst plausible wrong reply cost? 
 | Category | Lane | Worst plausible error | Reversible? | Justification |
 |---|---|---|---|---|
 | permit | | | | |
-| trail-condition | | | | |
+| conditions | | | | |
 | complaint | | | | |
 | lost-and-found | | | | |
+| general | | | | |
 | emergency | | | | |
 
 Two follow-up questions once the table is full:
