@@ -10,7 +10,9 @@ Everything the lab spec in [../README.md](../README.md) references:
 
 - `build-chunks.py`: the script that produced `chunks.jsonl` from `data/park-docs/`. You do not need it for the lab, since the chunks ship ready to use. It is here so the chunking decision is inspectable and changeable, which matters because that decision is what broke this feature. Run `python3 build-chunks.py` with no arguments and it rewrites `chunks.jsonl` identically. Pass different numbers (`python3 build-chunks.py chunks.jsonl 400 0`) and the strategy changes: the docstring suggests two experiments whose outcomes are already measured in `expected-output.md`, so you can check your prediction against what actually happened.
 
-Retrieval itself is not in this folder. It is your feature 04 embedding search, pointed at `chunks.jsonl`.
+- `chunk-embeddings.json`: all 250 chunk vectors, precomputed with `nomic-embed-text` (768 floats each, keyed by `chunk_id`, rounded to 6 places). This file exists so you can start here. If you did feature 04 first, ignore it and use your own vectors. If RAG is the reason you came and you would rather build it now and come back to search later, load this instead and skip straight to the part this feature is actually about: retrieving the right passages and making a model answer from them without inventing anything.
+
+Retrieval is the one piece this folder does not walk you through, because it is feature 04's cosine search pointed at `chunks.jsonl`. Either bring your own from 04 or load `chunk-embeddings.json` and rank by cosine similarity; both routes reach the same place.
 
 Four things the finished demo adds on top of that search, all four because the measured numbers demanded it:
 
