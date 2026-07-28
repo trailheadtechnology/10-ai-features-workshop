@@ -50,6 +50,7 @@ The model strategy is hybrid in a second sense, on purpose. Retrieval runs on fr
 - **When to reach for this:** internal knowledge bases, support and policy docs, product documentation. Anywhere the org already wrote the answer down and people still ask humans.
 - **Rough cost & effort:** weeks to production quality. The demo takes a day; the real work is chunking strategy, retrieval evaluation, and keeping the document set current. Ongoing model cost applies to generation only.
 - **The uncomfortable one:** the worst bug in this module was not in any model or any prompt. It was a text-splitting rule that separated a rule from its exception, it produced a confident wrong answer about fire safety once every five runs, and every retrieval metric on the dashboard said the system was working. Ask what your evaluation would have caught.
+- **Where the money goes:** swapping generation from a 3B local model to a 32B one closes every remaining defect in this module and costs about 20x the latency per answer, 0.9 seconds to 16.6. Swapping it before fixing the chunk boundary would have bought a smarter model reading the wrong context. Chunking is upstream of model choice; the measured table is in `lab/expected-output.md`.
 - **The one-liner for your CTO:** "Our documents already answer these questions. This makes them answer directly, with receipts."
 
 This card is row 5 of the [decision framework](../../docs/decision-framework.md).

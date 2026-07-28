@@ -174,7 +174,7 @@ Two hundred runs at default settings: 60 on Q1, 40 on Q2, 60 on Q3, 40 on Q4. Tw
 runs is enough to see a one-in-five defect and not enough to claim a 95 percent success
 rate, so the samples here are sized for the claim being made.
 
-**Q1** (59/60 correct):
+**Q1** (58/60 correct, plus 1 that says both things at once):
 
 > [glacier-backcountry-camping-guide:04.2] According to section 4.2 of the Glacier
 > Backcountry Camping Guide, wood fires are prohibited year-round at all campsites in
@@ -184,8 +184,8 @@ rate, so the samples here are sized for the claim being made.
 > danger is Low.
 
 **Check:** correct answer (no, and not because of September), a real chunk_id in
-brackets, and no Yosemite or frontcountry content bleeding in. Fifty-nine of sixty state
-the year-round prohibition, and not one of the sixty says fires are permitted when
+brackets, and no Yosemite or frontcountry content bleeding in. Fifty-eight of sixty state
+the year-round prohibition cleanly, and not one of the sixty says fires are permitted when
 conditions allow. The old failure mode is gone.
 
 The one failure is a different animal and worth reading:
@@ -210,8 +210,9 @@ The first is answering a question nobody asked. The second is agreeing with itse
 are substantively right, both would fail a human review on a safety question, and one run
 in sixty went all the way to "Yes, you can have a campfire at Sperry Chalet in September,
 but it's prohibited year-round," which is a sentence that contradicts itself inside twenty
-words. Chunking does not touch this. It is a prompt and a model-size question, and it is
-the largest remaining gap in the module.
+words. Chunking does not touch this. It is a prompt and a model-size question, and both were
+measured: the prompt route made it worse in all three variants tried, and `qwen3:32b` drops
+it to zero. See "The directness rule that did not work" and "What a bigger model buys".
 
 **Q2** (40/40 correct):
 
@@ -229,7 +230,7 @@ the largest remaining gap in the module.
 **Check:** closed, with a date and a citation. Roughly half the runs cite the closure
 notice, roughly half cite `glacier-visitor-faq:02`, and a few cite both.
 
-**Q4, the refusal** (36/40 refused, 0/40 asserted that a charging station exists):
+**Q4, the refusal** (37/40 refused, 0/40 asserted that a charging station exists):
 
 > The provided documents don't say.
 
@@ -240,7 +241,7 @@ provided documents about electric vehicle (EV) charging stations within Glacier 
 Park," which is substantively the same refusal but no longer a string anything downstream
 can match on.
 
-Q4 is the weakest of the four at 36 of 40, and the four misses are all the same shape.
+Q4 is the weakest of the four at 37 of 40, and the misses are all the same shape.
 Three answered the question next door:
 
 > No, fuel is not available anywhere within the Park [glacier-going-to-the-sun-road-guide:07].
@@ -248,7 +249,7 @@ Three answered the question next door:
 The corpus says nothing about electric vehicles. It says fuel is unavailable, the model
 treats that as close enough, and the answer opens with "No" to a question it never
 addressed. The conclusion happens to be plausible, which is what makes it dangerous: the
-grounding is wrong and the output looks fine. The fourth run answered with a bare
+grounding is wrong and the output looks fine. One earlier run in this series answered with a bare
 `[glacier-bear-safety-advisory:03]` and no sentence at all, which is not a refusal, not
 an answer, and not something any check in this demo catches.
 
@@ -277,12 +278,12 @@ long as fire danger was below Very High.
 
 | question | before (241 section chunks) | after (250 chunks) |
 |---|---|---|
-| **Q1, Sperry campfire, correct** | **15/20 (75%)** | **59/60 (98%)** |
+| **Q1, Sperry campfire, correct** | **15/20 (75%)** | **58/60 (97%)** |
 | Q1, wrong answer ("yes, if fire danger allows") | 4/20 | **0/60** |
 | Q1, refused | 1/20 | 0/60 |
 | Q2, group size, correct | 11/12 (92%) | **40/40 (100%)** |
 | Q3, trail closure, correct | 59/60 (98%) | 55/60 (92%) |
-| Q4, EV charging, refused | 18/20 (90%) | 36/40 (90%) |
+| Q4, EV charging, refused | 18/20 (90%) | 37/40 (92%) |
 | Q4, claimed a charging station exists | 2/20 | **0/40** |
 | Q4, refusal string used verbatim and alone | 12/20 (60%) | 12/40 (30%) |
 
@@ -353,6 +354,120 @@ repair path fires less often, which means the raw model wording survives more of
 The refusal itself got *more* reliable (18/20 to 19/20, with the two fabricated "no EV
 charging available" answers gone); the string got less uniform. If
 your product depends on an exact string, get it from code, not from the model.
+
+## The directness rule that did not work
+
+Two defects in the numbers above have the same shape: the model reaches for the nearest
+available assertion instead of answering the question that was asked. On Q1 it opens with
+"Yes" and then explains that fires are prohibited, because it is answering about the gas
+stove the context also mentions. On Q4 it says "No, fuel is not available anywhere within
+the Park" to a question about electric vehicles. Neither is a retrieval problem. Both look
+like a prompt problem, so a prompt rule was written, placed two ways, and measured.
+
+The rule, in the Rules block (variant A):
+
+```
+- Answer the question that was asked, not a related one. If the context covers only a
+  neighboring subject, that is not an answer. When the question is a yes-or-no question
+  and the context does answer it, make the first word of your reply Yes or No.
+```
+
+The same rule attached to the answer instruction instead, just above `Answer:` (variant B).
+Then a third try (variant C), same placement as A, with the Yes-or-No sentence removed and
+replaced by "Lead with the answer to the question that was asked. If the context permits
+one thing and prohibits another, say which one applies to what the visitor asked about
+before mentioning the other."
+
+Forty runs per question per variant, graded the same way as everything else. A terse reply
+is graded on its merits: a bare "No" to "can I have a campfire" counts as correct.
+
+| | Q1 correct | Q1 opens "Yes" | Q2 correct | Q3 correct | Q3 refused | Q4 refused | Q4 claimed a station exists |
+|---|---|---|---|---|---|---|---|
+| **shipped prompt** | **58/60 (97%)** | 24/60 (40%) | **40/40** | **55/60** | 5/60 | **37/40 (92%)** | **0/40** |
+| A, Rules block | 7/40 (18%) | 35/40 (88%) | 33/40 | 34/40 | 2/40 | 34/40 (85%) | 0/40 |
+| B, answer instruction | 5/40 (12%) | 36/40 (90%) | 21/40 | 33/40 | 1/40 | 13/40 (32%) | 0/40 |
+| C, no Yes-or-No wording | 15/40 (38%) | 32/40 (80%) | 40/40 | 35/40 | 0/40 | 33/40 (82%) | 3/40 |
+
+**All three made the metric they were written to fix worse.** The "Yes" opener rate went
+from 40 percent to 80 or 90 percent. Q1 correctness fell from 97 percent to between 12 and
+38. Variant C broke the one constraint that is not negotiable, producing three answers in
+forty that told a visitor the park has EV charging.
+
+**Why.** `llama3.2` reads any instruction about the shape of the opening as an instruction
+to be brief. Under variant A the median answer to Q1 was the entire string
+`Yes [glacier-backcountry-camping-guide:04.2].` Twenty words became two. The sentence that
+got deleted is the one that carried the year-round prohibition, so the answer stopped being
+correct. Then, forced to produce a bare verdict on "Can I have a campfire at Sperry Chalet
+in September?", the model reached for the agreeable token. A rule written to stop the model
+saying "Yes" doubled how often it said "Yes", and removed the explanation that had been
+quietly making the answer right.
+
+Variant B is the same failure with a wider blast radius. Moving the rule next to `Answer:`
+puts it closest to the generation and it dominates everything above it, including the
+refusal clause: Q4's refusal rate fell from 92 percent to 32.
+
+**Placement mattered less than wording.** That is worth saying, because placement is what
+this module's earlier date experiment turned on. Here A and B differ only in where the
+identical sentence sits, and both land in the same ditch on Q1 while differing wildly on Q4.
+Wording drove the Q1 result; placement drove how much collateral damage it did elsewhere.
+
+**Shipped: nothing.** The prompt is unchanged. The 40 percent "Yes" opener rate is a real
+wart, and the honest position is that a 3B model with a 20-word budget for hedging cannot
+reliably lead with a verdict it has to qualify. See the next section for what fixes it.
+
+## What a bigger model buys, and what it costs
+
+The demo stays on `llama3.2`. This section exists because module 03 teaches measuring the
+model-size question rather than arguing about it, and module 05 should be able to answer it
+about its own pipeline. Same 250 chunks, same `nomic-embed-text` retrieval, same prompt,
+same graders. Generation swapped to `qwen3:32b`, twenty runs per question. `qwen3` is a
+reasoning model; no thinking output reached the answer text, and the graders strip
+`<think>` blocks in any case.
+
+| | llama3.2 (3B) | qwen3:32b |
+|---|---|---|
+| Q1 correct | 58/60 (97%) | **20/20 (100%)** |
+| Q1 opens with "Yes" | 24/60 (40%) | **0/20 (0%)** |
+| Q1 opens with "No" | 3/60 (5%) | 13/20 (65%) |
+| Q2 correct | 40/40 (100%) | 20/20 (100%) |
+| Q3 correct | 55/60 (92%) | **20/20 (100%)** |
+| Q3 refused | 5/60 (8%) | **0/20** |
+| Q4 substantive refusal | 37/40 (92%) | **20/20 (100%)** |
+| Q4 refusal string, verbatim and alone | 13/40 (33%) | **20/20 (100%)** |
+| Q4 claimed a station exists | 0/40 | 0/20 |
+| invalid citations emitted | 9 in 200 runs | **0 in 80 runs** |
+| median latency per answer | **0.9 s** | 16.6 s |
+
+**What it buys.** Every open defect in this module closes. The "Yes" opener disappears
+completely, and the answer the prompt could not produce is the one the bigger model writes
+without being asked:
+
+> No, wood fires are prohibited year-round at all campsites in the Sperry Chalet area (site
+> code SPE), regardless of season or fire danger rating. Only pressurized-gas stoves are
+> permitted for cooking at these sites [glacier-backcountry-camping-guide:04.2].
+
+Q3's occasional refusal is gone. Q4 returns the contracted refusal string, alone, twenty
+times out of twenty, against 33 percent for the small model. And in eighty runs it never
+once fabricated a chunk_id.
+
+**What it does not buy.** Retrieval is identical, because retrieval never changed: the same
+embedder, the same 250 chunks, the same rank-1 margins. A bigger generation model would not
+have found the Sperry prohibition inside a 256-word chunk that led with the opposite rule.
+Chunking is upstream of model choice, and this is the cleanest statement of it in the
+module: the chunking fix took Q1 from 75 to 97 percent on a 3B model, and the 32B model adds
+the last 3 points. If you spend the money without fixing the chunk boundary, you are paying
+20x to have a smarter model read the wrong context more fluently.
+
+**What it costs.** Roughly 20x the latency, 0.9 seconds to 16.6 seconds per answer, on the
+same machine with the same retrieval. That is the difference between a demo you can run
+live and one where you talk over the pause. It is also 20 GB of resident model against 2 GB.
+
+**The consequence for this module's own demo.** Two of its set pieces only work because the
+model is small. Citation validation never fires on `qwen3:32b`, so the loud
+`!! CITATION CHECK FAILED` moment is a `llama3.2` phenomenon. So is the "Yes" opener. Say
+that out loud rather than letting the room conclude the check is unnecessary: the check is
+correct either way, it is cheap either way, and the reason to keep it is that you do not
+control which model you will be running on next quarter.
 
 ## Citation validation
 
@@ -480,13 +595,13 @@ not be able to tell which from the output.
   chunking section for why those two numbers moved in opposite directions. Do not tighten
   this by mentioning the refusal in the retry prompt; that trade was measured and it costs
   Q1 far more than it gains Q4.
-- **Roughly 45 percent of correct Q1 answers open with "Yes."** They then say fires are
-  prohibited. This is the biggest remaining gap in the module and it is not a chunking
-  gap: the retrieval is right, the substance is right, and the first word is wrong on a
-  safety question. Fixing it means a prompt rule about answering the question directly, or
-  a bigger generation model, and the prompt route has a measured history of collateral
-  damage in this module (see "Telling the model what day it is"). Left alone deliberately,
-  and flagged.
+- **Forty percent of correct Q1 answers open with "Yes."** They then say fires are
+  prohibited. This is the biggest remaining gap in the module and it is not a chunking gap:
+  the retrieval is right, the substance is right, and the first word is wrong on a safety
+  question. Both available fixes were measured. A prompt rule about answering directly made
+  it worse in all three variants tried, taking the opener rate to 80 or 90 percent and Q1
+  correctness to between 12 and 38 percent. `qwen3:32b` takes it to zero at 20x the latency.
+  The prompt is therefore unchanged and the wart ships, with numbers attached.
 - **Q4's four misses answer the question next door.** Three said "No, fuel is not
   available anywhere within the Park" to a question about EV charging. Same class of error
   as the "Yes" openers: the model reaching for the nearest available assertion rather than
