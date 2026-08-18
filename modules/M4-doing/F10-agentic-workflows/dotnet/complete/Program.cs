@@ -148,7 +148,7 @@ static class Trailhead
 {
     // Relative to the project folder, not the build output, so run with
     // `dotnet run` from complete/ rather than launching the binary directly.
-    const string DataDir = "../../../../../data";
+    const string DataDir = "../../data";
     public static bool AutoApprovePermits;
     public static readonly HashSet<string> Called = [];
     public static readonly List<string> LastResultIds = [];

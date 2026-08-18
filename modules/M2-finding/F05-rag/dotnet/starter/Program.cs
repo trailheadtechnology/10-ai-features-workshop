@@ -2,7 +2,7 @@ using Microsoft.Extensions.AI;
 using OllamaSharp;
 
 // Demo starting point: one chat client, one question, no context.
-// This is the "plain chatbot" from step 1 of the demo outline. It answers
+// This is the "plain chatbot" from step 1 of the demo script. It answers
 // confidently. It is also wrong: the model puts Sperry Chalet in California
 // and guesses at fire rules the park wrote down years ago.
 // Run: dotnet run [-- "your question"]

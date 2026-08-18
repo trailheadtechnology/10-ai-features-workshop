@@ -1,4 +1,4 @@
-# The decision framework
+# The Decision Framework
 
 This is the document the whole day builds toward. Each feature closes with the same three-part card: when to reach for the feature, what it roughly costs, and the one-liner for your CTO. Those cards accumulate here, so by the closing session this page is a complete answer to the question you brought to the workshop: which of these problems do my users have, and what would it cost to solve them?
 

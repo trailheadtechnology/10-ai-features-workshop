@@ -10,7 +10,7 @@ using OllamaSharp;
 //   dotnet run                          review the queue: [a]pprove / [e]dit / [r]eject / [s]kip
 //   dotnet run -- --policy              print the routing policy table and exit
 //   dotnet run -- --auto-approve-dry-run   non-interactive run for testing and CI
-//   dotnet run -- ../../lab/inquiries.jsonl   any queue file works
+//   dotnet run -- ../../data/inquiries.jsonl   any queue file works
 //
 // SAFETY INVARIANT, load-bearing, do not weaken:
 // emergencies never reach the model. The policy table below routes them to
@@ -54,7 +54,7 @@ var policy = new Dictionary<string, string>
     ["emergency"] = "human-only",
 };
 
-var inquiriesPath = "../../lab/inquiries.jsonl";
+var inquiriesPath = "../../data/inquiries.jsonl";
 var outboxDir = "outbox";
 var decisionsPath = "decisions.jsonl";
 var autoApprove = false;
@@ -71,7 +71,7 @@ for (var i = 0; i < args.Length; i++)
     }
 }
 
-var labDir = Path.GetDirectoryName(Path.GetFullPath(inquiriesPath))!;
+var dataDir = Path.GetDirectoryName(Path.GetFullPath(inquiriesPath))!;
 Directory.CreateDirectory(outboxDir);
 
 IChatClient client = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
@@ -109,7 +109,7 @@ foreach (var line in await File.ReadAllLinesAsync(inquiriesPath))
         continue;
     }
 
-    var snippetPath = Path.Combine(labDir, "snippets", inquiry.Doc);
+    var snippetPath = Path.Combine(dataDir, "snippets", inquiry.Doc);
     var snippet = !string.IsNullOrEmpty(inquiry.Doc) && File.Exists(snippetPath)
         ? (await File.ReadAllTextAsync(snippetPath)).Trim()
         : "(none on file for this message)";

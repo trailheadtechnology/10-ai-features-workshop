@@ -1,7 +1,7 @@
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Finished demo, matching the outline in ../../README.md:
+// Finished demo, matching the demo script in docs/slides/outlines:
 //   dotnet run                                the naive prompt (the book report)
 //   dotnet run -- --briefing                  3-bullet hiker briefing
 //   dotnet run -- --headline                  one-line trail status for a card UI
@@ -10,7 +10,7 @@ using OllamaSharp;
 
 IChatClient client = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
 
-var reportPath = "../../lab/tr-0004.md";
+var reportPath = "../../data/tr-0004.md";
 var mode = "naive";
 var audience = "hiker";
 for (var i = 0; i < args.Length; i++)
@@ -42,7 +42,7 @@ var prompt = mode switch
     // hazards slot and require any hazard to come first, so on a report with no
     // hazard the model will promote the nearest noun (a bear, a creek, the word
     // "avalanche" in the trail name) into a closure. Giving it a legal way to
-    // report nothing is what stops that. Measurements in lab/expected-output.md.
+    // report nothing is what stops that. Measurements in ../../expected-output.md.
     "briefing" => $"""
         You are helping {audienceFocus}.
         From the trip report below, produce exactly 3 bullets covering:

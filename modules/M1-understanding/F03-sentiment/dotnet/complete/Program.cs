@@ -4,7 +4,7 @@ using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Finished demo, matching the outline in ../../README.md:
+// Finished demo, matching the demo script in docs/slides/outlines:
 //   dotnet run                 both sets, both models, table + accuracy + disagreements
 //   dotnet run -- --easy       easy set only (demo steps 3 and 4)
 //   dotnet run -- --hard       hard set only (demo step 5)
@@ -44,14 +44,14 @@ else
 }
 
 var labels = JsonSerializer.Deserialize<Dictionary<string, RefLabel>>(
-    await File.ReadAllTextAsync("../../lab/reference-labels.json"))!;
+    await File.ReadAllTextAsync("../../data/reference-labels.json"))!;
 
 var results = new List<Result>();
 foreach (var set in sets)
 {
     Console.WriteLine($"── {set} set ──");
     Console.WriteLine($"{"id",-9} {"reference",-10} {"phi3",-10} {bigName,-10}");
-    foreach (var line in File.ReadLines($"../../lab/{set}.jsonl"))
+    foreach (var line in File.ReadLines($"../../data/{set}.jsonl"))
     {
         var review = JsonSerializer.Deserialize<Review>(line)!;
         var reference = labels[review.id].label;
@@ -90,10 +90,10 @@ if (disagreements.Count == 0) Console.WriteLine("(none this run)");
 static async Task<string> Classify(IChatClient client, string text)
 {
     // Both models get this exact prompt, and it is byte-identical to the one in
-    // lab/ollama.http and lab/azure.http, line breaks included. Reflowing these
+    // ../../http/ollama.http and ../../http/azure.http, line breaks included. Reflowing these
     // four lines into one costs phi3 measured accuracy on both sets while leaving
     // llama3.2 unchanged, so varying the prompt shape and the model in the same
-    // run measures nothing. See lab/expected-output.md.
+    // run measures nothing. See ../../expected-output.md.
     var prompt = $"""
         Classify this gear review as exactly one word: positive, negative, or mixed.
         Positive means the reviewer is happy with the product, negative means unhappy,

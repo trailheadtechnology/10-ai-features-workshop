@@ -1,0 +1,37 @@
+# Environment check: three requests, three JSON responses, cleared for the day.
+# Works in VS Code (REST Client extension) and JetBrains IDEs. Curl versions in README.md.
+#
+# For request 3, paste the key handed out in the room over <KEY FROM INSTRUCTOR>.
+
+### 1. Local chat (powers Modules 1 and 3)
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    { "role": "user", "content": "Reply with exactly: TRAILHEAD OK" }
+  ],
+  "stream": false
+}
+
+### 2. Local embeddings (powers Module 2 and anomaly detection)
+POST http://localhost:11434/api/embed
+Content-Type: application/json
+
+{
+  "model": "nomic-embed-text",
+  "input": "A quiet trail along the lake shore."
+}
+
+### 3. Cloud chat (powers sentiment comparison, RAG generation, and the capstone)
+# The endpoint and deployment name are already filled in; replace <KEY FROM INSTRUCTOR> with the key handed out in the room.
+POST https://trailhead-ai-workshop.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-10-21
+Content-Type: application/json
+api-key: <KEY FROM INSTRUCTOR>
+
+{
+  "messages": [
+    { "role": "user", "content": "Reply with exactly: TRAILHEAD CLOUD OK" }
+  ]
+}

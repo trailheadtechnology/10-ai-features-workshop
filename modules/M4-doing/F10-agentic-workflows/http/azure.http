@@ -1,0 +1,471 @@
+# Lab 10: one tool-calling round-trip by hand, against Azure OpenAI.
+#
+# In this file YOU are the agent loop. The model picks a tool; you copy the call
+# out of its response, run the "tool" (paste a canned result from below), send the
+# result back, and repeat until you get an itinerary instead of a tool call.
+# That copy-paste is exactly what dotnet/complete's function-invocation loop
+# automates, and doing it once by hand is the fastest way to see what agent
+# frameworks hide.
+#
+# The endpoint and deployment name are already filled in; replace <KEY FROM
+# INSTRUCTOR> with the key handed out in the room (same key as F00's smoke-test.http).
+# This lab uses the gpt-5.5 deployment, the frontier model; features 03 and 05 use gpt-4.1.
+#
+# The tool results below are the real outputs of the .NET tools over the workshop
+# data in data/ (trails.json, condition-reports.jsonl, mock-apis/*), so what
+# you hand back is what the demo hands back.
+#
+# Two things to know before you start:
+#  - Every tool_call the model returns has an "id". The tool message you send back
+#    must carry the same id in "tool_call_id", and the assistant message that made
+#    the call has to be replayed in the conversation before it. Wherever you see
+#    CALL-ID below, paste the id from your own response.
+#  - Argument strings vary run to run. Copy the assistant message out of YOUR
+#    response rather than trusting the sample; the sample shows the shape.
+
+### 1a. Step 1: two tools, first turn. Expect finish_reason "tool_calls", not prose.
+POST https://trailhead-ai-workshop.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-10-21
+Content-Type: application/json
+api-key: <KEY FROM INSTRUCTOR>
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the trip-planning agent for Trailhead Guides, a hiking app. Today's date is September 11, 2026. Plan trips using your tools; never invent trails, campgrounds, or availability. Every trail name and campground in your answer must have come back from a tool call in this conversation. Call search_trails and check_campsites before writing any part of the itinerary. If you have not yet called both, your next move is a tool call, not prose."
+    },
+    {
+      "role": "user",
+      "content": "Plan me a 3-day trip in Glacier National Park for September 14-16."
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "search_trails",
+        "description": "Search the trail catalog. Returns matching trails with id, name, park, distance, elevation, difficulty, and features. Call this before recommending any trail; trail ids from here are what the other tools expect.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'. Partial names like 'Glacier' also match." },
+            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional feature keywords to filter on, for example ['lake', 'waterfall', 'wildflowers']." },
+            "max_difficulty": { "type": "string", "enum": ["easy", "moderate", "hard"], "description": "Optional ceiling on difficulty. 'moderate' returns easy and moderate trails." }
+          },
+          "required": ["park"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "check_campsites",
+        "description": "Check campground availability for a park. Returns each campground with open sites per date, whether it is frontcountry or backcountry, amenities, and notes such as seasonal closures.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'." }
+          },
+          "required": ["park"]
+        }
+      }
+    }
+  ],
+  "tool_choice": "auto"
+}
+
+### 1b. Step 1: hand back the search_trails result, watch it ask for the next tool.
+# Replace the assistant message with the one from YOUR 1a response (its id and
+# arguments), then keep the tool message: this is the real search_trails result
+# for Glacier, all 8 trails the .NET tool returns for {"park":"Glacier National Park"}.
+# If the model asked for check_campsites first instead, swap the order: send it
+# the campsites result from 1c now and this trails result on the next turn.
+POST https://trailhead-ai-workshop.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-10-21
+Content-Type: application/json
+api-key: <KEY FROM INSTRUCTOR>
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the trip-planning agent for Trailhead Guides, a hiking app. Today's date is September 11, 2026. Plan trips using your tools; never invent trails, campgrounds, or availability. Every trail name and campground in your answer must have come back from a tool call in this conversation. Call search_trails and check_campsites before writing any part of the itinerary. If you have not yet called both, your next move is a tool call, not prose."
+    },
+    {
+      "role": "user",
+      "content": "Plan me a 3-day trip in Glacier National Park for September 14-16."
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "CALL-ID",
+          "type": "function",
+          "function": { "name": "search_trails", "arguments": "{\"park\":\"Glacier National Park\"}" }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "CALL-ID",
+      "content": "[{\"id\":\"trail-0003\",\"name\":\"Trail of the Cedars\",\"park\":\"Glacier National Park\",\"distance_mi\":1.0,\"elevation_ft\":60,\"difficulty\":\"easy\",\"features\":[\"boardwalk\",\"dog-friendly\",\"old-growth\",\"accessible\"]},{\"id\":\"trail-0008\",\"name\":\"Highline Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":11.8,\"elevation_ft\":1950,\"difficulty\":\"hard\",\"features\":[\"alpine\",\"viewpoint\",\"wildlife\",\"ledges\"]},{\"id\":\"trail-0013\",\"name\":\"Iceberg Lake Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":9.6,\"elevation_ft\":1275,\"difficulty\":\"moderate\",\"features\":[\"lake\",\"alpine\",\"wildflowers\",\"bears\"]},{\"id\":\"trail-0019\",\"name\":\"Grinnell Glacier Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":10.6,\"elevation_ft\":1840,\"difficulty\":\"hard\",\"features\":[\"glacier\",\"lake\",\"alpine\",\"wildflowers\"]},{\"id\":\"trail-0021\",\"name\":\"Sperry Chalet Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":6.4,\"elevation_ft\":3432,\"difficulty\":\"hard\",\"features\":[\"historic-chalet\",\"viewpoint\",\"wildlife\"]},{\"id\":\"trail-0028\",\"name\":\"Swiftcurrent Nature Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":2.5,\"elevation_ft\":95,\"difficulty\":\"easy\",\"features\":[\"lake\",\"wildlife\",\"family-friendly\"]},{\"id\":\"trail-0033\",\"name\":\"Running Eagle Falls Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":0.6,\"elevation_ft\":50,\"difficulty\":\"easy\",\"features\":[\"waterfall\",\"accessible\",\"family-friendly\"]},{\"id\":\"trail-0037\",\"name\":\"Bowman Lake Shoreline Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":7.1,\"elevation_ft\":260,\"difficulty\":\"moderate\",\"features\":[\"lake\",\"forest\",\"solitude\"]}]"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "search_trails",
+        "description": "Search the trail catalog. Returns matching trails with id, name, park, distance, elevation, difficulty, and features. Call this before recommending any trail; trail ids from here are what the other tools expect.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'. Partial names like 'Glacier' also match." },
+            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional feature keywords to filter on, for example ['lake', 'waterfall', 'wildflowers']." },
+            "max_difficulty": { "type": "string", "enum": ["easy", "moderate", "hard"], "description": "Optional ceiling on difficulty. 'moderate' returns easy and moderate trails." }
+          },
+          "required": ["park"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "check_campsites",
+        "description": "Check campground availability for a park. Returns each campground with open sites per date, whether it is frontcountry or backcountry, amenities, and notes such as seasonal closures.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'." }
+          },
+          "required": ["park"]
+        }
+      }
+    }
+  ],
+  "tool_choice": "auto"
+}
+
+### 1c. Step 1: hand back the check_campsites result, get the itinerary.
+# Append the second assistant tool_call from your 1b response (CALL-ID-2), then
+# this tool message. Notice the message list only ever grows: the whole
+# conversation, tool calls and results included, goes back up every turn.
+# Expect finish_reason "stop" and an itinerary that names trails from 1b and
+# campgrounds from here. Any name not in those two payloads was invented.
+POST https://trailhead-ai-workshop.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-10-21
+Content-Type: application/json
+api-key: <KEY FROM INSTRUCTOR>
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the trip-planning agent for Trailhead Guides, a hiking app. Today's date is September 11, 2026. Plan trips using your tools; never invent trails, campgrounds, or availability. Every trail name and campground in your answer must have come back from a tool call in this conversation. Call search_trails and check_campsites before writing any part of the itinerary. If you have not yet called both, your next move is a tool call, not prose."
+    },
+    {
+      "role": "user",
+      "content": "Plan me a 3-day trip in Glacier National Park for September 14-16."
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "CALL-ID",
+          "type": "function",
+          "function": { "name": "search_trails", "arguments": "{\"park\":\"Glacier National Park\"}" }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "CALL-ID",
+      "content": "[{\"id\":\"trail-0003\",\"name\":\"Trail of the Cedars\",\"park\":\"Glacier National Park\",\"distance_mi\":1.0,\"elevation_ft\":60,\"difficulty\":\"easy\",\"features\":[\"boardwalk\",\"dog-friendly\",\"old-growth\",\"accessible\"]},{\"id\":\"trail-0008\",\"name\":\"Highline Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":11.8,\"elevation_ft\":1950,\"difficulty\":\"hard\",\"features\":[\"alpine\",\"viewpoint\",\"wildlife\",\"ledges\"]},{\"id\":\"trail-0013\",\"name\":\"Iceberg Lake Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":9.6,\"elevation_ft\":1275,\"difficulty\":\"moderate\",\"features\":[\"lake\",\"alpine\",\"wildflowers\",\"bears\"]},{\"id\":\"trail-0019\",\"name\":\"Grinnell Glacier Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":10.6,\"elevation_ft\":1840,\"difficulty\":\"hard\",\"features\":[\"glacier\",\"lake\",\"alpine\",\"wildflowers\"]},{\"id\":\"trail-0021\",\"name\":\"Sperry Chalet Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":6.4,\"elevation_ft\":3432,\"difficulty\":\"hard\",\"features\":[\"historic-chalet\",\"viewpoint\",\"wildlife\"]},{\"id\":\"trail-0028\",\"name\":\"Swiftcurrent Nature Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":2.5,\"elevation_ft\":95,\"difficulty\":\"easy\",\"features\":[\"lake\",\"wildlife\",\"family-friendly\"]},{\"id\":\"trail-0033\",\"name\":\"Running Eagle Falls Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":0.6,\"elevation_ft\":50,\"difficulty\":\"easy\",\"features\":[\"waterfall\",\"accessible\",\"family-friendly\"]},{\"id\":\"trail-0037\",\"name\":\"Bowman Lake Shoreline Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":7.1,\"elevation_ft\":260,\"difficulty\":\"moderate\",\"features\":[\"lake\",\"forest\",\"solitude\"]}]"
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "CALL-ID-2",
+          "type": "function",
+          "function": { "name": "check_campsites", "arguments": "{\"park\":\"Glacier National Park\"}" }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "CALL-ID-2",
+      "content": "[{\"campground\":\"Avalanche Creek Campground\",\"type\":\"frontcountry\",\"sites_available\":{\"2026-09-13\":6,\"2026-09-14\":4,\"2026-09-15\":2,\"2026-09-16\":5,\"2026-09-17\":8},\"amenities\":[\"potable water\",\"flush toilets\",\"bear boxes\"],\"note\":\"Closes for season Sept 20.\"},{\"campground\":\"Sperry Chalet Area Sites\",\"type\":\"backcountry\",\"sites_available\":{\"2026-09-13\":0,\"2026-09-14\":0,\"2026-09-15\":0,\"2026-09-16\":1,\"2026-09-17\":1},\"amenities\":[\"pit toilet\",\"no fires permitted\"],\"note\":\"Backcountry permit required. Wood fires prohibited year-round.\"},{\"campground\":\"Many Glacier Campground\",\"type\":\"frontcountry\",\"sites_available\":{\"2026-09-13\":1,\"2026-09-14\":0,\"2026-09-15\":3,\"2026-09-16\":7,\"2026-09-17\":9},\"amenities\":[\"potable water\",\"flush toilets\",\"bear boxes\"],\"note\":\"High demand; fills by mid-morning.\"},{\"campground\":\"Lake McDonald Backcountry Sites\",\"type\":\"backcountry\",\"sites_available\":{\"2026-09-13\":2,\"2026-09-14\":3,\"2026-09-15\":3,\"2026-09-16\":4,\"2026-09-17\":4},\"amenities\":[\"pit toilet\",\"food hang poles\"],\"note\":\"Backcountry permit required.\"}]"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "search_trails",
+        "description": "Search the trail catalog. Returns matching trails with id, name, park, distance, elevation, difficulty, and features. Call this before recommending any trail; trail ids from here are what the other tools expect.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'. Partial names like 'Glacier' also match." },
+            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional feature keywords to filter on, for example ['lake', 'waterfall', 'wildflowers']." },
+            "max_difficulty": { "type": "string", "enum": ["easy", "moderate", "hard"], "description": "Optional ceiling on difficulty. 'moderate' returns easy and moderate trails." }
+          },
+          "required": ["park"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "check_campsites",
+        "description": "Check campground availability for a park. Returns each campground with open sites per date, whether it is frontcountry or backcountry, amenities, and notes such as seasonal closures.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'." }
+          },
+          "required": ["park"]
+        }
+      }
+    }
+  ],
+  "tool_choice": "auto"
+}
+
+### 2. Step 2: add get_weather. Your definition goes where the marker is.
+# Write the get_weather function definition yourself (name, description, a "park"
+# parameter) and paste it over the WRITE-GET-WEATHER-HERE object. Then run the same
+# loop as step 1: this first turn should ask for get_weather; when it does, hand
+# back the forecast below (the real Glacier fixture from data/mock-apis/weather.json)
+# in a tool message with the matching id, replay the 1b/1c tool results as it asks
+# for them, and check the itinerary against expected-output.md. The 16th is the rain
+# day; a passing plan does something about it.
+#
+# If the model never calls get_weather, look at your description first: it is the
+# only thing telling the model what the tool is for.
+POST https://trailhead-ai-workshop.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-10-21
+Content-Type: application/json
+api-key: <KEY FROM INSTRUCTOR>
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the trip-planning agent for Trailhead Guides, a hiking app. Today's date is September 11, 2026. Plan trips using your tools; never invent trails, weather, availability, or conditions. Every trail name, forecast, and campground in your answer must have come back from a tool call in this conversation. Call the tools one at a time, in this order, and do not write any part of the itinerary until all of them have been called: 1. get_weather for the park. 2. search_trails for candidate trails. 3. check_campsites for where to stay each night. Then write the itinerary: one section per day with trail, campsite, and how the forecast shaped the choice (put harder or more exposed hiking on the drier days)."
+    },
+    {
+      "role": "user",
+      "content": "Plan me a 3-day trip in Glacier National Park for September 14-16. I want one big hike and I don't want to be caught out in the weather."
+    }
+  ],
+  "tools": [
+    { "WRITE-GET-WEATHER-HERE": "replace this whole object with your get_weather definition, same shape as the two below" },
+    {
+      "type": "function",
+      "function": {
+        "name": "search_trails",
+        "description": "Search the trail catalog. Returns matching trails with id, name, park, distance, elevation, difficulty, and features. Call this before recommending any trail; trail ids from here are what the other tools expect.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'. Partial names like 'Glacier' also match." },
+            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional feature keywords to filter on, for example ['lake', 'waterfall', 'wildflowers']." },
+            "max_difficulty": { "type": "string", "enum": ["easy", "moderate", "hard"], "description": "Optional ceiling on difficulty. 'moderate' returns easy and moderate trails." }
+          },
+          "required": ["park"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "check_campsites",
+        "description": "Check campground availability for a park. Returns each campground with open sites per date, whether it is frontcountry or backcountry, amenities, and notes such as seasonal closures.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'." }
+          },
+          "required": ["park"]
+        }
+      }
+    }
+  ],
+  "tool_choice": "auto"
+}
+
+# --- get_weather tool result for Glacier. Send it back like this: ---
+#    {
+#      "role": "tool",
+#      "tool_call_id": "CALL-ID",
+#      "content": "{\"forecast\":[{\"date\":\"2026-09-13\",\"high_f\":61,\"low_f\":38,\"conditions\":\"sunny\",\"precip_chance\":0.05,\"wind_mph\":8},{\"date\":\"2026-09-14\",\"high_f\":63,\"low_f\":40,\"conditions\":\"sunny\",\"precip_chance\":0.05,\"wind_mph\":6},{\"date\":\"2026-09-15\",\"high_f\":58,\"low_f\":37,\"conditions\":\"partly cloudy\",\"precip_chance\":0.2,\"wind_mph\":12},{\"date\":\"2026-09-16\",\"high_f\":49,\"low_f\":33,\"conditions\":\"rain showers\",\"precip_chance\":0.7,\"wind_mph\":18},{\"date\":\"2026-09-17\",\"high_f\":52,\"low_f\":31,\"conditions\":\"clearing, frost overnight\",\"precip_chance\":0.15,\"wind_mph\":10},{\"date\":\"2026-09-18\",\"high_f\":57,\"low_f\":34,\"conditions\":\"sunny\",\"precip_chance\":0.05,\"wind_mph\":7}],\"advisories\":[\"Overnight temperatures below freezing at elevations above 6,000 ft after Sept 15.\"]}"
+#    }
+
+### 3. Step 3: the washed-out bridge. All five tools, a request for the closed trail.
+# The catalog entry for Avalanche Lake Trail (trail-0117) says nothing about the
+# bridge; only get_trail_conditions does. Run the loop. When the model calls
+# get_trail_conditions with trail-0117, hand back the result below (the newest four
+# reports on file, exactly what the .NET tool returns). For any other trail id, reply
+# with {"error": "No condition reports found for 'trail-XXXX'."} or make up a
+# benign report; the point is what happens with 0117.
+#
+# The request names trail-0117 outright, the same way the reference transcript's
+# second run does. Avalanche Lake is not in the default top-8 search result (the
+# tool caps at 8), so hand back the ["waterfall"] search below, which does include
+# it, whatever filter the model actually chose. If it skips searching and goes
+# straight to get_trail_conditions with the id, that is fine too.
+# Passing: the itinerary drops or flags the trail and says why, and the reason
+# came from the tool result, not from the model's imagination.
+POST https://trailhead-ai-workshop.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-10-21
+Content-Type: application/json
+api-key: <KEY FROM INSTRUCTOR>
+
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the trip-planning agent for Trailhead Guides, a hiking app. Today's date is September 11, 2026. Plan trips using your tools; never invent trails, weather, availability, or conditions. Every trail name, forecast, campground, and condition in your answer must have come back from a tool call in this conversation. Call the tools one at a time, in this order, and do not write any part of the itinerary until all of them have been called: 1. get_weather for the park. 2. search_trails for candidate trails that fit the request. 3. get_trail_conditions for EVERY trail you intend to recommend, one call per trail, using the trail id returned by search_trails. If the newest reports for a trail mention a closure, a washout, a bridge that is out, or any other reason hikers are turning around, that trail is CLOSED. Do not schedule a day on a closed trail. Replace it with another trail from search_trails and state plainly, in the itinerary, that the original trail is closed and why. 4. check_campsites for where to stay each night. 5. request_permit once, only if a backcountry site or permit zone is involved. If you have not yet called search_trails and get_trail_conditions, your next move is a tool call, not prose. Then write the final itinerary: one section per day with trail, campsite, and how the forecast shaped the choice. End with the permit status."
+    },
+    {
+      "role": "user",
+      "content": "Plan me a 3-day trip in Glacier National Park for September 14-16 that includes the Avalanche Lake Trail (trail-0117)."
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "search_trails",
+        "description": "Search the trail catalog. Returns matching trails with id, name, park, distance, elevation, difficulty, and features. Call this before recommending any trail; trail ids from here are what the other tools expect.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'. Partial names like 'Glacier' also match." },
+            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional feature keywords to filter on, for example ['lake', 'waterfall', 'wildflowers']." },
+            "max_difficulty": { "type": "string", "enum": ["easy", "moderate", "hard"], "description": "Optional ceiling on difficulty. 'moderate' returns easy and moderate trails." }
+          },
+          "required": ["park"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "Get the multi-day forecast and advisories for a park. Returns one entry per date with high, low, conditions, chance of precipitation, and wind.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'." }
+          },
+          "required": ["park"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_trail_conditions",
+        "description": "Get the most recent hiker-submitted condition reports for one trail, newest first. Call this for every trail you intend to recommend. Reports are where closures, washouts, and hazards show up; the catalog entry will not mention them.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "trail_id": { "type": "string", "description": "A trail id returned by search_trails, for example 'trail-0117'." }
+          },
+          "required": ["trail_id"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "check_campsites",
+        "description": "Check campground availability for a park. Returns each campground with open sites per date, whether it is frontcountry or backcountry, amenities, and notes such as seasonal closures.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'." }
+          },
+          "required": ["park"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "request_permit",
+        "description": "Submit a backcountry permit request. This files a request on the user's behalf, so call it once, at the end, after the plan is settled and the user has confirmed.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'." },
+            "zone": { "type": "string", "description": "Permit zone, for example 'Lake McDonald / Sperry' or 'Many Glacier'." },
+            "dates": { "type": "string", "description": "Trip dates, for example '2026-09-14 to 2026-09-16'." },
+            "group_size": { "type": "integer", "description": "Number of people in the group. Zones cap out at 8 in Glacier." }
+          },
+          "required": ["park", "zone", "dates", "group_size"]
+        }
+      }
+    }
+  ],
+  "tool_choice": "auto"
+}
+
+# --- Tool results for step 3. Weather and campsites are the same as steps 1-2. ---
+#
+# search_trails with {"park":"Glacier National Park","features":["waterfall"]}
+# (real output; Avalanche Lake is in the catalog like any other trail, and nothing
+# in this payload hints at the bridge):
+#    "content": "[{\"id\":\"trail-0033\",\"name\":\"Running Eagle Falls Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":0.6,\"elevation_ft\":50,\"difficulty\":\"easy\",\"features\":[\"waterfall\",\"accessible\",\"family-friendly\"]},{\"id\":\"trail-0108\",\"name\":\"Virginia Falls Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":3.6,\"elevation_ft\":520,\"difficulty\":\"moderate\",\"features\":[\"waterfall\",\"creek\",\"family-friendly\"]},{\"id\":\"trail-0117\",\"name\":\"Avalanche Lake Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":4.6,\"elevation_ft\":730,\"difficulty\":\"moderate\",\"features\":[\"waterfall\",\"lake\",\"gorge\",\"family-friendly\"]},{\"id\":\"trail-0151\",\"name\":\"Cobalt Lake Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":11.4,\"elevation_ft\":1400,\"difficulty\":\"moderate\",\"features\":[\"lake\",\"waterfall-adjacent\",\"wildflowers\"]},{\"id\":\"trail-0178\",\"name\":\"Lincoln Lake Trail\",\"park\":\"Glacier National Park\",\"distance_mi\":16.0,\"elevation_ft\":2350,\"difficulty\":\"hard\",\"features\":[\"lake\",\"waterfall-adjacent\",\"deep-solitude\"]}]"
+#
+# get_trail_conditions with {"trail_id":"trail-0117"} (real output, newest four reports):
+#    "content": "[{\"date\":\"2026-07-22\",\"report\":\"Trail is lovely as far as the creek, but with the bridge gone that is where the trip ends. Sign at the trailhead now says closed beyond mile 2.\"},{\"date\":\"2026-07-14\",\"report\":\"FYI the washed-out crossing has NOT been fixed. Saw a couple of people fording at low water but it looked sketchy, would not recommend.\"},{\"date\":\"2026-07-05\",\"report\":\"Bridge is still out at the gorge. Rangers say no repair timeline yet, so plan on an out-and-back to the crossing.\"},{\"date\":\"2026-06-24\",\"report\":\"Confirmed the washout everyone is posting about. Wreckage of the old footbridge is wedged against the rocks a hundred yards down. Turn around point for now.\"}]"
+
+### Stretch: the human gate. Do NOT send this until you have said yes out loud.
+# When the model calls request_permit, stop. Print (well, read) the arguments it
+# chose: park, zone, dates, group_size. That is the summary a human approves. Only
+# if you agree does the tool "run" and its result go back, which in this file means
+# only then do you send this request. If you decline, send the cancelled result
+# instead; the model should finish the itinerary and say no permit was filed.
+#
+# The whole message list from step 3 goes above the assistant/tool pair below; the
+# tail is all that changes.
+POST https://trailhead-ai-workshop.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-10-21
+Content-Type: application/json
+api-key: <KEY FROM INSTRUCTOR>
+
+{
+  "messages": [
+    { "role": "system", "content": "...same system prompt as step 3..." },
+    { "role": "user", "content": "...same user request, and every assistant/tool pair from your step 3 loop, in order..." },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "CALL-ID-PERMIT",
+          "type": "function",
+          "function": { "name": "request_permit", "arguments": "{\"park\":\"Glacier National Park\",\"zone\":\"Lake McDonald / Sperry\",\"dates\":\"2026-09-14 to 2026-09-16\",\"group_size\":2}" }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "CALL-ID-PERMIT",
+      "content": "{\"status\":\"submitted\",\"confirmation_id\":\"TRG-2026-091482\",\"message\":\"Permit request received. You will be notified by email when a ranger reviews your request, typically within 24 hours. This is a request, not a confirmed permit.\",\"next_steps\":[\"Check your email for a review decision.\",\"Carry printed confirmation on your trip.\",\"Walk-up conversion available at the Apgar Backcountry Permit Center.\"]}"
+    }
+  ],
+  "tools": [ "...same five tools as step 3..." ],
+  "tool_choice": "auto"
+}
+
+# --- Declined instead? Send this as the tool content and watch what the model does. ---
+# The reference implementation returns exactly this string, and the instruction not
+# to retry is there because a model that gets a bare "cancelled" will often try again.
+#    "content": "{\"status\":\"cancelled\",\"message\":\"The user declined to file the permit request. Do not retry; finish the itinerary and note that no permit was filed.\"}"
+#
+# You are also the step budget. Decide now how many round-trips you will do before
+# you stop (dotnet/complete caps at a handful), and if you hit it, that is a finding
+# worth writing down, not a reason to keep pasting.

@@ -4,7 +4,7 @@ using System.Text.Json;
 // Run: dotnet run [trail id or name]   (default: trail-0117, Avalanche Lake Trail)
 
 var trails = JsonSerializer.Deserialize<List<Trail>>(
-    await File.ReadAllTextAsync("../../lab/trails.json"),
+    await File.ReadAllTextAsync("../../data/trails.json"),
     new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower })!;
 
 var query = args.Length > 0 ? string.Join(' ', args) : "trail-0117";

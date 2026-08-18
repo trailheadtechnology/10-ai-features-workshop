@@ -3,8 +3,8 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Classifies every inquiry in ../../lab/inquiries-slice.jsonl and scores the
-// result against ../../lab/reference-labels.json.
+// Classifies every inquiry in ../../data/inquiries-slice.jsonl and scores the
+// result against ../../data/reference-labels.json.
 // Run: dotnet run
 //
 // The category comes back as a C# enum through structured output, so the model
@@ -17,12 +17,12 @@ IChatClient client = new OllamaApiClient(new Uri("http://localhost:11434"), "lla
 // runs, which makes a scored comparison against fixed reference labels meaningless.
 var options = new ChatOptions { Temperature = 0 };
 
-var inquiries = File.ReadLines("../../lab/inquiries-slice.jsonl")
+var inquiries = File.ReadLines("../../data/inquiries-slice.jsonl")
     .Select(line => JsonSerializer.Deserialize<Inquiry>(line)!)
     .ToList();
 
 var reference = JsonSerializer.Deserialize<ReferenceLabels>(
-    File.ReadAllText("../../lab/reference-labels.json"))!;
+    File.ReadAllText("../../data/reference-labels.json"))!;
 
 var results = new List<(Inquiry Inquiry, Category Category)>();
 foreach (var inquiry in inquiries)

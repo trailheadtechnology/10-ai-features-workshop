@@ -13,7 +13,7 @@ using OllamaSharp;
 IChatClient client = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
 
 var wantedId = args.Length > 0 ? args[0] : "inq-0005";
-var inquiry = File.ReadLines("../../lab/inquiries-slice.jsonl")
+var inquiry = File.ReadLines("../../data/inquiries-slice.jsonl")
     .Select(line => JsonSerializer.Deserialize<Inquiry>(line)!)
     .First(i => i.id == wantedId);
 

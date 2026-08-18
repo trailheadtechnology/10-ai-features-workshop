@@ -8,7 +8,7 @@ using OllamaSharp;
 //
 //   dotnet run                    trail-0117, live embeddings, distance table + cluster alerts
 //   dotnet run -- --raw           same trail with the task prefix removed
-//   dotnet run -- --trail 0042    the other trail in the lab data
+//   dotnet run -- --trail 0042    the other trail in the data folder
 //   dotnet run -- --sigma 1.5     tighter threshold
 //   dotnet run -- --window 30     wider clustering window, in days
 //
@@ -38,7 +38,7 @@ for (var i = 0; i < args.Length; i++)
 }
 
 var json = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-var reports = File.ReadLines($"../../lab/reports-{trail}.jsonl")
+var reports = File.ReadLines($"../../data/reports-{trail}.jsonl")
     .Select(line => JsonSerializer.Deserialize<Report>(line, json)!)
     .ToList();
 

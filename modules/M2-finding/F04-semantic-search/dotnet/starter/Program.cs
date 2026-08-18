@@ -16,7 +16,7 @@ var query = args.Length > 0
     : "dog-friendly waterfall hike, not too steep";
 
 var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
-var json = await File.ReadAllTextAsync("../../lab/trails-slice.json");
+var json = await File.ReadAllTextAsync("../../data/trails-slice.json");
 var trails = JsonSerializer.Deserialize<List<Trail>>(json, jsonOptions)!;
 
 var tokens = Regex.Matches(query.ToLowerInvariant(), "[a-z]+")

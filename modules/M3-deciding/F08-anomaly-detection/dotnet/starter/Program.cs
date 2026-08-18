@@ -4,7 +4,7 @@ using System.Text.Json;
 // Run: dotnet run
 //
 // Makes no model calls and needs no network. The vectors in
-// ../../lab/embeddings-0117.json were precomputed with nomic-embed-text so this
+// ../../data/embeddings-0117.json were precomputed with nomic-embed-text so this
 // runs with Ollama down, which is the fallback when the room's network is not
 // cooperating. Those vectors were embedded with the "classification: " task
 // prefix nomic requires, so anything you add to this corpus must be embedded the
@@ -12,13 +12,13 @@ using System.Text.Json;
 //
 // complete/ embeds live and adds the alert rule on top of this ranking.
 
-var lab = "../../lab";
+var data = "../../data";
 var json = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-var reports = File.ReadLines($"{lab}/reports-0117.jsonl")
+var reports = File.ReadLines($"{data}/reports-0117.jsonl")
     .Select(line => JsonSerializer.Deserialize<Report>(line, json)!)
     .ToList();
 
-using var doc = JsonDocument.Parse(File.ReadAllText($"{lab}/embeddings-0117.json"));
+using var doc = JsonDocument.Parse(File.ReadAllText($"{data}/embeddings-0117.json"));
 var vectors = doc.RootElement.GetProperty("embeddings")
     .EnumerateObject()
     .ToDictionary(p => p.Name, p => Normalize(p.Value.EnumerateArray().Select(v => v.GetSingle()).ToArray()));

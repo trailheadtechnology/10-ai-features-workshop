@@ -3,8 +3,8 @@ using System.Globalization;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Finished demo, matching the outline in ../../README.md:
-//   dotnet run                          extract both lab reports, then validate
+// Finished demo, matching the demo script in docs/slides/outlines:
+//   dotnet run                          extract both data/ reports, then validate
 //   dotnet run -- path1.md [path2.md]   extract any report(s) instead
 // The schema is the C# record below. Nullable fields plus the [Description]
 // attributes ("null if not stated") are what keep the sparse report honest.
@@ -14,7 +14,7 @@ IChatClient client = new OllamaApiClient(new Uri("http://localhost:11434"), "lla
 
 var reportPaths = args.Length > 0
     ? args
-    : ["../../lab/tr-0007.md", "../../lab/tr-0011.md"];
+    : ["../../data/tr-0007.md", "../../data/tr-0011.md"];
 
 foreach (var reportPath in reportPaths)
 {
@@ -83,7 +83,7 @@ static void Print(TripFacts f)
 
 // The rejection rules. Ordinary code, no model involved. Each rule covers output
 // llama3.2 has actually returned for these two reports, which is why none of them
-// look defensive until you see the run that needs them (lab/expected-output.md).
+// look defensive until you see the run that needs them (../../expected-output.md).
 static List<Verdict> Validate(TripFacts f, string sourceText)
 {
     List<Verdict> verdicts =

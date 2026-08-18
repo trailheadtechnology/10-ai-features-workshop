@@ -1,0 +1,17 @@
+{
+  "name": "f07-classification-routing",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "starter": "tsx starter/index.ts",
+    "complete": "tsx complete/index.ts"
+  },
+  "dependencies": {
+    "openai": "^6",
+    "zod": "^4"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "tsx": "^4"
+  }
+}

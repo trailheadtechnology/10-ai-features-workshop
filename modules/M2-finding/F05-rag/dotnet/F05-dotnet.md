@@ -1,9 +1,9 @@
-# .NET demo for 05 RAG
+# .NET Demo for 05 RAG
 
 Two console projects, both built on Microsoft.Extensions.AI:
 
 - `starter/`: the demo's starting point. One `IChatClient`, one question, no context. It produces the confident wrong answer that puts Sperry Chalet in the San Gabriel Mountains of California.
-- `complete/`: the finished demo as shown on stage. Embeds `../../lab/chunks.jsonl` with `nomic-embed-text`, retrieves top-k with hybrid scoring, generates a cited answer, and validates the citations before printing them.
+- `complete/`: the finished demo as shown on stage. Embeds `../../data/chunks.jsonl` with `nomic-embed-text`, retrieves top-k with hybrid scoring, generates a cited answer, and validates the citations before printing them.
 
 Retrieval always runs locally. Generation goes to Azure OpenAI when `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` are all set, and falls back to local `llama3.2` when they are not, printing which one it picked. That fallback is the whole of step 7 in the demo outline: one client construction changes, the prompt and the retrieval do not.
 
@@ -34,7 +34,7 @@ active because it runs on any laptop in the room. `qwen3:32b` answers correctly
 100% of the time against llama3.2's 97%, never opens with a misleading "Yes",
 and never invents a citation, but it is a 20GB download that wants about 24GB of
 free memory and takes 16.6 seconds per answer against 0.9. Do not pull it at the
-workshop; the numbers are recorded in [../lab/expected-output.md](../lab/expected-output.md)
+workshop; the numbers are recorded in [../expected-output.md](../expected-output.md)
 so you do not have to.
 
 The `--model` flag exists so the contrast can be shown live without editing the
@@ -48,7 +48,7 @@ dotnet run -- --model qwen3:32b   # about 20
 
 The first run embeds all 250 chunks (roughly 40 seconds) and caches the vectors to `complete/embeddings.json`. Every run after that is instant. Delete that file if you change `chunks.jsonl`.
 
-## Chunk granularity
+## Chunk Granularity
 
 Read this before the retrieval section, because it landed harder than the retrieval work did.
 
@@ -63,9 +63,9 @@ Two details that are not decoration:
 
 Retrieve-then-expand, pulling sibling subsections into the context after retrieval, was considered and rejected: expanding `:04.2` back out to its siblings reassembles the section that caused the failure.
 
-Full before-and-after numbers are in [../lab/expected-output.md](../lab/expected-output.md) under "Chunking".
+Full before-and-after numbers are in [../expected-output.md](../expected-output.md) under "Chunking".
 
-## Hybrid retrieval
+## Hybrid Retrieval
 
 Cosine similarity alone matches the phrase "campfire regulations" across five different parks' documents, and the word "Sperry" barely moves the needle. On the current chunks it still gets rank 1 right on the Sperry question, but ranks 4 through 8 fill up with Acadia and Yosemite, and everything in the top-k is what the model reads next.
 
@@ -78,9 +78,9 @@ Both signals are rescaled to 0..1 across the whole corpus for that one question,
 
 The tool prints the query terms with their IDF, then a table of combined, semantic, and lexical scores for the top hits, then the margin over rank 2. Everything on that table is a number you can point at while explaining why a chunk won.
 
-Alpha 0.6 was picked by measuring, not by taste. Lower weights on the semantic half start pulling in chunks that share rare words by accident: at alpha 0.3, the EV charging question retrieves the bear advisory paragraph about what to do when a grizzly charges, because "charging" appears in exactly one chunk of the corpus and IDF has no idea what it means. Real numbers for every question at both settings are in [../lab/expected-output.md](../lab/expected-output.md).
+Alpha 0.6 was picked by measuring, not by taste. Lower weights on the semantic half start pulling in chunks that share rare words by accident: at alpha 0.3, the EV charging question retrieves the bear advisory paragraph about what to do when a grizzly charges, because "charging" appears in exactly one chunk of the corpus and IDF has no idea what it means. Real numbers for every question at both settings are in [../expected-output.md](../expected-output.md).
 
-## Citation validation
+## Citation Validation
 
 `llama3.2` does not reliably copy a chunk_id. It writes `[glacier-bear-safety-advisory:02]` when only `:03` was retrieved. It writes `[chunk_id: glacier-seasonal-closures-2026:04.1]`, pasting the label into the brackets along with the value. At higher top-k it has written `[glacier-backcountry-campground-regulations:04]`, an id welded out of two real document names that names no document at all. All three look like receipts and none of them are.
 
@@ -105,7 +105,7 @@ A tempting alternative is to repair near-misses automatically, truncating a trai
 
 The general point is worth a sentence on stage: a repair prompt should not restate options it is not repairing. The version of this that adds "if the context did not cover the question, answer exactly `The provided documents don't say.`" to the retry text takes Q4 to 20 of 20 word for word and makes Q1 refuse in 6 of 20 runs, because any answerable question that trips the citation check is now being shown the exit on its way past. Fixing the citation in code touches only the citation.
 
-## Telling the model what day it is
+## Telling the Model What Day It Is
 
 The grounded prompt carries a date:
 
@@ -124,6 +124,125 @@ Two things about the fix are worth showing, because both are counterintuitive an
 - **The date alone changes nothing.** Adding "Today's date is September 23, 2026." to the top of the prompt moved Q3 from 5 refusals in 16 to 6 in 16. Removing the words "right now" from the question moved it to 0 in 16. The model needs to be told what the date is *for*, not just what it is.
 - **Where the rule lives decides what else it breaks.** The same guidance written broadly as its own rule ("the context is the park's current status record, answer present-tense questions from it") fixes Q3 outright and holds Q4's refusal, while dropping Q1 from 22 correct in 24 to 14, because the model starts applying effective-date logic to a year-round fire ban and decides the ban must have lapsed. Attached to the refusal clause instead, it fixes Q3 with no measurable cost to Q1 or Q2 and no loss of refusal on Q4.
 
-Numbers for all four questions before and after are in [../lab/expected-output.md](../lab/expected-output.md).
+Numbers for all four questions before and after are in [../expected-output.md](../expected-output.md).
 
-Both projects run fully offline against Ollama. See [../lab/expected-output.md](../lab/expected-output.md) for what the answers and the scores actually look like.
+Both projects run fully offline against Ollama. See [../expected-output.md](../expected-output.md) for what the answers and the scores actually look like.
+
+## Lab Walkthrough: From `starter/` to `complete/`
+
+The steps in [`../F05-lab.md`](../F05-lab.md), done in .NET: start from `starter/Program.cs` and end where `complete/Program.cs` is. Edit the starter in place (or copy it first); `complete/` is the answer key, and its comments say why each piece is there. Run from the `starter/` directory with `dotnet run`; the flags shown for later steps are the ones `complete/` supports, so add the same argument parsing or hard-code the value.
+
+### Step 1: Run the Starter: The Confident Wrong Answer
+
+No retrieval, no context. Ask the Sperry Chalet question and read the answer, then open `../data/park-docs/glacier-backcountry-camping-guide.md` Section 4.2 and read the actual rule. Everything that follows exists because of this gap.
+
+Run:
+
+```bash
+dotnet run
+```
+
+Check: Fluent, specific, and wrong about a fire regulation.
+
+### Step 2: Embed the Chunks and Retrieve the Top 3 by Cosine (lab step 1)
+
+Load `../data/chunks.jsonl` (250 chunks with `chunk_id`, `source`, `text`), embed them with `nomic-embed-text` in batches of 32, cache the vectors (about 40 seconds the first time), embed the question, and print the top 3 with scores. If retrieval does not find the right material here, no prompt later can save you.
+
+```csharp
+var chunks = File.ReadLines("../../data/chunks.jsonl").Select(l => JsonSerializer.Deserialize<Chunk>(l)!).ToList();
+IEmbeddingGenerator<string, Embedding<float>> embedder =
+    new OllamaApiClient(new Uri("http://localhost:11434"), "nomic-embed-text");
+var index = new Dictionary<string, float[]>();
+foreach (var batch in chunks.Chunk(32))
+{
+    var embeddings = await embedder.GenerateAsync(batch.Select(c => c.text));
+    foreach (var (chunk, e) in batch.Zip(embeddings)) index[chunk.chunk_id] = e.Vector.ToArray();
+}
+var questionVector = (await embedder.GenerateAsync(question)).Vector.ToArray();
+var top = chunks
+    .Select(c => (Chunk: c, Score: TensorPrimitives.CosineSimilarity(questionVector, index[c.chunk_id])))
+    .OrderByDescending(h => h.Score).Take(3).ToList();
+foreach (var (c, s) in top) Console.WriteLine($"{s:F4}  {c.chunk_id}");
+// record Chunk(string chunk_id, string source, string text);
+```
+
+Check: `glacier-backcountry-camping-guide:04.2` at rank 1 with cosine 0.7422, and the margin over rank 2 is small. Print the scores; the margin is the story.
+
+### Step 3: Blend in a Lexical Score so "Sperry" Counts (lab step 2)
+
+Cosine alone puts Acadia and Yosemite campfire sections in the top 8, because the embedder collapses "campfire regulations" from five parks onto nearly the same point. Add a BM25-lite score: tokenize, weight each query word by how few chunks contain it, min-max both signals to 0..1, and combine with an alpha. The full tokenizer, stop-word list, and BM25 formula are in `complete/`; the shape is below. The commands below use the flags `complete/` has; in your own copy, change the `alpha` and top-k variables by hand.
+
+```csharp
+var idf = queryTerms.ToDictionary(t => t,
+    t => Math.Log(1 + (n - docFreq.GetValueOrDefault(t) + 0.5) / (docFreq.GetValueOrDefault(t) + 0.5)));
+// lexical[c] = sum over query terms of idf[t] * tf*(K1+1) / (tf + K1*(1 - B + B*len/avgLen))
+var combined = alpha * semanticNorm[id] + (1 - alpha) * lexicalNorm[id];
+```
+
+Run:
+
+```bash
+dotnet run -- --top-k 8 --alpha 1.0 --retrieval-only
+dotnet run -- --top-k 8 --retrieval-only
+```
+
+Check: At alpha 1.0, five of eight chunks are from the wrong park. At the default 0.6, the wrong-park chunks are replaced by Glacier documents that name Sperry and the margin over rank 2 grows from 0.16 to 0.23. Try the rephrasings listed in `../expected-output.md`.
+
+### Step 4: Build the Grounded Prompt and Generate (lab step 3)
+
+Context in, citations out, refusal when the context is silent. Two details are load-bearing and both are measured in `../expected-output.md`: the exact refusal string, and today's date inside the refusal clause (not in the rules block), so "is the trail open right now?" is answered from a dated notice rather than refused.
+
+```csharp
+const string today = "September 23, 2026";
+const string refusal = "The provided documents don't say.";
+var context = string.Join("\n\n", top.Select(x => $"chunk_id: {x.Chunk.chunk_id}\nsource: {x.Chunk.source}\n{x.Chunk.text}"));
+var prompt = $"""
+    You are a park information assistant. Answer the visitor's question using ONLY the context below.
+    Rules:
+    - Base every statement on the context. Do not use outside knowledge.
+    - Cite the chunk_id of each chunk you relied on, in square brackets, e.g. [glacier-visitor-faq:02].
+    - Copy chunk_ids exactly as they appear above the context.
+    - If, and only if, none of the context is relevant to the question, reply exactly: "{refusal}"
+      A question about "right now" is answered from the context, not refused: today is {today},
+      and a notice that is in effect "until further notice" is still in effect right now.
+
+    Context:
+    {context}
+
+    Question: {question}
+
+    Answer:
+    """;
+var answer = (await chatClient.GetResponseAsync(prompt)).Text;
+```
+
+Check: The right answer (no wood fires at Sperry, year-round) with `[glacier-backcountry-camping-guide:04.2]` cited. Ask "Is the Avalanche Lake Trail open right now?" too; without the date line it was refused in 10 runs out of 18.
+
+### Step 5: Validate the Citations (lab step 4)
+
+A citation is only a string the model typed. Pull every bracketed token with a colon out of the answer and check it against the ids you actually retrieved. Fail loudly on a mismatch: `complete/` retries once with the legal ids spelled out and then strips whatever is still wrong, so a bad receipt never reaches the visitor.
+
+```csharp
+static List<string> Citations(string text) =>
+    Regex.Matches(text, @"\[([^\]]*:[^\]]*)\]")
+        .SelectMany(m => m.Groups[1].Value.Split(','))
+        .Select(c => c.Trim()).Where(c => c.Contains(':')).ToList();
+
+var retrievedIds = top.Select(x => x.Chunk.chunk_id).ToHashSet();
+var bad = Citations(answer).Where(c => !retrievedIds.Contains(c)).Distinct().ToList();
+if (bad.Count > 0) Console.WriteLine($"!! CITATION CHECK FAILED: {string.Join(", ", bad)} not in the retrieved set");
+```
+
+Check: Run the unanswerable question a few times: the model will eventually attach an invented chunk id to its own refusal, and the check catches it. Every run should end with a `[citations: N valid, M invalid]` line.
+
+### Step 6: Run All Four Questions, Then Run Question 1 Twenty Times (lab steps 5 and 6)
+
+`../data/questions.json` has three answerable questions and one that is not. Then loop the Sperry question: a wrong answer one run in five is invisible in a single run and is the only defect in this feature that could hurt somebody.
+
+Run:
+
+```bash
+for i in $(seq 20); do dotnet run 2>/dev/null | grep -A3 "^Q:" | tail -2; done
+```
+
+Check: Three correct cited answers, a refusal on the fourth, and no invalid citation reaching the output unflagged. Over 20 runs, count how many open with "Yes" before saying fires are banned; the measured rate for `llama3.2` is 40%, and it is 0% for the 32B model at 18x the latency (`--model qwen3:32b`, if you have the memory). Stretch: write ten more questions with the chunk that should win, sweep alpha from 0 to 1, and defend your alpha with recall@3 rather than with the Sperry question.

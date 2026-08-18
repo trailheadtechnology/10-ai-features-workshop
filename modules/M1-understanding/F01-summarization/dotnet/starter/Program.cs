@@ -6,7 +6,7 @@ using OllamaSharp;
 
 IChatClient client = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
 
-var reportPath = args.Length > 0 ? args[0] : "../../lab/tr-0001.md";
+var reportPath = args.Length > 0 ? args[0] : "../../data/tr-0001.md";
 var report = StripFrontMatter(await File.ReadAllTextAsync(reportPath));
 
 var response = await client.GetResponseAsync($"Summarize this trip report.\n\n{report}");

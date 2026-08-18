@@ -3,7 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Finished demo, matching the outline in ../../README.md:
+// Finished demo, matching the demo script in docs/slides/outlines:
 //   dotnet run -- dog-friendly waterfall hike, not too steep
 //   dotnet run -- somewhere quiet to take my kids
 // Embeds every trail description once, embeds the query, ranks by cosine
@@ -17,7 +17,7 @@ IEmbeddingGenerator<string, Embedding<float>> generator =
     new OllamaApiClient(new Uri("http://localhost:11434"), "nomic-embed-text");
 
 var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
-var json = await File.ReadAllTextAsync("../../lab/trails-slice.json");
+var json = await File.ReadAllTextAsync("../../data/trails-slice.json");
 var trails = JsonSerializer.Deserialize<List<Trail>>(json, jsonOptions)!;
 
 // Embedding the catalog takes seconds, so the vectors are cached next to the

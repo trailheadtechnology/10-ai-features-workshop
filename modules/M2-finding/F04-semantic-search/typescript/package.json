@@ -1,0 +1,16 @@
+{
+  "name": "f04-semantic-search",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "starter": "tsx starter/index.ts",
+    "complete": "tsx complete/index.ts"
+  },
+  "dependencies": {
+    "openai": "^6"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "tsx": "^4"
+  }
+}

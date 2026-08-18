@@ -6,7 +6,7 @@ using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Finished demo, matching the outline in ../../README.md:
+// Finished demo, matching the demo script in docs/slides/outlines:
 //   dotnet run                                    the Sperry Chalet question, grounded
 //   dotnet run -- "Is the Avalanche Lake Trail open right now?"
 //   dotnet run -- --no-context                    step 1: the confident wrong answer
@@ -18,7 +18,7 @@ using OllamaSharp;
 // Retrieval is hybrid: normalized cosine similarity blended with a BM25-lite
 // lexical score, so a distinctive proper noun like "Sperry" counts for something.
 // Chunks are one numbered subsection each wherever a section ran long enough to
-// hold a rule and the exception that overrides it; see ../../lab/expected-output.md.
+// hold a rule and the exception that overrides it; see ../../expected-output.md.
 // Every generated answer's [chunk-id] citations are validated against the chunks
 // that were actually retrieved.
 //
@@ -31,7 +31,7 @@ using OllamaSharp;
 //
 // Everything else in this file is identical either way: same retrieval, same
 // chunks, same prompt. Only the model changes. All numbers below were measured
-// on this pipeline and are written up in ../../lab/expected-output.md.
+// on this pipeline and are written up in ../../expected-output.md.
 //
 //                            llama3.2 (3B)      qwen3:32b
 //   answers correctly           97%               100%
@@ -53,7 +53,7 @@ using OllamaSharp;
 var localModel = "llama3.2";       // the default, because it runs on any laptop in the room
 // ---------------------------------------------------------------------------
 
-var chunksPath = "../../lab/chunks.jsonl";
+var chunksPath = "../../data/chunks.jsonl";
 var cachePath = "embeddings.json";
 var topK = 3;
 var alpha = 0.6;          // weight on the semantic signal; 1.0 = cosine only
@@ -221,7 +221,7 @@ if (retrievalOnly) return;
 // have no expiry, and it starts deciding a year-round fire ban has lapsed.
 //
 // Production passes DateTime.Today here; this demo pins a date so the recorded outputs in
-// lab/expected-output.md stay reproducible.
+// ../../expected-output.md stay reproducible.
 const string today = "September 23, 2026";
 const string refusal = "The provided documents don't say.";
 

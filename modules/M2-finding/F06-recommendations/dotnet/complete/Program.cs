@@ -2,7 +2,7 @@ using Microsoft.Extensions.AI;
 using OllamaSharp;
 using System.Text.Json;
 
-// Finished demo, matching the outline in ../../README.md:
+// Finished demo, matching the demo script in docs/slides/outlines:
 //   dotnet run                          "more like this" for Avalanche Lake Trail
 //   dotnet run -- trail-0008            any trail id works
 //   dotnet run -- Trail of the Cedars   so does any name (or part of one)
@@ -25,7 +25,7 @@ if (args.Length > 0 && args[0] == "--gear")
 // Same catalog and same embedding model as feature 04. Recommendations need no
 // new model and no new data, only the vectors search already produced.
 var trails = JsonSerializer.Deserialize<List<Trail>>(
-    await File.ReadAllTextAsync("../../lab/trails.json"),
+    await File.ReadAllTextAsync("../../data/trails.json"),
     new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower })!;
 
 var vectors = await EmbedWithCache(generator, "embeddings.json",
@@ -66,7 +66,7 @@ foreach (var (trail, score) in hits)
 // or mention together), and no embedding of the product text can supply it.
 static async Task RecommendGear(IEmbeddingGenerator<string, Embedding<float>> generator, string query)
 {
-    var reviews = File.ReadLines("../../../../../data/gear-reviews.jsonl")
+    var reviews = File.ReadLines("../../data/gear-reviews.jsonl")
         .Select(line => JsonSerializer.Deserialize<Review>(line,
             new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower })!)
         .ToList();

@@ -13,3 +13,12 @@ decisions.jsonl
 
 # Local review notes
 findings.md
+
+# Python and Node
+__pycache__/
+.venv/
+venv/
+node_modules/
+
+# macOS
+.DS_Store

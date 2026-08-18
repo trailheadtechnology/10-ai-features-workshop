@@ -28,8 +28,8 @@ const string SystemPrompt = """
     to dispatch.
     """;
 
-var inquiriesPath = args.Length > 0 ? args[0] : "../../lab/inquiries.jsonl";
-var labDir = Path.GetDirectoryName(Path.GetFullPath(inquiriesPath))!;
+var inquiriesPath = args.Length > 0 ? args[0] : "../../data/inquiries.jsonl";
+var dataDir = Path.GetDirectoryName(Path.GetFullPath(inquiriesPath))!;
 
 IChatClient client = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
 
@@ -38,7 +38,7 @@ foreach (var line in await File.ReadAllLinesAsync(inquiriesPath))
     if (string.IsNullOrWhiteSpace(line)) continue;
     var inquiry = JsonSerializer.Deserialize<Inquiry>(line)!;
 
-    var snippetPath = Path.Combine(labDir, "snippets", inquiry.Doc);
+    var snippetPath = Path.Combine(dataDir, "snippets", inquiry.Doc);
     var snippet = !string.IsNullOrEmpty(inquiry.Doc) && File.Exists(snippetPath)
         ? (await File.ReadAllTextAsync(snippetPath)).Trim()
         : "(none on file for this message)";
