@@ -5,7 +5,7 @@ One feature, double the time, and it uses everything from the rest of the day.
 This file is the instructor script for the module. The bullets under each slide are what is on screen; the `Notes:` text and the "Demo script" steps under each "Demo: What to Watch" slide are what you say and click. The specs in `modules/` are written for attendees and no longer carry the demo steps.
 
 Runsheet (lengths, not clock times):
-- 10 min instructor: slides 1 to 9. The demo (slide 6) is the bulk of it, so keep the tool loop on screen and let it scroll; slides 7 to 9 are one sentence each if the demo ran long.
+- 10 min instructor: slides 1 to 11. The two diagram slides (6 and 7) and the demo (slide 8) are the bulk of it, so keep the tool loop on screen and let it scroll; slides 9 to 11 are one sentence each if the demo ran long.
 - 50 min build: everyone does 10. Foundry key and the `gpt-5.5` deployment name on the board. Sticky check at about 20 min.
 - Cut if behind: the break-it-on-purpose re-run with full campsites (step 4); leave the leadership card as one sentence.
 - Last 5 min: debrief, then hand off to the closing deck.
@@ -49,7 +49,28 @@ Runsheet (lengths, not clock times):
 
 Notes: Be precise: the demo prints the trace, it does not persist one. Shipping this means writing that trace to durable storage next to the approval record from 09. That pair is what you show your security team.
 
-## 6. 10 · Demo: What to Watch
+## 6. 10 · How the Loop Works
+
+Flow: Trip request + tool descriptions -> Model: call a tool, or answer -> Your code runs the tool (weather, trails, conditions, campsites) -> Result appended to the conversation -> Model again, until it answers or hits the step budget -> Itinerary + a full trace
+
+- The loop is in your code. The model only ever returns "call this with these arguments" or a final answer.
+- Tools are ordinary methods; their descriptions are the model's manual
+- Guardrails are boxes on this line: a step budget on the loop, an approval gate before `request_permit`
+
+Notes: Trace one iteration with your finger: model, tool, result back in, model. Then say the loop runs seven or eight times for this request.
+
+## 7. RAG Fetches Before, an Agent Asks During
+
+Flow (05 RAG): Question -> Your code retrieves context -> Model answers once -> Done
+Flow (10 Agent): Request -> Model asks for what it needs -> Your code fetches it -> Model asks again, or answers -> Done, after N turns
+
+- RAG: you decide what the model reads, once, up front. Cheap, predictable, one call.
+- Agent: the model decides what to fetch, in what order, and when to stop. Flexible, and N times the cost.
+- Pick the left row whenever you can name the context in advance. Pick the right row when you can't.
+
+Notes: This is the "why not just RAG" slide. The trip request needs weather before it can pick a trail and conditions before it can book, and nobody knows that order up front. That is the whole case for the loop.
+
+## 8. 10 · Demo: What to Watch
 
 - Plain chat completion first: a lovely generic itinerary that ignores the bridge and books nothing
 - The five tools as ordinary C# methods over the mock APIs: `search_trails`, `get_weather`, `get_trail_conditions`, `check_campsites`, `request_permit`. The descriptions are the model's only manual.
@@ -68,7 +89,7 @@ Demo script (the demo outline that used to live in the spec, sized for the 10-mi
 5. The permit step hits the feature 09 gate: the agent pauses, presents the summary, and waits for a human yes before filing. Show the step budget in the loop while you're there.
 6. Close on the trace as an artifact: every tool call, its arguments, and its result printed as the loop runs, so every decision is inspectable rather than mysterious. Be precise about what this demo does and doesn't do: it prints the trace, and it does not persist one. Shipping this means writing that trace to durable storage alongside the approval record from feature 09, and that pair is what you show your security team when they ask whether this thing is safe.
 
-## 7. 10 · Reliability Is the Whole Engineering Problem
+## 9. 10 · Reliability Is the Whole Engineering Problem
 
 - Across roughly two dozen local runs while building this, `llama3.2`:
   - called a tool with the literal argument `[insert trail IDs here]`
@@ -80,7 +101,7 @@ Demo script (the demo outline that used to live in the spec, sized for the 10-mi
 
 Notes: These counts are in `dotnet/F10-dotnet.md` as measured fact. They are the honest answer to "should we ship an agent?" Yes: with a step budget, validated arguments, tools that return errors, a persisted trace, and a human approving anything irreversible. Which is to say, with feature 09.
 
-## 8. 10 · Why This One Pays for a Frontier Model
+## 10. 10 · Why This One Pays for a Frontier Model
 
 - The only feature today where the workshop pays for a cloud model rather than running local
 - The reason is the numbers on the previous slide
@@ -88,7 +109,7 @@ Notes: These counts are in `dotnet/F10-dotnet.md` as measured fact. They are the
 
 Notes: Measured against the workshop's Microsoft Foundry deployment (gpt-4.1): every run sequenced weather, search, conditions on every candidate, campsites, then the permit only when needed, with zero nudges, in all three languages; the closed-trail request checked trail-0117 first and planned around the closure. Say that plainly; the contrast with the local counts on the previous slide is the argument.
 
-## 9. 10 · Leadership Card
+## 11. 10 · Leadership Card
 
 - When: multi-step workflows spanning systems where users state a goal and then do the clicking themselves. Trip planning, onboarding, procurement, incident response, report assembly.
 - Cost: the highest of the ten. Weeks to months, frontier-model API costs, real design work on guardrails, confirmation gates, observability. Do one of 01 to 09 first.
@@ -96,7 +117,7 @@ Notes: Measured against the workshop's Microsoft Foundry deployment (gpt-4.1): e
 
 Notes: Row 10, and the one your board has already asked about.
 
-## 10. Hands-On: 50 Minutes
+## 12. Hands-On: 50 Minutes
 
 - `http/azure.http`: you are the loop. Send the request with the tools array, read the tool call out of the response, send the follow-up with the tool result.
 - Step 1: the two-tool round-trip (`search_trails`, `check_campsites`) is written out for you
@@ -107,7 +128,7 @@ Notes: Row 10, and the one your board has already asked about.
 
 Notes: If you get an itinerary instead of a tool call on step 1, the model never saw your tools. Three failure modes on step 3, in ascending order of embarrassment: never calls conditions; calls it, reads "bridge is OUT", schedules anyway; drops the trail but invents a reason without calling. The third guessed right, which is worse.
 
-## 11. Debrief
+## 13. Debrief
 
 - Whose agent checked the bridge? Whose scheduled it anyway?
 - Row 10 is done. All ten rows are done.

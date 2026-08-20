@@ -107,7 +107,17 @@ Notes: This is the artifact you take back to work. Point at `docs/decision-frame
 
 Notes: Rows 1 through 8 of the framework mostly run on free local models. That is a finding your leadership will care about on its own.
 
-## 12. Every Model Is an HTTP Call
+## 12. The Shape of Every Feature
+
+Flow: Your data (a report, a query, an inbox) -> Prompt: instruction + data + the shape you want back -> Model, over HTTP (Ollama or Foundry) -> Output your code checks -> Your UI
+
+- Ten features, one shape. What changes is the data going in, the instruction, and what your code does with what comes back
+- The model is one box in the middle. Everything around it is ordinary software you already know how to write
+- Modules 2 to 4 add boxes to this line (a vector store, a retrieval step, a tool loop) and never replace it
+
+Notes: Put this up before the HTTP slide and leave the picture in people's heads for the day. Every module opens with a version of this diagram with more boxes; point back to this one each time.
+
+## 13. Every Model Is an HTTP Call
 
 - Ollama is a local server on `localhost:11434`: native `/api/chat` and `/api/embed`, plus an OpenAI-compatible `/v1`
 - Foundry serves `gpt-4.1` and `gpt-5.5` at `…openai.azure.com/openai/deployments/<name>/chat/completions` with an `api-key` header
@@ -116,7 +126,7 @@ Notes: Rows 1 through 8 of the framework mostly run on free local models. That i
 
 Notes: Show one request to each on screen: the smoke test's local chat and its cloud chat, side by side. Point at the URL and the header. This is why "any language" is true and why local-to-cloud is a config change, which the next slide makes concrete in code.
 
-## 13. One Line of Code, Any Provider
+## 14. One Line of Code, Any Provider
 
 - Every .NET demo uses Microsoft.Extensions.AI: `IChatClient`, `IEmbeddingGenerator`
 - Ollama today, Azure OpenAI tomorrow, is a change in DI registration, not in the feature
@@ -124,7 +134,7 @@ Notes: Show one request to each on screen: the smoke test's local chat and its c
 
 Notes: This is the one "framework" slide of the day. Show the two registration lines side by side, and then move on; that is all the framework talk the day needs.
 
-## 14. Meet Trailhead Guides
+## 15. Meet Trailhead Guides
 
 - A fictional national-park trip-planning app, one deliberately messy corpus, reused all day; each feature's `data/` holds what its lab reads
 - 40 rambling trip reports · ~300 gear reviews · 200 trails · 25 park regulation docs · a visitor-inquiry inbox · ~500 trail-condition reports · mock weather/campsite/permit APIs
@@ -132,7 +142,7 @@ Notes: This is the one "framework" slide of the day. Show the two registration l
 
 Notes: Two minutes, not a tour; each lab doc describes its own data when people get there. Open one trip report on screen and scroll it slowly; that is the problem feature 01 is about to solve. Mention two planted facts people will meet repeatedly: the washed-out footbridge on Avalanche Lake Trail (trail-0117), and a bear-activity spike two trails over.
 
-## 15. Row 0 of the Framework
+## 16. Row 0 of the Framework
 
 - When: before any AI feature at all
 - Cost: one workshop's worth of attention

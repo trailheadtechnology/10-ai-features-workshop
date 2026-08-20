@@ -5,7 +5,7 @@ The first two modules produced answers for a user. This one produces decisions f
 This file is the instructor script for the module. The bullets under each slide are what is on screen; the `Notes:` text and the "Demo script" steps under each "Demo: What to Watch" slide are what you say and click. The specs in `modules/` are written for attendees and no longer carry the demo steps.
 
 Runsheet (lengths, not clock times):
-- 30 min instructor: slides 1 to 3, then for each feature the problem, concept, demo (about 8 min each), and leadership card. Feature 07 first, then 08, then 09.
+- 30 min instructor: slides 1 to 4 (the module thread and the comparison diagram), then for each feature the problem, concept, how-it-works diagram, demo (about 8 min each), and leadership card. Feature 07 first, then 08, then 09.
 - 60 min build: slide "Hands-On" up; attendees pick 07 (recommended), 08, or 09. Sticky check at about 20 min.
 - Cut if behind: the "unsure" route in demo 07 (step 5), the `--raw` first pass in demo 08 (step 3, go straight to the prefixed run), and the audit log in demo 09 (step 4).
 - Last 5 min: debrief slide.
@@ -32,21 +32,43 @@ Notes: Feature 09 makes the sharpest version of this by failing, live, every tim
 
 ---
 
-## 3. 07 · Classification & Routing: The User Problem
+## 3. Three Ways to Decide
+
+Flow (07 Classify): Inquiry -> Model picks one label from your list -> Queue
+Flow (08 Detect): Reports -> Embed -> Distance from "normal" -> Threshold rule -> Alert
+Flow (09 Approve): Inquiry -> Model drafts a reply -> Human approves, edits, or rejects -> Send + log
+
+- Three shapes of decision: a label, a "this is unusual," and a signature
+- Only 07 and 09 ask a model to decide anything. 08 asks it for numbers and decides with arithmetic.
+- 09 wraps the other two: the routing policy says which decisions a model may make alone
+
+Notes: The module thread is "who decides, and how do you know they got it right." Say which box in each row is the decision.
+
+## 4. 07 · Classification & Routing: The User Problem
 
 - Every message to Trailhead lands in one inbox: permits, conditions, complaints, lost-and-found, and occasionally an actual emergency
 - A ranger triages by hand once or twice a day
 - The permit waits behind the granola questions; the emergency sits unread for four hours
 - The user's real problem: their message goes into a hole
 
-## 4. 07 · The Concept
+## 5. 07 · The Concept
 
 - Classification again (03 was the warm-up), but now the label has consequences
 - Zero-shot: describe the categories in plain language, no training data, which is where every team is on day one
 - The taxonomy is the product. When the model misfiles something, fix the description, not the model.
 - Tune so the expensive class never slips through, even at the cost of extra false alarms
 
-## 5. 07 · Demo: What to Watch
+## 6. 07 · How It Works
+
+Flow: Inquiry text -> Prompt: each category described in plain language, plus "unsure" -> llama3.2 -> Exactly one label -> Route to that queue
+
+- The taxonomy lives in the prompt as descriptions, so a misroute is fixed by editing a sentence, not code
+- Constrain the output: one label from the list, nothing else, and reject anything off-list
+- "Unsure" is a real queue, deliberately narrow, for messages two teams must both see
+
+Notes: The planted misclassification (inq-0030) is fixed by editing the description box. Show that.
+
+## 7. 07 · Demo: What to Watch
 
 - Scroll the raw inbox; let the room find the emergency
 - One classify method, taxonomy as plain-language descriptions, exactly one label
@@ -65,7 +87,7 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 5. Walk the "unsure" route in the taxonomy: it is deliberately narrow, for messages that two queues must both act on. Show inq-0035 landing there, which is correct behavior, and point out that the description forbids sending anything dangerous to it.
 6. Close on asymmetric error costs: what this system is tuned never to miss, and what noise level that tolerance buys.
 
-## 6. 07 · Leadership Card
+## 8. 07 · Leadership Card
 
 - When: any shared inbox, ticket queue, or intake form where a human sorts before anyone acts. Support, sales leads, HR, incoming documents.
 - Cost: days. No training data to start; ongoing work is refining the taxonomy as traffic reveals edge cases. Local models make per-message cost roughly zero.
@@ -73,13 +95,13 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 
 ---
 
-## 7. 08 · Anomaly Detection: The User Problem
+## 9. 08 · Anomaly Detection: The User Problem
 
 - ~500 trail-condition reports a season across 200 trails. Almost all say "muddy in spots, otherwise fine."
 - Then in one week three hikers report a washed-out bridge on the same trail, and a fourth mentions aggressive bear activity two trails over
 - Nobody notices. The park hears about the bridge from a one-star review a month later.
 
-## 8. 08 · The Concept
+## 10. 08 · The Concept
 
 - Barely an AI feature: embeddings plus arithmetic
 - Embed a trail's reports; the routine ones cluster. Average them: a centroid, the center of "normal."
@@ -88,7 +110,17 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 
 Notes: "Most" is doing real work in that sentence, and the demo is honest about it.
 
-## 9. 08 · Demo: What to Watch
+## 11. 08 · How It Works
+
+Flow: A trail's condition reports -> nomic-embed-text, with the classification: prefix -> Average the vectors: the centroid of "normal" -> Distance of each new report from it -> Beyond threshold, and 2 or more in 14 days -> Alert
+
+- The model is only used to turn reports into vectors. Every box after that is subtraction and a rule.
+- The alert rule is where the feature lives: one odd report is noise, two in a fortnight is a washout
+- Reusing 04's embedding code; the task prefix is the one thing that changed the ranking
+
+Notes: Say "some AI features are mostly arithmetic wearing an AI badge" while pointing at the last three boxes.
+
+## 12. 08 · Demo: What to Watch
 
 - Scroll the report stream, which is boring on purpose. Nobody can find the problem.
 - Centroid on one slide: the center of normal
@@ -108,7 +140,7 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 5. Now the alert rule, which is where the feature actually lives: distance beyond threshold, plus two or more flagged reports within a two-week window. One alert fires on this trail, three genuine washout reports in it, nothing false. Show it also catching the bear-activity spike on the other trail, where the signal is even cleaner because that trail's routine chatter is more uniform. Accuracy here is a property of your corpus, not your code.
 6. Count the model calls: embeddings only, and everything after them was subtraction. Some AI features are mostly arithmetic wearing an AI badge.
 
-## 10. 08 · Leadership Card
+## 13. 08 · Leadership Card
 
 - When: any stream of routine text where the rare exception is expensive to miss. Tickets, logs, safety reports, transaction notes, review streams.
 - Cost: days, and cheap to run forever. Embeddings are the only model cost.
@@ -118,14 +150,14 @@ Notes: Pairs with 07: classification handles the categories you knew to define; 
 
 ---
 
-## 11. 09 · Human-in-the-Loop: The User Problem
+## 14. 09 · Human-in-the-Loop: The User Problem
 
 - 07 routed the inbox; now the ranger has forty messages that need replies. Most are boilerplate typed a hundred times.
 - The obvious move: let the AI answer
 - The obvious disaster: the AI tells a visitor campfires are fine during a burn ban, on official letterhead
 - The ranger's problem is drudgery. The park's problem is that fully automating outbound communication is how you end up apologizing publicly.
 
-## 12. 09 · The Concept
+## 15. 09 · The Concept
 
 - A product pattern, not a model feature. The difference between AI features that ship and ones killed in legal review.
 - AI drafts; a human approves, edits, or rejects; the system remembers what happened
@@ -133,7 +165,7 @@ Notes: Pairs with 07: classification handles the categories you knew to define; 
 - Emergencies never get an AI draft at all
 - Audit trail, and measure the draft-to-final gap: how much people edit tells you whether trust in each lane is earned
 
-## 13. 09 · The Failure That Makes the Point
+## 16. 09 · The Failure That Makes the Point
 
 - Asked to draft a reply to a woman whose husband is four hours overdue, the model ignores its escalation instruction and writes a warm, reassuring, useless note. Every run.
 - Move the instruction to the top: it announces `ESCALATE`, then writes the note anyway. Every run.
@@ -142,7 +174,17 @@ Notes: Pairs with 07: classification handles the categories you knew to define; 
 
 Notes: This is the sharpest slide in the module. Show the raw prompt fail live if time allows; the reference runs are in `expected-output.md`, 3/3 both ways.
 
-## 14. 09 · Demo: What to Watch
+## 17. 09 · How It Works
+
+Flow: Routed inquiry (from 07) -> Retrieve park docs (05) -> Model drafts a reply -> Human: approve, edit, or reject -> Send, and log draft + decision + final text
+
+- The model does the typing; a person does the deciding, and the log proves who decided what
+- A policy table sits in front of this line: which categories auto-send, which get a draft, which never see a model
+- The edits are data. Tomorrow's prompt improvement comes out of today's log.
+
+Notes: The emergency row of the policy table skips the whole diagram. That is the design.
+
+## 18. 09 · Demo: What to Watch
 
 - A routed queue of condition questions awaiting replies
 - Draft one reply, grounded in park docs the way 05 grounded answers. It is good without being perfect.
@@ -161,7 +203,7 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 5. Put the routing policy on screen as a table: which categories auto-send, which get drafts, which stay human-only. Point at the emergency row: no AI draft, ever, by policy.
 6. Close the loop: the edits collected in step 3 are tomorrow's prompt improvements. The human is the feedback signal as much as the safety check.
 
-## 15. 09 · Leadership Card
+## 19. 09 · Leadership Card
 
 - When: any customer-facing or high-stakes generation. Support replies, quotes, claims decisions, anything sent under your name.
 - Cost: drafting is trivial; the approval UI, audit trail, and policy design are ordinary product engineering, measured in weeks. Often what makes the other nine shippable.
@@ -169,14 +211,14 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 
 ---
 
-## 16. Hands-On: 60 Minutes
+## 20. Hands-On: 60 Minutes
 
 - **Start with 07 Classification** (Recommended): structured output with an enum plus an honest scoring pass. The number that matters is whether both emergencies were caught. Missing one fails the lab at 19/20.
 - Then choose by energy as much as by interest:
   - **08 Anomaly Detection**: the most code. Ships precomputed vectors so you can go straight to the math.
   - **09 Human-in-the-Loop**: the least code; mostly a policy worksheet and a decision about what your software may do unsupervised. Running out of gas? Take this. It is also the one most likely to matter back at work.
 
-## 17. Debrief
+## 21. Debrief
 
 - Whose classifier caught both emergencies? Whose model wrote the reassuring note?
 - Rows 7 to 9 of the decision framework are done

@@ -11,6 +11,6 @@ Six decks, one per session. The outlines in [`outlines/`](outlines/) are the sou
 | 4 | Module 4: Doing, 60 min | [M4-doing.md](outlines/M4-doing.md) |
 | 5 | Closing, 30 min | [05-closing.md](outlines/05-closing.md) |
 
-The module decks share a shape: the module's thread, then per feature the user problem, the concept, what to watch in the demo, and the leadership card, then the hands-on menu and a debrief slide. The Microsoft.Extensions.AI provider-swap slide lives in the opening deck (slide 13) and is referenced from features 03 and 05.
+The module decks share a shape: the module's thread, a comparison diagram of the module's features side by side, then per feature the user problem, the concept, a how-it-works flow diagram, what to watch in the demo, and the leadership card, then the hands-on menu and a debrief slide. The diagrams are drawn by `build.py` from `Flow:` lines in the outline, so they stay editable as text. The Microsoft.Extensions.AI provider-swap slide lives in the opening deck (slide 14) and is referenced from features 03 and 05.
 
 Everything on the slides is drawn from the module overviews and feature specs; where a slide quotes a number, the run behind it is in that feature's `expected-output.md`.

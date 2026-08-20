@@ -5,7 +5,7 @@ Three features that share one shape: a single model call and a carefully written
 This file is the instructor script for the module. The bullets under each slide are what is on screen; the `Notes:` text and the "Demo script" steps under each "Demo: What to Watch" slide are what you say and click. The specs in `modules/` are written for attendees and no longer carry the demo steps.
 
 Runsheet (lengths, not clock times):
-- 30 min instructor: slides 1 to 3, then for each feature the problem, concept, demo (about 8 min each), and leadership card. Feature 01 first, then 02, then 03.
+- 30 min instructor: slides 1 to 4 (the module thread and the comparison diagram), then for each feature the problem, concept, how-it-works diagram, demo (about 8 min each), and leadership card. Feature 01 first, then 02, then 03.
 - 60 min build: slide "Hands-On" up; attendees pick 01 (recommended), 02, or 03. Walk the room. Sticky check at about 20 min: green if `complete/` output matches `expected-output.md`, red if stuck.
 - Cut if behind: the "one-line trail status" reshape in demo 01, the break-it-on-purpose beats in demos 02 and 03, then say the 02 and 03 leadership cards in one sentence each.
 - Last 5 min: debrief slide; ask two people what surprised them.
@@ -32,13 +32,24 @@ Notes: Plant this now; every feature in the module pays it off, and it saves the
 
 ---
 
-## 3. 01 · Summarization: The User Problem
+## 3. Three Features, One Call
+
+Flow (01 Summarize): Trip report -> "In 3 bullets, for a hiker: conditions, hazards, crowding" -> llama3.2 -> Prose or bullets
+Flow (02 Extract): Trip report -> Prompt + JSON schema, nulls allowed -> llama3.2, JSON mode -> Validated JSON
+Flow (03 Classify): Gear review -> Prompt: the label set + examples -> phi3 or gpt-4.1 -> One label
+
+- The pipeline is identical. Only the instruction and the output shape change.
+- Which is why the labs feel similar and why you should pick by what you would ship, not by difficulty
+
+Notes: Thirty seconds. The point is that "understanding" is one HTTP call three ways, and the module thread (a wrong-shaped answer is a bug in the instruction) applies to all three.
+
+## 4. 01 · Summarization: The User Problem
 
 - Forty trip reports for Avalanche Lake Trail, 1,200 words each
 - Somewhere in there: is the bridge out, and are the mosquitoes bad?
 - Nobody reads forty essays. They skim three, miss the warning in the fourth, and have a bad Saturday.
 
-## 4. 01 · The Concept
+## 5. 01 · The Concept
 
 - The simplest LLM feature: one chat call, a document, an instruction
 - "Summarize this" produces a book report
@@ -47,7 +58,17 @@ Notes: Plant this now; every feature in the module pays it off, and it saves the
 
 Notes: Small local model handles all of this. This feature never touches the cloud.
 
-## 5. 01 · Demo: What to Watch
+## 6. 01 · How It Works
+
+Flow: 1,200-word trip report -> Prompt: purpose, output shape, and two grounding lines -> llama3.2 (local, no key) -> Three bullets a hiker can act on
+
+- One request, one response. There is no pipeline to build.
+- The instruction carries the feature: who it is for, what to keep, what to drop, and "only from the text"
+- The output shape is a product decision: bullets for a card, a headline for a list, prose for an email
+
+Notes: Read the prompt aloud once. Everything they build in the lab is a change to the middle box.
+
+## 7. 01 · Demo: What to Watch
 
 - Raw report on screen first, so the room feels the problem
 - Naive prompt: faithful, generic, useless
@@ -66,7 +87,7 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 6. Change the shape: same call, but output a one-line "trail status" headline for a card UI. Same feature, different product surface.
 7. Point at the Ollama endpoint in the code. This ran entirely on the laptop, with no API key and no data leaving the room.
 
-## 6. 01 · Leadership Card
+## 8. 01 · Leadership Card
 
 - When: anywhere users face long content they don't want to read. Reviews, tickets, reports, meeting notes, threads.
 - Cost: days. One call per document, free local models, no new infrastructure.
@@ -74,13 +95,13 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 
 ---
 
-## 7. 02 · Extraction: The User Problem
+## 9. 02 · Extraction: The User Problem
 
 - Trailhead wants a "trail stats" panel: which trails, when, how far, what wildlife, what shape the trail was in
 - All of it exists, scattered through forty reports as prose
 - Today a human would re-read every report and re-type the facts. So the panel doesn't exist.
 
-## 8. 02 · The Concept
+## 10. 02 · The Concept
 
 - Summarization's sibling: the output is data your code consumes, not text a person reads
 - JSON mode: the model is constrained to emit valid JSON matching your schema
@@ -89,7 +110,17 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 
 Notes: This is where the LLM stops being a chat feature and becomes a data-pipeline component. Extraction runs on private data at volume, so free and on-prem matters here more than anywhere.
 
-## 9. 02 · Demo: What to Watch
+## 11. 02 · How It Works
+
+Flow: Trip report -> Prompt: fields, types, examples, "null when absent" -> llama3.2 in JSON mode -> Parse and validate against the schema -> Store, or reject and log
+
+- The model writes JSON; your code decides whether to believe it
+- JSON mode guarantees syntax, not truth. The schema check and the null rule are the feature.
+- A rejected record is a good outcome. A silently stored zero is the bug.
+
+Notes: The last box is the one people skip. Say plainly that extraction without validation is a data-corruption feature.
+
+## 12. 02 · Demo: What to Watch
 
 - Define a C# record (`TripFacts`); typed response, no parsing step
 - Break it: a report that never mentions distance comes back with `distance_mi: 5.0`
@@ -107,7 +138,7 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 5. Fix it in the schema with nullable fields and "null when not stated" descriptions. Re-run: the invented distance usually goes away, and something else usually doesn't. Run it two or three times live so the room sees the variance rather than one lucky result. Then say the quiet part: this is better, and it is not a guarantee. The last mile is a validator that rejects a date like "early last month" and a `0` that should have been `null`, which is ordinary code your team already knows how to write.
 6. Zoom out: loop over ten reports and print rows. That's an ingestion pipeline in thirty lines, and the "trail stats" panel is now just a query.
 
-## 10. 02 · Leadership Card
+## 13. 02 · Leadership Card
 
 - When: valuable data trapped in documents. Invoices, resumes, support emails, contracts, legacy records.
 - Cost: days to a working pipeline. The real work is schema design and spot-checking accuracy.
@@ -115,7 +146,7 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 
 ---
 
-## 11. 03 · Sentiment: The User Problem
+## 14. 03 · Sentiment: The User Problem
 
 - The Cascade 65 backpack has 300 reviews. Are people happy, and what are they mad about?
 - Star ratings lie: "4 stars, but the hip belt broke on day two"
@@ -123,7 +154,7 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 
 Notes: Track the happy/unhappy signal weekly and a defect surfaces months before returns spike. One product in the corpus has that problem buried in its reviews.
 
-## 12. 03 · The Concept
+## 15. 03 · The Concept
 
 - Classification applied to text, and the day's model-selection lesson: you don't always need the big model
 - `phi3` (2 GB, free, private) vs Azure OpenAI, same prompt
@@ -132,7 +163,17 @@ Notes: Track the happy/unhappy signal weekly and a defect surfaces months before
 
 Notes: Most teams never run that experiment. The room runs it before lunch.
 
-## 13. 03 · Demo: What to Watch
+## 16. 03 · How It Works
+
+Flow: Gear review -> Prompt: the three labels, what each means, two examples -> Model (phi3 local, or gpt-4.1 on Foundry) -> One word -> Compare with the gold label
+
+- Same shape as extraction with a one-word output, which makes it the cleanest place to compare models
+- Everything else held equal: same prompt, same reviews, same gold labels. Swap the model box and count.
+- Small model for the easy pile, big model for the sarcastic slice: the number tells you where the money goes
+
+Notes: This is the slide that sets up the "which model" argument the demo measures.
+
+## 17. 03 · Demo: What to Watch
 
 - One classify method, `positive | negative | mixed`; the provider swap is one DI line
 - 20 easy reviews through `phi3`: fast, free, and correct
@@ -150,7 +191,7 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 5. Now the hard set, sarcasm and mixed reviews. Run both and diff the labels on screen. Second payoff: `phi3` drops to 7/10 and `gpt-4.1` holds at 10/10, and every disagreement is one the frontier model gets right. This is the slice that earns its price, and you know that because you measured it rather than assumed it. Check `expected-output.md` for what happened when this was built, and be ready for the room's answer to differ from yours.
 6. Close with the decision recipe: labeled sample, run both, count disagreements, price the errors. That recipe generalizes to every feature today.
 
-## 14. 03 · Leadership Card
+## 18. 03 · Leadership Card
 
 - When: any high-volume text stream needing a judgment call. Reviews, NPS verbatims, tickets, mentions, survey answers.
 - Cost: days. The classifier is trivial; the diligence is a labeled sample and an error count.
@@ -158,7 +199,7 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 
 ---
 
-## 15. Hands-On: 60 Minutes
+## 19. Hands-On: 60 Minutes
 
 - **Start with 01 Summarization** (Recommended). One endpoint, one prompt, two reports. New to this? Budget the full time and do the stretch goal.
 - Then, if you have time: **02 Extraction** (more code, most reusable at work) or **03 Sentiment** (least code, most measurement; pick this if your question is "which model should we pay for")
@@ -166,7 +207,7 @@ Demo script (the demo outline that used to live in the spec, sized for the 30-mi
 
 Notes: Start with 01 regardless of experience. Everything else today assumes you've made one model call and seen what comes back. Finished everything? Help someone near you.
 
-## 16. Debrief
+## 20. Debrief
 
 - What surfaced the buried bridge, and what invented one?
 - Rows 1 to 3 of the decision framework are done
