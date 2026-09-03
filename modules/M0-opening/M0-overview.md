@@ -22,7 +22,7 @@ Four working modules after this one, each 90 minutes: **Understanding**, **Findi
 
 Every module marks one feature as **Recommended** and the other two as **Challenge**. Start with the Recommended lab unless you have a reason not to. What you do after that is yours: another feature, a stretch goal, or helping the person next to you. Doing one lab properly is a good outcome, and it is the intended one for most people. Ten labs in a day is not the goal, and nobody is behind.
 
-Every feature carries the same closing card: when to reach for it, roughly what it costs, and the one-liner for your CTO. Those accumulate into the [decision framework](../../docs/decision-framework.md) we assemble in the closing session, which is the artifact you actually take back to work.
+Every feature carries the same closing card: when to reach for it, the one-liner for your CTO, and a difficulty rating. Those accumulate into the [decision framework](../../docs/decision-framework.md) we assemble in the closing session, which is the artifact you actually take back to work.
 
 ## Before You Sit Down
 

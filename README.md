@@ -23,18 +23,18 @@ We will cover ten features grouped into 4 modules.
 | 30 min | **[Module 0: Opening](modules/M0-opening/M0-overview.md)** · environment check, the day's thesis, a tour of the data |
 | 90 min | **[Module 1: Understanding](modules/M1-understanding/M1-overview.md)** · making sense of messy content |
 | | [01 Summarization](modules/M1-understanding/F01-summarization/F01-spec.md) [RECOMMENDED] |
-| | [02 Extraction](modules/M1-understanding/F02-extraction/F02-spec.md) [CHALLENGE 1] |
-| | [03 Sentiment](modules/M1-understanding/F03-sentiment/F03-spec.md) [CHALLENGE 2] |
+| | [02 Extraction](modules/M1-understanding/F02-extraction/F02-spec.md) [CHALLENGE] |
+| | [03 Sentiment](modules/M1-understanding/F03-sentiment/F03-spec.md) [CHALLENGE] |
 | 15 min | Break |
 | 90 min | **[Module 2: Finding](modules/M2-finding/M2-overview.md)** · surfacing the right thing |
 | | [04 Semantic Search](modules/M2-finding/F04-semantic-search/F04-spec.md) [RECOMMENDED] |
-| | [05 RAG](modules/M2-finding/F05-rag/F05-spec.md) [CHALLENGE 1] |
-| | [06 Recommendations](modules/M2-finding/F06-recommendations/F06-spec.md) [CHALLENGE 2] |
+| | [05 RAG](modules/M2-finding/F05-rag/F05-spec.md) [CHALLENGE] |
+| | [06 Recommendations](modules/M2-finding/F06-recommendations/F06-spec.md) [CHALLENGE] |
 | 60 min | Lunch |
 | 90 min | **[Module 3: Deciding](modules/M3-deciding/M3-overview.md)** · triage and judgment |
 | | [07 Classification & Routing](modules/M3-deciding/F07-classification-routing/F07-spec.md) [RECOMMENDED] |
-| | [08 Anomaly Detection](modules/M3-deciding/F08-anomaly-detection/F08-spec.md) [CHALLENGE 1] |
-| | [09 Human-in-the-Loop](modules/M3-deciding/F09-human-in-the-loop/F09-spec.md) [CHALLENGE 2] |
+| | [08 Anomaly Detection](modules/M3-deciding/F08-anomaly-detection/F08-spec.md) [CHALLENGE] |
+| | [09 Human-in-the-Loop](modules/M3-deciding/F09-human-in-the-loop/F09-spec.md) [CHALLENGE] |
 | 15 min | Break |
 | 60 min | **[Module 4: Doing](modules/M4-doing/M4-overview.md)** · the capstone |
 | | [10 Agentic Workflows](modules/M4-doing/F10-agentic-workflows/F10-spec.md) [EVERYONE] |

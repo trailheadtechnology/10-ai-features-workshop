@@ -29,7 +29,7 @@ Icon (shield-check): F09 Approve
 Icon (robot): F10 Agent
 
 Notes: One cell per advance: name each feature as it lands, a few seconds apiece — the day, replayed in ten beats.
-The full table lives in decision-framework.md: # · Feature · When to reach for this · Cost & effort · The one-liner. (Paste the real table over this slide, or demo it from the repo.)
+The full table lives in decision-framework.md: # · Feature · When · Think · Difficulty, the same three fields as every card today. (Paste the real table over this slide, or demo it from the repo.)
 Don't read it. Let it sit on screen while you explain how to use it, which is the next section. It's dense on purpose; it's a reference, and they have it in the repo.
 
 ## What the Day Measured, Not Assumed

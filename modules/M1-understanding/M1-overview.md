@@ -32,4 +32,4 @@ A better model does not fix any of that. What does is a more specific instructio
 
 ## The Leadership Beats
 
-We collect all three at the debrief. Each feature's README ends with the same card: when to reach for it, roughly what it costs, and the one-liner for your CTO. Those become rows 1 through 3 of the [decision framework](../../docs/decision-framework.md).
+We collect all three at the debrief. Each feature's spec ends with the same card: when to reach for it, the one-liner for your CTO, and a difficulty rating. Those become rows 1 through 3 of the [decision framework](../../docs/decision-framework.md).
