@@ -14,7 +14,7 @@ The easy set is close to a tie: the free local model gets nine of ten and the fr
 
 The local stand-in tells a different story, and it is worth keeping: `llama3.2` ties `phi3` on the easy set and beats it by one on the hard set. A bigger local model is not the same thing as a frontier model, and a comparison run against the wrong stand-in would have told you the gap is a single review wide.
 
-One caveat on the easy column: across four Azure runs at temperature 0, `gpt-4.1` called `gr-0014` (the sleeping bag with the snagging zipper) `positive` instead of `mixed` once, for 9/10. Temperature 0 narrows the spread; it does not remove it.
+One caveat on the easy column. Across four Azure runs at temperature 0, `gpt-4.1` called `gr-0014` (the sleeping bag with the snagging zipper) `positive` instead of `mixed` once, for 9/10. Temperature 0 makes runs more consistent, but the same review can still come back with a different label on a different day.
 
 ## The Disagreement List
 
@@ -38,7 +38,7 @@ Against the `llama3.2` stand-in (4 of 20, mostly resolved by llama3.2):
 
 Two for `llama3.2`, one for `phi3`, and one both lost. That is the one-review gap on the hard set.
 
-- `gr-0004` is the label that changed after the workshop deployment was soak-tested. It was originally `positive` ("the pack deserves five"), and `gpt-4.1` called it `mixed` on every run. Rereading it, two stars and a paragraph calling the manual a crime against paper is a genuinely split review, which is exactly the case `mixed` exists for. The label moved, not the model. Hand-labeling is a first draft too.
+- `gr-0004` is the label that changed after the workshop deployment was soak-tested. It was originally `positive` ("the pack deserves five"), and `gpt-4.1` called it `mixed` on every run. Rereading it, two stars and a paragraph calling the manual a crime against paper is a genuinely split review, which is what `mixed` is for. So the label changed rather than the model, and it is worth saying on stage that the hand labels were a first draft that the comparison itself corrected.
 
 - `gr-0074` is the miss worth showing the room. "It pitches in three minutes flat. That's it, that's the review." is a four-star rave, and both models read the deadpan brevity as a complaint. Nothing about it is sarcastic or contradictory; it just isn't effusive. Your hard cases are not always the ones you nominated.
 - `gr-0013` and `gr-0089` are the classic shape: the star rating is about something other than the product (a return process, a customer-service email). Each model gets one and misses the other.
