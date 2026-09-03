@@ -72,7 +72,7 @@ If you are working from the .NET, Python, or TypeScript starters, the same three
 
 The instructor demos in C#, and every feature ships `starter/` and `complete/` projects in three stacks if you want to follow along in code rather than from the `.http` files:
 
-- **.NET**: install the current .NET SDK ([dot.net](https://dot.net); the repo pins the SDK in `global.json`) and confirm `dotnet --version` runs.
+- **.NET**: install the current .NET SDK ([dot.net](https://dot.net); the repo pins the SDK in `global.json`) and confirm `dotnet --version` runs. `dotnet build workshop.slnx` at the repo root builds all twenty projects once, so the first `dotnet run` in the room is not a compile wait.
 - **Python**: Python 3.11 or newer. Each feature's `python/requirements.txt` is one line (`openai`). Modern macOS and Linux Pythons refuse `pip install` outside a virtual environment, so the setup is `python3 -m venv .venv`, `source .venv/bin/activate`, `pip install -r requirements.txt` in the feature's `python/` folder, and every Python walkthrough repeats it.
 - **TypeScript**: Node 20 or newer. Each feature's `typescript/` folder has a `package.json`; `npm install` there pulls `openai` and `tsx`, and `npm run complete` runs the demo with no build step.
 

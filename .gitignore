@@ -5,14 +5,14 @@ obj/
 .env
 appsettings.Development.json
 
-# Generated at runtime by the demos, not source
+# Generated at runtime by the demos, not source. The precomputed vectors that ARE
+# tracked (F05 data/chunk-embeddings.json, F06 data/trail-embeddings.json,
+# F08 data/embeddings-0117.json) are shipped on purpose so those labs run without
+# finishing feature 04 first.
 embeddings.json
 gear-embeddings.json
 outbox/
 decisions.jsonl
-
-# Local review notes
-findings.md
 
 # Instructor-only notes (contain secrets)
 *.local.md

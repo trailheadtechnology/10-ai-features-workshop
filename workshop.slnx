@@ -1,0 +1,72 @@
+<Solution>
+  <Folder Name="/F01-summarization/" />
+  <Folder Name="/F01-summarization/complete/">
+    <Project Path="modules/M1-understanding/F01-summarization/dotnet/complete/Summarize.csproj" />
+  </Folder>
+  <Folder Name="/F01-summarization/starter/">
+    <Project Path="modules/M1-understanding/F01-summarization/dotnet/starter/Summarize.csproj" />
+  </Folder>
+  <Folder Name="/F02-extraction/" />
+  <Folder Name="/F02-extraction/complete/">
+    <Project Path="modules/M1-understanding/F02-extraction/dotnet/complete/Extract.csproj" />
+  </Folder>
+  <Folder Name="/F02-extraction/starter/">
+    <Project Path="modules/M1-understanding/F02-extraction/dotnet/starter/Extract.csproj" />
+  </Folder>
+  <Folder Name="/F03-sentiment/" />
+  <Folder Name="/F03-sentiment/complete/">
+    <Project Path="modules/M1-understanding/F03-sentiment/dotnet/complete/Sentiment.csproj" />
+  </Folder>
+  <Folder Name="/F03-sentiment/starter/">
+    <Project Path="modules/M1-understanding/F03-sentiment/dotnet/starter/Sentiment.csproj" />
+  </Folder>
+  <Folder Name="/F04-semantic-search/" />
+  <Folder Name="/F04-semantic-search/complete/">
+    <Project Path="modules/M2-finding/F04-semantic-search/dotnet/complete/Search.csproj" />
+  </Folder>
+  <Folder Name="/F04-semantic-search/starter/">
+    <Project Path="modules/M2-finding/F04-semantic-search/dotnet/starter/Search.csproj" />
+  </Folder>
+  <Folder Name="/F05-rag/" />
+  <Folder Name="/F05-rag/complete/">
+    <Project Path="modules/M2-finding/F05-rag/dotnet/complete/Rag.csproj" />
+  </Folder>
+  <Folder Name="/F05-rag/starter/">
+    <Project Path="modules/M2-finding/F05-rag/dotnet/starter/Rag.csproj" />
+  </Folder>
+  <Folder Name="/F06-recommendations/" />
+  <Folder Name="/F06-recommendations/complete/">
+    <Project Path="modules/M2-finding/F06-recommendations/dotnet/complete/Recommend.csproj" />
+  </Folder>
+  <Folder Name="/F06-recommendations/starter/">
+    <Project Path="modules/M2-finding/F06-recommendations/dotnet/starter/Recommend.csproj" />
+  </Folder>
+  <Folder Name="/F07-classification-routing/" />
+  <Folder Name="/F07-classification-routing/complete/">
+    <Project Path="modules/M3-deciding/F07-classification-routing/dotnet/complete/Triage.csproj" />
+  </Folder>
+  <Folder Name="/F07-classification-routing/starter/">
+    <Project Path="modules/M3-deciding/F07-classification-routing/dotnet/starter/Triage.csproj" />
+  </Folder>
+  <Folder Name="/F08-anomaly-detection/" />
+  <Folder Name="/F08-anomaly-detection/complete/">
+    <Project Path="modules/M3-deciding/F08-anomaly-detection/dotnet/complete/Anomaly.csproj" />
+  </Folder>
+  <Folder Name="/F08-anomaly-detection/starter/">
+    <Project Path="modules/M3-deciding/F08-anomaly-detection/dotnet/starter/Anomaly.csproj" />
+  </Folder>
+  <Folder Name="/F09-human-in-the-loop/" />
+  <Folder Name="/F09-human-in-the-loop/complete/">
+    <Project Path="modules/M3-deciding/F09-human-in-the-loop/dotnet/complete/Ranger.csproj" />
+  </Folder>
+  <Folder Name="/F09-human-in-the-loop/starter/">
+    <Project Path="modules/M3-deciding/F09-human-in-the-loop/dotnet/starter/Ranger.csproj" />
+  </Folder>
+  <Folder Name="/F10-agentic-workflows/" />
+  <Folder Name="/F10-agentic-workflows/complete/">
+    <Project Path="modules/M4-doing/F10-agentic-workflows/dotnet/complete/TripAgent.csproj" />
+  </Folder>
+  <Folder Name="/F10-agentic-workflows/starter/">
+    <Project Path="modules/M4-doing/F10-agentic-workflows/dotnet/starter/TripAgent.csproj" />
+  </Folder>
+</Solution>

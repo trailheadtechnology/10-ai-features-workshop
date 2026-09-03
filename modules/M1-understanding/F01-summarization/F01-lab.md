@@ -28,4 +28,5 @@ Every code track has a `complete/` next to its `starter/`, which is the answer k
 
 - `data/tr-0001.md`: the clean report (a gear obsessive hikes Avalanche Lake in July 2025; the bridge is fine, the mud and crowds are real)
 - `data/tr-0004.md`: the buried-hazard report (June 2026; the washed-out footbridge hides mid-report between airport sandwiches and huckleberry ice cream)
+- `data/trip-reports/`: the other forty reports for Avalanche Lake, for the stretch goal and for the ingestion-pipeline beat in feature 02. The two files above sit outside that folder because they are the lab's named inputs, referenced by path from every walkthrough.
 - `expected-output.md`: real `llama3.2` outputs for all three requests, plus the success checks

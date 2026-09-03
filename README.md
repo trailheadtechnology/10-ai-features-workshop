@@ -54,8 +54,11 @@ Before the workshop, do the pre-work in [`SETUP.md`](SETUP.md). It's mostly "ins
 
 ```
 ├── SETUP.md                  # attendee pre-work, please do this before Sept 23
+├── workshop.slnx             # every .NET starter and complete project; dotnet build once
 ├── docs/
 │   ├── decision-framework.md # the closing leadership framework
+│   ├── runsheet.md           # instructor: what to have open, what to run, what to cut
+│   ├── soak-2026-09-03.md    # measured results against the real Azure deployment
 │   └── slides/               # decks, outlines, and the instructor demo scripts
 └── modules/
     └── MN-theme/             # a module: three related features, one hands-on period
