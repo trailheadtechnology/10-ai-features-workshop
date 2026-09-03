@@ -9,7 +9,7 @@ Three requests, three JSON responses, and you're cleared for the whole day. Run 
   3. Chat completion against Azure OpenAI using the key handed out at the door, which proves the cloud path for sentiment, RAG, and the capstone.
 - **Success check:** three JSON responses, no red text. Compare `expected-output.md`.
 - **If something fails:** flag a helper now. Fallbacks (USB model copies, shared endpoints) exist precisely for this moment. Do not wait until Module 1 to mention it.
-- **Stretch goal:** finished early? Pull up `modules/M1-understanding/F01-summarization/data/trip-reports/` and skim one trip report end to end. Feel the problem feature 01 is about to solve.
+- **Stretch goal:** finished early? Pull up `modules/M1-understanding/F01-summarization/data/` and skim one trip report end to end. Feel the problem feature 01 is about to solve.
 
 The exact requests live in `http/smoke-test.http` (VS Code REST Client / JetBrains HTTP Client format). The curl equivalents are below.
 
@@ -54,6 +54,6 @@ curl "https://trailhead-ai-workshop.openai.azure.com/openai/deployments/gpt-4.1/
 
 ## Done?
 
-All three passed: you're fully provisioned for all ten features. Stretch goal: skim one trip report from feature 01's `data/trip-reports/` end to end, granola recipes and all. Feature 01 exists because nobody wants to read forty of those.
+All three passed: you're fully provisioned for all ten features. Stretch goal: skim one trip report from feature 01's `data/` end to end, granola recipes and all. Feature 01 exists because nobody wants to read forty of those.
 
 Something failed and the fixes above didn't help: flag a helper **now**, during the opening. This is the moment we've reserved for fixing environments; Module 1 starts on schedule either way.

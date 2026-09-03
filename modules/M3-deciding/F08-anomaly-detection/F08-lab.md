@@ -3,13 +3,43 @@
 *A Challenge lab. Do it if you finished [Module 3](../M3-overview.md)'s Recommended lab and want another, or skip it without guilt: you will have seen this feature demonstrated either way.*
 
 - **Goal:** flag the anomalous condition reports for one trail using centroid distance.
-- **Input:** `data/` provides one trail's reports from the full stream (feature 10's `data/condition-reports.jsonl`) (about 40, including a planted washout cluster) plus precomputed embeddings if you'd rather skip the embedding step.
-- **How:** Ollama embeddings via `http/ollama.http` (or the precomputed vectors), then your own vector averaging and cosine distance.
-- **Steps:**
-  1. Compute the centroid of all report embeddings for the trail.
-  2. Score every report by distance from the centroid and sort descending.
-  3. Success check: washout reports rise toward the top, but not cleanly, and your ranking will have routine reports mixed in (compare `expected-output.md`). Then add the `classification:` prefix to each text before embedding and watch the ranking improve. Then apply the alert rule (threshold plus two flagged reports within 14 days) and check that it fires once, on real reports.
-- **Stretch goal:** compute the centroid only from reports before the washout window, so the anomalies stop dragging "normal" toward themselves. That puts all 8 washout reports in the top 10 and is the seed of a real sliding-window detector. Or run the second trail's data and catch the bear-activity spike, which separates more sharply.
+- **Input:** `data/reports-0117.jsonl`, 40 reports for trail-0117 with the planted washout cluster; `data/embeddings-0117.json`, their `nomic-embed-text` vectors, unnormalized, `classification: ` prefixed; `data/reports-0042.jsonl`, trail-0042, for the stretch goal.
+- **How:** POST to Ollama's `/api/embed`; `http/ollama.http` holds four embed requests. The centroid, distances, threshold, and alert rule are arithmetic you write.
+- **Model:** `nomic-embed-text`, local. `dotnet/starter` runs offline on the precomputed vectors; only step 3 needs Ollama.
+
+### Step 1: The trail-0117 centroid
+
+Run `dotnet run` in `dotnet/starter/`, or load `data/embeddings-0117.json`, L2-normalize every vector, average them, then normalize the average (`Normalize` in `dotnet/complete/Program.cs`, applied at both points); request 1 in `http/ollama.http` is the input shape every vector came from, prefix and trailing space included:
+
+```text
+classification: Muddy in the usual low spots, gaiters not a bad idea. Sunscreen is non-negotiable up there.
+```
+
+**Check:** one 768-dimension unit vector for trail-0117. Step 2 distances off in the third decimal from `expected-output.md` mean you skipped a normalization.
+
+### Step 2: Score and sort trail-0117
+
+Score each report in `data/reports-0117.jsonl` as 1 minus the dot product of its unit vector and the centroid (`CosineDistance` in `dotnet/complete/Program.cs`), sort descending. **Check:** `cr-0496` and `cr-0429` are in the top six, routine reports mixed in, no gap in the distances. Washout reports ranked in the 30s mean the prefix is missing.
+
+### Step 3: The task prefix on trail-0117, then the alert rule
+
+Send all 40 texts from `data/reports-0117.jsonl` through request 3 twice, bare and with `classification: ` in front of every text, and rank both (.NET: `dotnet run -- --raw` and `dotnet run` in `dotnet/complete/`); requests 2 and 4 are washout report `cr-0429` both ways:
+
+```text
+classification: The footbridge over the gorge is completely gone. Creek is raging and there is no safe way across, we turned back.
+```
+
+```text
+The footbridge over the gorge is completely gone. Creek is raging and there is no safe way across, we turned back.
+```
+
+**Check:** bare, `cr-0429` is rank 11 and two false alerts fire. Prefixed, `cr-0429` is rank 2 and three washout reports are in the top 5.
+
+Then the rule on the trail-0117 distances: threshold at mean plus one standard deviation (`--sigma`, default 1.0), flag everything above it, sort the flagged by date, and alert when two or more fall within 14 days (`--window`, default 14). **Check:** 7 reports above the 0.2208 threshold and exactly one alert, `cr-0429`, `cr-0436`, `cr-0464`, 2026-06-18 to 2026-07-05. Lone outliers like `cr-0496` are ignored.
+
+### Stretch goal: a baseline the anomalies did not help build
+
+Rebuild the trail-0117 centroid from only the 32 reports dated before 2026-06-18 and re-score all 40, or run `dotnet run -- --trail 0042` on `data/reports-0042.jsonl`. **Check:** all eight trail-0117 washout reports land in the top 10. On trail-0042, `cr-0446` is rank 1 and one alert fires on `cr-0446` and `cr-0449`.
 
 ## Pick a Track
 

@@ -75,7 +75,7 @@ Notes: The textbook version: text classification assigns one of a fixed set of c
 - `inq-0035` → `unsure`, correctly
 - 📊 17/20 · 2/2 emergencies · every run
 
-Notes: ~8 min · Terminal 2 · `cd modules/M3-deciding/F07-classification-routing/dotnet`
+Notes: ~8 min · `cd modules/M3-deciding/F07-classification-routing/dotnet`
 Files: `inquiries.jsonl` = the full inbox, 100 · `inquiries-slice.jsonl` = the 20 the demo scores · `reference-labels.json` = hand labels
 Args: an inquiry id; starter default inq-0005, complete with none = all 20
 1. Open `data/inquiries.jsonl`, scroll. Let the room find the emergency.
@@ -149,7 +149,7 @@ The alert rule is the feature: one flagged report is noise, two in fourteen days
 - The bear trail: cleaner still
 - Model calls: embeddings only
 
-Notes: ~9 min · Terminal 2 · `cd modules/M3-deciding/F08-anomaly-detection/dotnet`
+Notes: ~9 min · `cd modules/M3-deciding/F08-anomaly-detection/dotnet`
 Files: `reports-0117.jsonl` = 40 reports, the washout trail · `reports-0042.jsonl` = 25 reports, the bear trail · `embeddings-0117.json` = precomputed vectors, the starter runs offline on them
 Flags: `--raw` = no task prefix · `--trail 0042` = the other trail · `--sigma` = threshold (default mean + 1 sd) · `--window` = days (default 14)
 1. Open `data/reports-0117.jsonl`, scroll. Boring on purpose. Find the problem. Nobody can.
@@ -222,7 +222,7 @@ Today's edits are tomorrow's prompt. The human is the feedback signal as much as
 - The audit log, with edit distance
 - The policy table — point at the emergency row
 
-Notes: ~9 min · Terminal 2 · `cd modules/M3-deciding/F09-human-in-the-loop/dotnet`
+Notes: ~9 min · `cd modules/M3-deciding/F09-human-in-the-loop/dotnet`
 Files: `inquiries.jsonl` = a queue of 6, one is the overdue-husband emergency · `outbox/` = what got sent · `decisions.jsonl` = the audit log
 Flags: `--policy` = print the routing table and exit · `--auto-approve-dry-run` = non-interactive, testing only
 1. Before: `cd starter && dotnet run`. Six drafts, all sent, none reviewed. The emergency gets a warm, useless note. Every time.

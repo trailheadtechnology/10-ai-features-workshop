@@ -2,17 +2,92 @@
 
 *A Challenge lab. Do it if you finished [Module 2](../M2-overview.md)'s Recommended lab and want another, or skip it without guilt: you will have seen this feature demonstrated either way.*
 
-- **Goal:** answer natural-language questions from the park docs, with citations you have verified, and refuse cleanly when the docs are silent.
-- **Input:** `data/` provides pre-chunked park docs (with chunk IDs and source filenames) from `data/park-docs/`, plus four test questions: three answerable, one not.
-- **How:** `http/ollama.http` for embeddings and local generation, `http/azure.http` for cloud generation. Retrieval is your feature 04 code pointed at the chunks.
-- **Steps:**
-  1. Embed the chunks, retrieve the top 3 for question #1, and eyeball whether retrieval found the right material. Print the scores, not just the ids: the margin is the story. If retrieval fails, generation can't save you; that's a lesson, not a bug.
-  2. Add a lexical score (count query words in the chunk, weight each by how few chunks contain it) and combine it with the cosine score. Re-run question #1 and the rephrasings in `expected-output.md` at `--top-k 8`, and compare both the margins and which parks fill the rest of the context.
-  3. Build the grounded prompt and generate the answer with the source cited.
-  4. Validate the citations: pull the bracketed ids out of the answer, check each against the chunks you retrieved, and fail loudly on a mismatch.
-  5. Run all four questions. Success check: three correct cited answers, a refusal on the fourth, and no invalid citation reaching the output unflagged (compare `expected-output.md`). Question 3 asks about "right now"; if your model refuses it, do not go debugging retrieval. Put today's date in the prompt and read the measured before-and-after in `expected-output.md`.
-  6. Run question #1 twenty times, not once. A wrong answer that shows up one run in five is invisible in a single run and is the only defect in this feature that could hurt somebody.
-- **Stretch goal:** build a real evaluation loop instead of eyeballing one question. Write ten more questions with the chunk that should win, then sweep alpha from 0 to 1 and report recall@3 and mean rank-1 margin at each setting. Defend your chosen alpha with the table rather than with the Sperry question, and see whether the setting that wins on Sperry wins on the other ten.
+- **Goal:** answer questions from the park docs with verified citations, and refuse when the docs are silent.
+- **Input:** `data/chunks.jsonl` (250 chunks from `data/park-docs/`, each with `chunk_id` and `source`), `data/chunk-embeddings.json` (their `nomic-embed-text` vectors), `data/questions.json` (four questions, one unanswerable); `data/build-chunks.py` made the chunks, not needed.
+- **How:** Ollama's embed endpoint for vectors, chat endpoint for answers. `http/ollama.http`: 1 no-context baseline, 2 question embedding, 3 chunk batch embedding, 4 grounded prompt with the top-3 chunks inlined. `http/azure.http`: 1 the grounded prompt on the cloud model, 2 a multi-document question. Retrieval is code (feature 04's cosine search plus step 2); the .NET `complete/` runs it all.
+- **Model:** `nomic-embed-text` for retrieval; `gpt-4.1` on Azure for generation, `llama3.2` as local fallback. The room key replaces `<KEY FROM INSTRUCTOR>` in `http/azure.http`; code tracks use Azure when `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` are set.
+
+### Step 1: Embed the chunks and retrieve the top 3 for question 1
+
+Request 2 embeds question 1, request 3 embeds all 250 chunk texts from `chunks.jsonl` (or load `data/chunk-embeddings.json`); rank every chunk by cosine (`complete/`: `dotnet run -- --retrieval-only --alpha 1.0`). Request 2's input:
+
+```text
+Can I have a campfire at Sperry Chalet in September?
+```
+
+**Check:** `glacier-backcountry-camping-guide:04.2` at rank 1 for question 1, cosine 0.7422, rank 2 at 0.6913. Anything else at rank 1 means stop; generation cannot fix retrieval.
+
+### Step 2: Add a lexical score and blend it for question 1
+
+No prompt. Score each chunk on the query terms it contains, weighted by how few chunks contain each, min-max both scores to 0..1, and blend `alpha * semantic + (1 - alpha) * lexical` at alpha 0.6 (`complete/Program.cs`: `Tokenize`, `idf`, `lexical`, `MinMax`). Run `dotnet run -- --retrieval-only --top-k 8`, then the same with `--alpha 1.0` added, and compare the two rankings.
+
+**Check:** question 1's rank-1 margin grows from 0.1630 to 0.2321 with the same top 3, and ranks 4 through 8 turn from Acadia and Yosemite to Glacier. If the margin does not grow, check the normalization.
+
+### Step 3: Build the grounded prompt and answer question 1
+
+Request 4 in `http/ollama.http` (`llama3.2`), request 1 in `http/azure.http` (`gpt-4.1`, needs the key), or `dotnet run` in `complete/`; request 4 is these rules, then `Context:`, the three question 1 chunks as `chunk_id:`, `source:`, and text, then `Question: Can I have a campfire at Sperry Chalet in September?` and `Answer:`.
+
+```text
+You are a park information assistant. Answer the visitor's question using ONLY the context below.
+Rules:
+- Base every statement on the context. Do not use outside knowledge.
+- Cite the chunk_id of each chunk you relied on, in square brackets, e.g. [glacier-visitor-faq:02].
+- Copy chunk_ids exactly as they appear above the context. Do not add section numbers to them,
+  and do not combine parts of two chunk_ids.
+- If, and only if, none of the context is relevant to the question, reply exactly: "The provided documents don't say."
+  A question about "right now" is answered from the context, not refused: today is September 23, 2026,
+  and a notice that is in effect "until further notice" is still in effect right now.
+```
+
+Azure request 1's system message (the user message is the context, then the `Question:` line):
+
+```text
+You are a park information assistant. Answer the visitor's question using ONLY the context the user provides. Base every statement on that context and do not use outside knowledge. Cite the chunk_id of each chunk you relied on, in square brackets, e.g. [glacier-visitor-faq:02]. If, and only if, none of the context is relevant to the question, reply exactly: "The provided documents don't say." Today is September 23, 2026; a notice that is in effect "until further notice" is still in effect right now, so a question about the present is answered from the context rather than refused.
+```
+
+**Check:** question 1 gets a no, a real chunk_id in brackets, and nothing from Yosemite or the frontcountry; an answer that opens "Yes" and then says fires are prohibited still passes. The failure is `You can have a campfire at Sperry Chalet in September, but only pressurized-gas stoves are permitted...` with no citation.
+
+### Step 4: Validate the citations in the question 1 answer
+
+No prompt. Pull every `[...]` token containing a colon out of the answer, split comma-separated lists, and check each id against the context's chunk_ids; on a miss, print it, retry once with the valid ids spelled out, then strip anything still wrong and label it `invalid-citation-removed` (`complete/Program.cs`: `Citations`, `InvalidCitations`).
+
+**Check:** an invented id on any question prints `!! CITATION CHECK FAILED: [glacier-bear-safety-advisory:02] not in the retrieved set`. Any bad citation reaching the output unflagged is the failure.
+
+### Step 5: Run all four questions in data/questions.json
+
+Run each question through step 3's prompt with its own top-3 chunks, `dotnet run -- "<question>"` in `complete/`:
+
+```text
+Can I have a campfire at Sperry Chalet in September?
+What is the maximum group size on a Glacier backcountry permit?
+Is the Avalanche Lake Trail open right now?
+Are there EV charging stations in Glacier National Park?
+```
+
+Then request 2 in `http/azure.http`, a fifth question that needs two documents:
+
+```text
+Can I have a campfire at Sperry Chalet in September?
+What is the maximum group size on a Glacier backcountry permit?
+Is the Avalanche Lake Trail open right now?
+Are there EV charging stations in Glacier National Park?
+```
+
+**Check:** question 2: eight, citing `[glacier-backcountry-permit-regulations:04]`; question 3: closed effective June 20, 2026, citing `glacier-seasonal-closures-2026:04.1` or `glacier-visitor-faq:02`; question 4: `The provided documents don't say.`, no charger claimed. If question 3 refuses, check the date sits inside the refusal clause as in step 3; `No, fuel is not available anywhere within the Park` on question 4 is a miss.
+
+### Step 6: Run question 1 twenty times
+
+From `complete/`, loop question 1 and read every answer:
+
+```bash
+for i in $(seq 20); do dotnet run 2>/dev/null | grep -A3 "^Q:" | tail -2; done
+```
+
+**Check:** every run says no with a citation. The failure, `campfires are permitted at Sperry Chalet area (site code SPE) when the posted fire danger rating is below Very High` or a September date borrowed from another park's chunk, only shows up in a loop.
+
+### Stretch goal: a real evaluation loop over ten new questions
+
+Write ten more questions, each with the chunk_id that should win, then sweep `--alpha` from 0 to 1 and record recall@3 and the mean rank-1 margin at each setting. **Check:** a table, not one question, and whether the alpha that wins on question 1 wins on the other ten; the question 1 rephrasings table in `expected-output.md` seeds the first four rows.
 
 ## Pick a Track
 

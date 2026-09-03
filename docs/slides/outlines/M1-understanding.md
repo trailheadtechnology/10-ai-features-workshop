@@ -47,7 +47,7 @@ The concept needs no slide: one chat call, a document, an instruction. "Summariz
 - Grounding lines — without them, ~half of runs invent a closure
 - Same call, new shape: a one-line trail status
 
-Notes: ~8 min · Terminal 2 · `cd modules/M1-understanding/F01-summarization/dotnet`
+Notes: ~8 min · `cd modules/M1-understanding/F01-summarization/dotnet`
 Files: `tr-0004.md` = the story's report, bridge buried mid-text · `tr-0001.md` = clean report, nothing closed (hallucination bait)
 Flags: none = naive "Summarize this" · `--briefing` = 3 hiker bullets · `--headline` = one-line trail card · `--audience ranger` = same report, different reader
 1. Open `data/tr-0004.md`, scroll. The bridge is one sentence, mid-report.
@@ -112,7 +112,7 @@ A rejected record is a good outcome; it is the pipeline telling you the truth.
 - Run it 3×: better ≠ guaranteed
 - The last mile is a validator — ordinary code
 
-Notes: ~10 min · Terminal 2 · `cd modules/M1-understanding/F02-extraction/dotnet`
+Notes: ~10 min · `cd modules/M1-understanding/F02-extraction/dotnet`
 Files: `tr-0007.md` = full report, every field present · `tr-0011.md` = sparse report, no distance stated (the null test)
 Args: a report path; complete with no args runs both
 1. Same kind of report as 01. This time the goal is a database row.
@@ -152,7 +152,7 @@ No concept slide: this is classification, and the demo IS the lesson — the day
 - The hard set through both — diff on screen
 - 📊 `phi3` 9/10 · 7/10 — `gpt-4.1` 10/10 · 10/10
 
-Notes: ~10 min · Terminal 1 (Azure) · `cd modules/M1-understanding/F03-sentiment/dotnet`
+Notes: ~10 min · `cd modules/M1-understanding/F03-sentiment/dotnet`
 Files: `easy.jsonl` = 10 plain reviews · `hard.jsonl` = 10 sarcastic or split reviews · `reference-labels.json` = the hand labels
 Flags: `--easy` / `--hard` = one set; none = both · starter takes a review id (default gr-0007, the sarcastic one)
 1. Open `data/hard.jsonl`. Find a two-star review with glowing text. Stars lie.

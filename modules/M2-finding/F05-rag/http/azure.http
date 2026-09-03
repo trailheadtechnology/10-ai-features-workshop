@@ -1,5 +1,7 @@
-# Lab 05: cloud generation against Azure OpenAI, same grounded prompt as request 4
-# of ollama.http. Retrieval never moves; only the generation call changes.
+# Lab 05: cloud generation against Azure OpenAI. The grounded prompt from request 4
+# of ollama.http, split into a system message (the rules) and a user message (the
+# retrieved chunks and the question); the chunk text is abridged to the Sperry
+# paragraphs. Retrieval never moves; only the generation call changes.
 #
 # The endpoint and deployment name (gpt-4.1) are already filled in; replace
 # <KEY FROM INSTRUCTOR> with the key handed out in the room (same key as F00's smoke-test.http).

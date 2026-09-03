@@ -10,7 +10,7 @@ Setup once (`npm install` in this directory), then:
 ```bash
 npm run complete                                # both reports: extract, validate, show what we would store
 npm run complete -- ../data/tr-0011.md          # just the sparse one, for the null check
-npm run complete -- ../../F01-summarization/data/trip-reports/tr-0002.md   # any report path works
+npm run complete -- ../../F01-summarization/data/tr-0002.md   # any report path works
 ```
 
 Run the sparse report three or four times. The output moves, and that is the demo: some runs come back clean, and some hand you `0` or "early last month", which is what the validator is for. The measured runs are in [`../expected-output.md`](../expected-output.md).

@@ -85,7 +85,7 @@ Can you name the context up front? Then RAG. The trip request needs weather befo
 - Campsites full → it adapts
 - The permit waits for a human yes
 
-Notes: ~7 min · Terminal 1 (Azure, `AZURE_OPENAI_DEPLOYMENT=gpt-5.5`) · `cd modules/M4-doing/F10-agentic-workflows/dotnet`
+Notes: ~7 min · prefix every run with `AZURE_OPENAI_DEPLOYMENT=gpt-5.5` · `cd modules/M4-doing/F10-agentic-workflows/dotnet`
 Files: `trails.json` = 200 trails · `condition-reports.jsonl` = 08's stream, the bridge is in it · `mock-apis/` = weather, campsites, permits as JSON
 Flags: `--yes` = auto-approve the permit gate · any other words = your own request (default: 3 days in Glacier, Sept 14 to 16)
 1. Before: `cd starter && dotnet run`. The same request, no tools. Lovely, generic, books nothing.

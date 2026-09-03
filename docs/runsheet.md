@@ -5,8 +5,8 @@ The whole day on one page: what to have open, what to run, what to cut. Timings 
 ## Before the room opens
 
 - Ollama running, three models present: `ollama list` shows `llama3.2`, `phi3`, `nomic-embed-text`.
-- Terminal 1 at the repo root with the Azure variables loaded. Paste key1 (yours, not the room key) into `.env`, then `set -a; source .env; set +a`. Every `dotnet run` below that needs the cloud inherits it from this terminal.
-- Terminal 2 with no Azure variables, for the demos that must stay local.
+- Every new terminal loads `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY` (key1, yours), and `AZURE_OPENAI_DEPLOYMENT=gpt-4.1` from the repo's `.env` via `~/.zshrc`. Check once with `echo $AZURE_OPENAI_DEPLOYMENT`. Only F03, F05, and F10 read them; every other demo is local regardless.
+- For F10, prefix the run: `AZURE_OPENAI_DEPLOYMENT=gpt-5.5 dotnet run`.
 - All six decks open in PowerPoint, in order, presenter view checked once.
 - VS Code open at the repo root, REST Client extension installed, for the `.http` labs.
 - Room key (key2) written on the whiteboard before Module 0's smoke test, never on a slide. The command to fetch it is in `instructor.local.md`.
@@ -27,14 +27,14 @@ Deck `M0-opening.pptx`.
 
 ## Module 1: Understanding, 90 min
 
-Deck `M1-understanding.pptx`. Terminal 2 for 01 and 02, Terminal 1 for 03.
+Deck `M1-understanding.pptx`. 
 
 | At | Do |
 |---|---|
 | 0:00 | This Module slide. Two minutes. |
-| 0:02 | 01 Summarization, 8 min. `modules/M1-understanding/F01-summarization/dotnet/complete`. Open a report from `data/trip-reports/` first. `dotnet run`, `dotnet run -- --briefing`, `dotnet run -- --briefing ../../data/tr-0001.md`, `dotnet run -- --headline`. |
+| 0:02 | 01 Summarization, 8 min. `modules/M1-understanding/F01-summarization/dotnet/complete`. Open a report from `data/` first. `dotnet run`, `dotnet run -- --briefing`, `dotnet run -- --briefing ../../data/tr-0001.md`, `dotnet run -- --headline`. |
 | 0:10 | 02 Extraction, 10 min. `modules/M1-understanding/F02-extraction/dotnet`. Starter `dotnet run`, then complete `dotnet run`, then `dotnet run -- ../../data/tr-0011.md` three times. |
-| 0:20 | 03 Sentiment, 10 min. `modules/M1-understanding/F03-sentiment/dotnet`, Terminal 1. Starter `dotnet run`, then complete `dotnet run -- --easy`, then `dotnet run -- --hard`. Expect phi3 7/10, gpt-4.1 10/10 on the hard set. If gpt-4.1 shows 9/10 on the easy set, that is `gr-0014` flickering and it is in expected-output. |
+| 0:20 | 03 Sentiment, 10 min. `modules/M1-understanding/F03-sentiment/dotnet`. Starter `dotnet run`, then complete `dotnet run -- --easy`, then `dotnet run -- --hard`. Expect phi3 7/10, gpt-4.1 10/10 on the hard set. If gpt-4.1 shows 9/10 on the easy set, that is `gr-0014` flickering and it is in expected-output. |
 | 0:30 | Lab slide up. 01 Recommended, 02 and 03 Challenge. Sticky check at 0:50. |
 | 1:25 | Debrief. Two people, what surprised them. |
 | 1:30 | Break, 15 min. |
@@ -43,13 +43,13 @@ Cut order if behind: the break-it beats in 02 and 03, then the headline reshape 
 
 ## Module 2: Finding, 90 min
 
-Deck `M2-finding.pptx`. Terminal 2 for 04 and 06, Terminal 1 for 05.
+Deck `M2-finding.pptx`. 
 
 | At | Do |
 |---|---|
 | 0:00 | This Module and the Same First Half diagram. Four minutes. |
 | 0:04 | 04 Semantic Search, 8 min. `modules/M2-finding/F04-semantic-search/dotnet`. Starter `dotnet run`, then complete `rm -f embeddings.json && dotnet run`, then `dotnet run -- somewhere quiet to take my kids`. Taft Point is the lesson, not a bug. |
-| 0:12 | 05 RAG, 12 min. `modules/M2-finding/F05-rag/dotnet`, Terminal 1. Starter `dotnet run`, then complete: `dotnet run -- --top-k 8 --alpha 1.0 --retrieval-only`, `dotnet run -- --top-k 8 --retrieval-only`, `dotnet run`, the EV question, the Avalanche Lake question. Commands are in the slide notes. |
+| 0:12 | 05 RAG, 12 min. `modules/M2-finding/F05-rag/dotnet`. Starter `dotnet run`, then complete: `dotnet run -- --top-k 8 --alpha 1.0 --retrieval-only`, `dotnet run -- --top-k 8 --retrieval-only`, `dotnet run`, the EV question, the Avalanche Lake question. Commands are in the slide notes. |
 | 0:24 | 06 Recommendations, 6 min. `modules/M2-finding/F06-recommendations/dotnet/complete`. `dotnet run`, then `dotnet run -- --gear` for the daypack failure. |
 | 0:30 | Lab slide up. 04 Recommended, 05 and 06 Challenge. 05 needs the whiteboard key. Sticky check at 0:50. |
 | 1:25 | Debrief. |
@@ -59,7 +59,7 @@ Cut order: the zero-overlap second query in 04, the drone and Avalanche Lake que
 
 ## Module 3: Deciding, 90 min
 
-Deck `M3-deciding.pptx`. Terminal 2 for all three.
+Deck `M3-deciding.pptx`. 
 
 | At | Do |
 |---|---|
@@ -75,7 +75,7 @@ Cut order: the unsure route in 07, the `--raw` pass in 08, the audit log in 09, 
 
 ## Module 4: Doing, 60 min
 
-Deck `M4-doing.pptx`. Terminal 1, with `AZURE_OPENAI_DEPLOYMENT=gpt-5.5` exported over the default.
+Deck `M4-doing.pptx`. Every `dotnet run` here gets the `AZURE_OPENAI_DEPLOYMENT=gpt-5.5` prefix.
 
 | At | Do |
 |---|---|

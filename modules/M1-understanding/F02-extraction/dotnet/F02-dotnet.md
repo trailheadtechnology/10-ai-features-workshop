@@ -19,7 +19,7 @@ Both run against Ollama (`llama3.2`, JSON mode), matching the demo script in [do
 ```bash
 dotnet run                                       # both lab reports, extracted and validated
 dotnet run -- ../../data/tr-0011.md               # just the sparse one, for the null check
-dotnet run -- ../../../F01-summarization/data/trip-reports/tr-0002.md   # any report path works
+dotnet run -- ../../../F01-summarization/data/tr-0002.md   # any report path works
 ```
 
 Run the sparse report three or four times on stage. The output moves, and that is the demo: some runs come back clean, and some hand you `0` or "last month" and the validator says so out loud. Real output from four consecutive runs, rejections included, lives in [../expected-output.md](../expected-output.md).

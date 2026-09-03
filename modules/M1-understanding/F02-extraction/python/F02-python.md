@@ -10,7 +10,7 @@ No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see 
 ```bash
 uv run main.py                              # both reports: extract, validate, show what we would store
 uv run main.py ../../data/tr-0011.md         # just the sparse one, for the null check
-uv run main.py ../../../F01-summarization/data/trip-reports/tr-0002.md   # any report path works
+uv run main.py ../../../F01-summarization/data/tr-0002.md   # any report path works
 ```
 
 Run the sparse report three or four times. The output moves, and that is the demo: some runs come back clean, and some hand you `0` or "early last month", which is what the validator is for. The measured runs are in [`../expected-output.md`](../expected-output.md).

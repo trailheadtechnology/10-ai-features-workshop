@@ -94,7 +94,7 @@ pgvector or Azure AI Search is the same math at scale. Foundation for the rest o
 - ✅ Same query, semantic: the right trails, with scores
 - "Quiet, for kids" → Taft Point. A 3,000-foot drop.
 
-Notes: ~8 min · Terminal 2 · `cd modules/M2-finding/F04-semantic-search/dotnet`
+Notes: ~8 min · `cd modules/M2-finding/F04-semantic-search/dotnet`
 Files: `trails-slice.json` = 30 trails · `queries.json` = the three demo queries · `embeddings.json` = cache, delete to embed live
 Args: the query, in plain words; none = "dog-friendly waterfall hike, not too steep"
 1. Before: `cd starter && dotnet run`. Keyword search. Junk.
@@ -160,7 +160,7 @@ Two failure spots: the wrong chunk, or a bad split. The bad-split lesson gets it
 - "Open right now?" needs the date in the prompt
 - One-line swap to `gpt-4.1`
 
-Notes: ~12 min · Terminal 1 (Azure) · `cd modules/M2-finding/F05-rag/dotnet`
+Notes: ~12 min · `cd modules/M2-finding/F05-rag/dotnet`
 Files: `park-docs/` = 25 regulation docs · `chunks.jsonl` = 250 chunks · `chunk-embeddings.json` = their vectors, precomputed · `questions.json` = the four lab questions
 Flags: `--retrieval-only` = no answer, just ranks · `--top-k N` = chunks retrieved (default 3) · `--alpha` = semantic weight, 1.0 = cosine only, default 0.6 · `--no-context` = plain chatbot · a quoted question replaces the Sperry default
 1. Before: `cd starter && dotnet run`. The Sperry campfire question, no context. Confident. Wrong.
@@ -209,7 +209,7 @@ Notes: The textbook version: a recommender system predicts what a user will pref
 - Difficulty and park aren't in the description text
 - Cascade 65 → Cascade 40: substitutes, not complements
 
-Notes: ~6 min · Terminal 2 · `cd modules/M2-finding/F06-recommendations/dotnet`
+Notes: ~6 min · `cd modules/M2-finding/F06-recommendations/dotnet`
 Files: `trails.json` = 30 trails · `trail-embeddings.json` = 04's vectors, precomputed · `gear-reviews.jsonl` = 300 reviews
 Args: a trail id or name (default trail-0117, Avalanche Lake) · `--gear <product>` = same trick over review text
 1. Avalanche Lake Trail page. What belongs at the bottom of this screen?
