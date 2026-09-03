@@ -128,7 +128,7 @@ No concept slide: this is classification, and the demo IS the lesson — the day
 - The hard set through both — diff on screen
 - 📊 `phi3` 9/10 · 7/10 — `gpt-4.1` 10/10 · 10/10
 
-Notes: Both halves of the argument hold: ordinary reviews barely need the big model, and the sarcastic slice does, 7/10 vs 10/10, with every disagreement going the frontier model's way. The local stand-in (`llama3.2`) tied phi3, so a comparison against the wrong big model would have said the gap does not exist. Side finding worth 20 seconds: reflowing the identical prompt onto one line dropped phi3 to 7/10 and 4/10. Small models are sensitive to formatting.
+Notes: Both halves of the argument hold: ordinary reviews barely need the big model, and the sarcastic slice does, 7/10 vs 10/10, with every disagreement going the frontier model's way. The local stand-in (`llama3.2`) came within one review of phi3, so a comparison against the wrong big model would have said the gap barely exists. Side finding worth 20 seconds: reflowing the identical prompt onto one line dropped phi3 to 7/10 and 4/10. Small models are sensitive to formatting.
 Close with the decision recipe: labeled sample, run both, count disagreements, price the errors. That recipe generalizes to every feature today.
 
 Demo script (~10 min; the hard-set diff in step 5 is the heart — cut step 4's Azure easy-run first if behind):

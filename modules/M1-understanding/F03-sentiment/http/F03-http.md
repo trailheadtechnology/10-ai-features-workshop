@@ -25,7 +25,7 @@ Check: a label per review per model.
 
 Write down every review where the two models disagree, with the reference label and your call on who was right. That list is the deliverable.
 
-Check: your version of the two tables in [`../expected-output.md`](../expected-output.md). Recorded: `phi3` 7/10 on the hard set, `gpt-4.1` 10/10, and the local stand-in 7/10.
+Check: your version of the two tables in [`../expected-output.md`](../expected-output.md). Recorded: `phi3` 7/10 on the hard set, `gpt-4.1` 10/10, and the local stand-in 8/10.
 
 ### Stretch
 

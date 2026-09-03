@@ -49,7 +49,7 @@ api-key: <KEY FROM INSTRUCTOR>
           "type": "object",
           "properties": {
             "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'. Partial names like 'Glacier' also match." },
-            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional feature keywords to filter on, for example ['lake', 'waterfall', 'wildflowers']." },
+            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional keywords matched against each trail's features and its name, for example ['lake', 'waterfall'] or ['Avalanche Lake']." },
             "max_difficulty": { "type": "string", "enum": ["easy", "moderate", "hard"], "description": "Optional ceiling on difficulty. 'moderate' returns easy and moderate trails." }
           },
           "required": ["park"]
@@ -121,7 +121,7 @@ api-key: <KEY FROM INSTRUCTOR>
           "type": "object",
           "properties": {
             "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'. Partial names like 'Glacier' also match." },
-            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional feature keywords to filter on, for example ['lake', 'waterfall', 'wildflowers']." },
+            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional keywords matched against each trail's features and its name, for example ['lake', 'waterfall'] or ['Avalanche Lake']." },
             "max_difficulty": { "type": "string", "enum": ["easy", "moderate", "hard"], "description": "Optional ceiling on difficulty. 'moderate' returns easy and moderate trails." }
           },
           "required": ["park"]
@@ -209,7 +209,7 @@ api-key: <KEY FROM INSTRUCTOR>
           "type": "object",
           "properties": {
             "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'. Partial names like 'Glacier' also match." },
-            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional feature keywords to filter on, for example ['lake', 'waterfall', 'wildflowers']." },
+            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional keywords matched against each trail's features and its name, for example ['lake', 'waterfall'] or ['Avalanche Lake']." },
             "max_difficulty": { "type": "string", "enum": ["easy", "moderate", "hard"], "description": "Optional ceiling on difficulty. 'moderate' returns easy and moderate trails." }
           },
           "required": ["park"]
@@ -271,7 +271,7 @@ api-key: <KEY FROM INSTRUCTOR>
           "type": "object",
           "properties": {
             "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'. Partial names like 'Glacier' also match." },
-            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional feature keywords to filter on, for example ['lake', 'waterfall', 'wildflowers']." },
+            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional keywords matched against each trail's features and its name, for example ['lake', 'waterfall'] or ['Avalanche Lake']." },
             "max_difficulty": { "type": "string", "enum": ["easy", "moderate", "hard"], "description": "Optional ceiling on difficulty. 'moderate' returns easy and moderate trails." }
           },
           "required": ["park"]
@@ -316,6 +316,10 @@ api-key: <KEY FROM INSTRUCTOR>
 # tool caps at 8), so hand back the ["waterfall"] search below, which does include
 # it, whatever filter the model actually chose. If it skips searching and goes
 # straight to get_trail_conditions with the id, that is fine too.
+# Why the id is in the request: the code tools match keywords against trail names
+# too, but here you are the tool, and without the id or a name match the model has
+# no way to reach a trail the catalog buries at position 27. Soak-tested: with only
+# the name and a tag-only search, 6 of 10 runs never found it.
 # Passing: the itinerary drops or flags the trail and says why, and the reason
 # came from the tool result, not from the model's imagination.
 POST https://trailhead-ai-workshop.openai.azure.com/openai/deployments/gpt-5.5/chat/completions?api-version=2024-10-21
@@ -343,7 +347,7 @@ api-key: <KEY FROM INSTRUCTOR>
           "type": "object",
           "properties": {
             "park": { "type": "string", "description": "Park name, for example 'Glacier National Park'. Partial names like 'Glacier' also match." },
-            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional feature keywords to filter on, for example ['lake', 'waterfall', 'wildflowers']." },
+            "features": { "type": "array", "items": { "type": "string" }, "description": "Optional keywords matched against each trail's features and its name, for example ['lake', 'waterfall'] or ['Avalanche Lake']." },
             "max_difficulty": { "type": "string", "enum": ["easy", "moderate", "hard"], "description": "Optional ceiling on difficulty. 'moderate' returns easy and moderate trails." }
           },
           "required": ["park"]

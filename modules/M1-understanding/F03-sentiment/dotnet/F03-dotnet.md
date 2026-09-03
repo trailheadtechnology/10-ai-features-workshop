@@ -96,7 +96,7 @@ Run:
 dotnet run
 ```
 
-Check: Two columns of labels for the hard set. Recorded: 7/10 for `phi3`, 10/10 for `gpt-4.1` on Azure, and 7/10 for the `llama3.2` stand-in. The frontier model earns its price on this slice; the local stand-in would have told you otherwise.
+Check: Two columns of labels for the hard set. Recorded: 7/10 for `phi3`, 10/10 for `gpt-4.1` on Azure, and 8/10 for the `llama3.2` stand-in. The frontier model earns its price on this slice; the local stand-in would have told you the gap is one review wide.
 
 ### Step 4: Print the Disagreement List and Call Each One (lab step 3, the success check)
 

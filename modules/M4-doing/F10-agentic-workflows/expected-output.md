@@ -20,7 +20,7 @@ If you get an itinerary instead, the model never saw your tools. Look at where `
 
 Write the `get_weather` definition yourself, add it to the array, and ask for a trip on September 14-16.
 
-**Check:** the model calls `get_weather`, and the forecast shapes the plan rather than decorating it. The Glacier fixture puts rain showers on September 16 (49/33, 70 percent chance, 18 mph wind) after two dry days, so a passing itinerary does something about the 16th. In the reference run:
+**Check:** the model calls `get_weather`, and the forecast shapes the plan rather than decorating it. Expect some spread here even from the frontier model: in ten `gpt-5.5` runs of `dotnet/complete`, seven put an easy trail on the 16th and three kept a moderate hike (Iceberg Lake) there while still saying it was the wet day. All ten put the hard hike on a dry day, which is the check that matters. The Glacier fixture puts rain showers on September 16 (49/33, 70 percent chance, 18 mph wind) after two dry days, so a passing itinerary does something about the 16th. In the reference run:
 
 > **Day 3 (September 16)** Trail: **Swiftcurrent Nature Trail**, 2.5 miles, easy. Forecast: Rain showers with a high temperature of 49°F and low of 33°F.
 > Note: We replaced Lake McDonald Backcountry Site with Swiftcurrent Nature Trail due to the rain forecast.
@@ -32,6 +32,8 @@ and on day 1:
 Passing looks like the hardest or most exposed day landing on the 14th or 15th, and the 16th getting something short, low, or sheltered, with a sentence saying why. Failing looks like the same three trails you would have gotten with no weather tool at all, plus a decorative line reading "expect rain on the 16th".
 
 ## Step 3: The Washed-Out Bridge
+
+A note on reaching the trail at all. `search_trails` caps at eight results and Avalanche Lake is far down the Glacier list, so the tool's keyword filter matches trail names as well as feature tags: `["Avalanche Lake"]` finds it. Before that name match existed, a soak run of `dotnet/complete` on `gpt-5.5` (2026-09-03) failed to find the trail in 6 of 10 runs when the request gave only the name; the agent said so and planned around it, which is honest but teaches nothing. With the id in the request, or with the name match in place, it checked `trail-0117` and flagged the closure 10 of 10. If your own `search_trails` filters on tags only, this is the step where you will find out.
 
 Ask for a trip that includes Avalanche Lake Trail (`trail-0117`).
 

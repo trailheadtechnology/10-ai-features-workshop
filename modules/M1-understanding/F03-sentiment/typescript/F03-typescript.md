@@ -13,7 +13,7 @@ npm run complete -- --easy   # easy set only (demo steps 3 and 4)
 npm run complete -- --hard   # hard set only (demo step 5)
 ```
 
-Without the Azure variables, `llama3.2` stands in for the big model so the whole comparison runs offline; that pairing ties (9/10 easy, 7/10 hard for both); against the workshop's `gpt-4.1` deployment the frontier model scores 10/10 on both sets, and both results are in [`../expected-output.md`](../expected-output.md). Keep the prompt's line breaks exactly as they are: reflowing it onto one line costs `phi3` measured accuracy.
+Without the Azure variables, `llama3.2` stands in for the big model so the whole comparison runs offline; that pairing nearly ties (9/10 easy for both, 7/10 vs 8/10 hard); against the workshop's `gpt-4.1` deployment the frontier model scores 10/10 on both sets, and both results are in [`../expected-output.md`](../expected-output.md). Keep the prompt's line breaks exactly as they are: reflowing it onto one line costs `phi3` measured accuracy.
 
 Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` (endpoint `https://trailhead-ai-workshop.openai.azure.com`, the deployment name the feature uses, and the key handed out in the room) and the big model switches to Azure OpenAI through the SDK's `AzureOpenAI` client; leave them unset and it runs against Ollama.
 
@@ -77,7 +77,7 @@ Run:
 npm run starter
 ```
 
-Check: Two columns of labels for the hard set. Recorded: 7/10 for `phi3`, 10/10 for `gpt-4.1` on Azure, and 7/10 for the `llama3.2` stand-in. The frontier model earns its price on this slice; the local stand-in would have told you otherwise.
+Check: Two columns of labels for the hard set. Recorded: 7/10 for `phi3`, 10/10 for `gpt-4.1` on Azure, and 8/10 for the `llama3.2` stand-in. The frontier model earns its price on this slice; the local stand-in would have told you the gap is one review wide.
 
 ### Step 4: Print the Disagreement List and Call Each One (lab step 3, the success check)
 

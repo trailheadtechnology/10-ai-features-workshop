@@ -16,7 +16,7 @@
             "features": {
               "type": "array",
               "items": { "type": "string" },
-              "description": "Optional feature keywords to filter on, for example ['lake', 'waterfall', 'wildflowers']."
+              "description": "Optional keywords matched against each trail's features and its name, for example ['lake', 'waterfall'] or ['Avalanche Lake']."
             },
             "max_difficulty": {
               "type": "string",

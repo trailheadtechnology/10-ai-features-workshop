@@ -10,7 +10,7 @@
   "gr-0074": { "set": "easy", "label": "positive" },
   "gr-0077": { "set": "easy", "label": "mixed" },
   "gr-0001": { "set": "hard", "label": "negative", "rationale": "five stars on a review that calls it absolute garbage and demands a refund" },
-  "gr-0004": { "set": "hard", "label": "positive", "rationale": "two stars aimed at the instruction manual; the pack itself 'deserves five'" },
+  "gr-0004": { "set": "hard", "label": "mixed", "rationale": "two stars and a scathing paragraph about the manual, then 'deserves five' for the pack itself; genuinely split, which is what mixed is for" },
   "gr-0007": { "set": "hard", "label": "negative", "rationale": "sarcasm: 'five-star experience' measuring personal growth through a blown-out shoe" },
   "gr-0013": { "set": "hard", "label": "negative", "rationale": "the five stars are for the return process; the watch is 'the worst piece of gear'" },
   "gr-0021": { "set": "hard", "label": "positive", "rationale": "the chair is 'a sitting cloud'; the low rating is about the reviewer's ex" },

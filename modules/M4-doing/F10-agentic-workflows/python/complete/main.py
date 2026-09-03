@@ -86,7 +86,11 @@ def search_trails(park: str = "Glacier National Park", features: list[str] | Non
             continue
         if rank.get(t["difficulty"], 2) > max_rank:
             continue
-        if features and not any(f.lower() in x.lower() for f in features for x in t["features"]):
+        # Keywords match features OR the trail name. Without the name match a
+        # request for "Avalanche Lake Trail" can never find trail-0117: it sits past
+        # the 8-result cut and "Avalanche" is not a feature tag, so the washed-out
+        # bridge lesson never fires (6 of 10 gpt-5.5 runs in the 2026-09-03 soak).
+        if features and not any(f.lower() in t["name"].lower() or f.lower() in x.lower() for f in features for x in t["features"]):
             continue
         found.append({k: t[k] for k in ("id", "name", "park", "distance_mi", "elevation_ft", "difficulty", "features")})
         if len(found) == 8:

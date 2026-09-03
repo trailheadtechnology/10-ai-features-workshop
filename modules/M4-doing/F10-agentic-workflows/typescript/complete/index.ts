@@ -77,7 +77,11 @@ function searchTrails({ park = "Glacier National Park", features = null, max_dif
   const found = (load("trails.json") as Trail[])
     .filter((t) => t.park.toLowerCase().includes(park.toLowerCase()))
     .filter((t) => rank(t.difficulty) <= maxRank)
-    .filter((t) => !features || features.length === 0 || features.some((f) => t.features.some((x) => x.toLowerCase().includes(f.toLowerCase()))))
+    // Keywords match features OR the trail name. Without the name match a request
+    // for "Avalanche Lake Trail" can never find trail-0117: it sits past the 8-result
+    // cut and "Avalanche" is not a feature tag, so the washed-out bridge lesson never
+    // fires (6 of 10 gpt-5.5 runs in the 2026-09-03 soak).
+    .filter((t) => !features || features.length === 0 || features.some((f) => t.name.toLowerCase().includes(f.toLowerCase()) || t.features.some((x) => x.toLowerCase().includes(f.toLowerCase()))))
     .slice(0, 8)
     .map(({ id, name, park, distance_mi, elevation_ft, difficulty, features }) => ({ id, name, park, distance_mi, elevation_ft, difficulty, features }));
   lastResultIds = found.map((t) => t.id);

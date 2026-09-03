@@ -158,7 +158,7 @@ static class Trailhead
     [Description("Search the trail catalog. Returns matching trails with id, name, park, distance, elevation, difficulty, and features.")]
     public static string SearchTrails(
         [Description("Park name, e.g. 'Glacier National Park'. Partial names like 'Glacier' work.")] string park = "Glacier National Park",
-        [Description("Optional feature keywords to look for, e.g. ['lake', 'waterfall'].")] string[]? features = null,
+        [Description("Optional keywords matched against each trail's features and its name, e.g. ['lake', 'waterfall'] or ['Avalanche Lake'].")] string[]? features = null,
         [Description("Optional maximum difficulty: 'easy', 'moderate', or 'hard'.")] string? maxDifficulty = null)
     {
         Narrate("search_trails", new { park, features, max_difficulty = maxDifficulty });
@@ -170,7 +170,15 @@ static class Trailhead
         var matches = trails
             .Where(t => ((string)t!["park"]!).Contains(park, StringComparison.OrdinalIgnoreCase))
             .Where(t => rank((string)t!["difficulty"]!) <= maxRank)
+            // Keywords match features OR the trail name. Without the name match a
+            // request for "Avalanche Lake Trail" can never find trail-0117: it is the
+            // 27th Glacier trail in the catalog, past the Take(8) cut, and "Avalanche"
+            // is not a feature tag. The washed-out-bridge lesson depends on the model
+            // being able to reach that trail by name. Soak-tested 2026-09-03: without
+            // this, 6 of 10 gpt-5.5 runs gave up on the trail (honestly, but the
+            // closure never surfaced).
             .Where(t => features is null || features.Length == 0 || features.Any(f =>
+                ((string)t!["name"]!).Contains(f, StringComparison.OrdinalIgnoreCase) ||
                 t!["features"]!.AsArray().Any(x => ((string)x!).Contains(f, StringComparison.OrdinalIgnoreCase))))
             .Take(8)
             .Select(t => new
