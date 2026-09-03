@@ -2,9 +2,9 @@
 loop. Every tool call prints as it happens, the permit step waits for a human
 yes, and a step budget bounds the loop.
 
-  python main.py                                       the capstone request
-  python main.py Plan me a trip on Avalanche Lake Trail in September
-  python main.py --yes <request>                       auto-approve the permit gate
+  uv run main.py                                       the capstone request
+  uv run main.py Plan me a trip on Avalanche Lake Trail in September
+  uv run main.py --yes <request>                       auto-approve the permit gate
 
 Model: Azure OpenAI when AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_KEY /
 AZURE_OPENAI_DEPLOYMENT are set; otherwise Ollama llama3.2, which is much

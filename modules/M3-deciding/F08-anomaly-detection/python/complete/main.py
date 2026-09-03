@@ -2,11 +2,11 @@
 several outliers land close together in time. Needs Ollama running with
 nomic-embed-text pulled.
 
-  python main.py                  trail-0117, live embeddings, distance table + cluster alerts
-  python main.py --raw            same trail with the task prefix removed
-  python main.py --trail 0042     the other trail in the data folder
-  python main.py --sigma 1.5      tighter threshold
-  python main.py --window 30      wider clustering window, in days
+  uv run main.py                  trail-0117, live embeddings, distance table + cluster alerts
+  uv run main.py --raw            same trail with the task prefix removed
+  uv run main.py --trail 0042     the other trail in the data folder
+  uv run main.py --sigma 1.5      tighter threshold
+  uv run main.py --window 30      wider clustering window, in days
 
 Embeddings are the only model calls. Everything after them is arithmetic, so
 the cost of this feature is one embedding per report and nothing per query.

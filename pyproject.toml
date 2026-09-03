@@ -1,0 +1,9 @@
+[project]
+name = "ai-features-workshop"
+version = "0.1.0"
+description = "Python track for the 10 AI Features workshop: every starter/main.py and complete/main.py runs with `uv run main.py` from its own folder."
+requires-python = ">=3.11"
+dependencies = ["openai>=1.66"]
+
+[tool.uv]
+package = false

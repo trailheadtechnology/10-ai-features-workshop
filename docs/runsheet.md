@@ -32,9 +32,9 @@ Deck `M1-understanding.pptx`. Terminal 2 for 01 and 02, Terminal 1 for 03.
 | At | Do |
 |---|---|
 | 0:00 | This Module slide. Two minutes. |
-| 0:02 | 01 Summarization, 8 min. `modules/M1-understanding/F01-summarization/dotnet/complete`. Open a report from `data/trip-reports/` first. `dotnet run`, then `dotnet run -- --headline` for the card-UI reshape. |
-| 0:10 | 02 Extraction, 10 min. `modules/M1-understanding/F02-extraction/dotnet/complete`. `dotnet run`. Run the sparse report two or three times so the room sees the variance. |
-| 0:20 | 03 Sentiment, 10 min. `modules/M1-understanding/F03-sentiment/dotnet/complete`, Terminal 1. `dotnet run -- --easy`, then `dotnet run -- --hard`. Expect phi3 7/10, gpt-4.1 10/10 on the hard set. If gpt-4.1 shows 9/10 on the easy set, that is `gr-0014` flickering and it is in expected-output. |
+| 0:02 | 01 Summarization, 8 min. `modules/M1-understanding/F01-summarization/dotnet/complete`. Open a report from `data/trip-reports/` first. `dotnet run`, `dotnet run -- --briefing`, `dotnet run -- --briefing ../../data/tr-0001.md`, `dotnet run -- --headline`. |
+| 0:10 | 02 Extraction, 10 min. `modules/M1-understanding/F02-extraction/dotnet`. Starter `dotnet run`, then complete `dotnet run`, then `dotnet run -- ../../data/tr-0011.md` three times. |
+| 0:20 | 03 Sentiment, 10 min. `modules/M1-understanding/F03-sentiment/dotnet`, Terminal 1. Starter `dotnet run`, then complete `dotnet run -- --easy`, then `dotnet run -- --hard`. Expect phi3 7/10, gpt-4.1 10/10 on the hard set. If gpt-4.1 shows 9/10 on the easy set, that is `gr-0014` flickering and it is in expected-output. |
 | 0:30 | Lab slide up. 01 Recommended, 02 and 03 Challenge. Sticky check at 0:50. |
 | 1:25 | Debrief. Two people, what surprised them. |
 | 1:30 | Break, 15 min. |
@@ -48,8 +48,8 @@ Deck `M2-finding.pptx`. Terminal 2 for 04 and 06, Terminal 1 for 05.
 | At | Do |
 |---|---|
 | 0:00 | This Module and the Same First Half diagram. Four minutes. |
-| 0:04 | 04 Semantic Search, 8 min. `modules/M2-finding/F04-semantic-search/dotnet/complete`. `dotnet run`. The kids query lands on Taft Point; that is the lesson, not a bug. |
-| 0:12 | 05 RAG, 12 min. `modules/M2-finding/F05-rag/dotnet/complete`, Terminal 1. In order: `dotnet run -- --no-context`, `dotnet run -- --top-k 8 --alpha 1.0 --retrieval-only`, `dotnet run -- --top-k 8 --retrieval-only`, `dotnet run`, then the EV question: `dotnet run -- "Are there EV charging stations in Glacier National Park?"`. |
+| 0:04 | 04 Semantic Search, 8 min. `modules/M2-finding/F04-semantic-search/dotnet`. Starter `dotnet run`, then complete `rm -f embeddings.json && dotnet run`, then `dotnet run -- somewhere quiet to take my kids`. Taft Point is the lesson, not a bug. |
+| 0:12 | 05 RAG, 12 min. `modules/M2-finding/F05-rag/dotnet`, Terminal 1. Starter `dotnet run`, then complete: `dotnet run -- --top-k 8 --alpha 1.0 --retrieval-only`, `dotnet run -- --top-k 8 --retrieval-only`, `dotnet run`, the EV question, the Avalanche Lake question. Commands are in the slide notes. |
 | 0:24 | 06 Recommendations, 6 min. `modules/M2-finding/F06-recommendations/dotnet/complete`. `dotnet run`, then `dotnet run -- --gear` for the daypack failure. |
 | 0:30 | Lab slide up. 04 Recommended, 05 and 06 Challenge. 05 needs the whiteboard key. Sticky check at 0:50. |
 | 1:25 | Debrief. |
@@ -64,9 +64,9 @@ Deck `M3-deciding.pptx`. Terminal 2 for all three.
 | At | Do |
 |---|---|
 | 0:00 | This Module and the Three Ways to Decide diagram. Four minutes. |
-| 0:04 | 07 Classification, 8 min. `modules/M3-deciding/F07-classification-routing/dotnet/complete`. Scroll `data/inquiries.jsonl` first. `dotnet run`. inq-0030 is the planted miss; fix the category description, re-run. |
-| 0:12 | 08 Anomaly Detection, 9 min. `modules/M3-deciding/F08-anomaly-detection/dotnet/complete`. `dotnet run -- --raw` first (underwhelms on purpose), then `dotnet run`. |
-| 0:21 | 09 Human-in-the-Loop, 9 min. `modules/M3-deciding/F09-human-in-the-loop/dotnet/complete`. `dotnet run` is interactive: approve one, edit one, reject one. `dotnet run -- --policy` prints the routing table for the close. |
+| 0:04 | 07 Classification, 8 min. `modules/M3-deciding/F07-classification-routing/dotnet`. Scroll `data/inquiries.jsonl` first. Starter `dotnet run`, complete `dotnet run`, fix inq-0030's category description, re-run, then `dotnet run -- inq-0035`. |
+| 0:12 | 08 Anomaly Detection, 9 min. `modules/M3-deciding/F08-anomaly-detection/dotnet/complete`. `dotnet run -- --raw` first (underwhelms on purpose), then `dotnet run`, then `dotnet run -- --trail 0042`. |
+| 0:21 | 09 Human-in-the-Loop, 9 min. `modules/M3-deciding/F09-human-in-the-loop/dotnet`. Starter `dotnet run` for the escalation failure, then complete `dotnet run`: approve one, edit one, reject one. Open `decisions.jsonl`. `dotnet run -- --policy` for the close. |
 | 0:30 | Lab slide up. 07 Recommended, 08 and 09 Challenge. Sticky check at 0:50. Steer tired people to 09. |
 | 1:25 | Debrief. |
 | 1:30 | Break, 15 min. |
@@ -80,7 +80,7 @@ Deck `M4-doing.pptx`. Terminal 1, with `AZURE_OPENAI_DEPLOYMENT=gpt-5.5` exporte
 | At | Do |
 |---|---|
 | 0:00 | This Module, the definition, the two diagrams. |
-| 0:03 | Demo, 7 min. `modules/M4-doing/F10-agentic-workflows/dotnet/starter`: `dotnet run` for the fluent, useless plain completion. Then `dotnet/complete`: `dotnet run` and narrate the trace. Without `--yes` the permit gate waits for you, which is the point. For the washout, use the request exactly as written in the lab: it names `trail-0117`. |
+| 0:03 | Demo, 7 min. `modules/M4-doing/F10-agentic-workflows/dotnet/starter`: `dotnet run` for the fluent, useless plain completion. Then `dotnet/complete`: `dotnet run` and narrate the trace. Without `--yes` the permit gate waits for you, which is the point. For the washout, use the request exactly as written in the slide notes: it names `trail-0117`. |
 | 0:10 | Lab slide up. Everyone does 10. Whiteboard gets the key and the deployment name `gpt-5.5`. Sticky check at 0:30. |
 | 0:55 | Debrief, then hand off to the closing deck. |
 

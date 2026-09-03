@@ -1,8 +1,8 @@
 """Finished demo, matching the demo script in docs/slides/outlines:
-  python main.py                        "more like this" for Avalanche Lake Trail
-  python main.py trail-0008             any trail id works
-  python main.py Trail of the Cedars    so does any name (or part of one)
-  python main.py --gear Cascade 65      the same trick on gear, from review text
+  uv run main.py                        "more like this" for Avalanche Lake Trail
+  uv run main.py trail-0008             any trail id works
+  uv run main.py Trail of the Cedars    so does any name (or part of one)
+  uv run main.py --gear Cascade 65      the same trick on gear, from review text
 
 Vectors are cached in embeddings.json / gear-embeddings.json next to this
 script. The cache is only checked for missing keys, so an edited description

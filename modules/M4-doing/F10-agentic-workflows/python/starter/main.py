@@ -3,7 +3,7 @@ Nothing here can reach the trail catalog, the weather feed, or the condition
 reports, so the itinerary that comes back is fluent, generic, and books
 nothing. That gap is the point of this script; the fix lives in ../complete.
 
-Run: python main.py [your own trip request]
+Run: uv run main.py [your own trip request]
 """
 
 import os

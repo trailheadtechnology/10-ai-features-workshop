@@ -1,7 +1,7 @@
 """Starting point, and deliberately unsafe. Every draft goes straight out with no
 human between the model and the visitor, and nothing is logged, so there is no
 record of what was sent or any way to find out later.
-Run: python main.py [path-to-inquiries.jsonl]
+Run: uv run main.py [path-to-inquiries.jsonl]
 
 Nothing here treats an emergency differently. The system prompt asks the model
 to escalate instead of drafting, and the model is free to ignore that and

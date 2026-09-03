@@ -5,20 +5,12 @@ Two scripts, both reading from [`../data/`](../data/):
 - `starter/main.py`: the trip request as a plain chat completion, no tools, no loop: a fluent generic itinerary that checks nothing and books nothing.
 - `complete/main.py`: the finished demo as shown on stage. Five tools as ordinary functions over `../data/` (`search_trails`, `get_weather`, `get_trail_conditions`, `check_campsites`, `request_permit`), their definitions loaded from `../data/tool-definitions.json` so the model sees exactly what the `.http` lab sends, a hand-written tool-calling loop with a step budget of 12, the permit gate that waits for a human yes, and the nudge logic for a model that stops early.
 
-Setup once, from this `python/` directory. A virtual environment is not optional on a modern macOS or Linux Python (`pip install` outside one is refused), and activating it is what puts `python` and `pip` on your path:
+No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-Then, with the venv active, from `complete/`. (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
-
-```bash
-python main.py                                       # the capstone request
-python main.py Plan me a trip on Avalanche Lake Trail in September
-python main.py --yes <request>                       # auto-approve the permit gate
+uv run main.py                                       # the capstone request
+uv run main.py Plan me a trip on Avalanche Lake Trail in September
+uv run main.py --yes <request>                       # auto-approve the permit gate
 ```
 
 There is no agent framework here on purpose: the loop is the same one `../http/azure.http` walks by hand, about thirty lines, and reading it is the fastest way to see what frameworks hide. Without the Azure variables it runs on `llama3.2`, which is much weaker at sequencing five tools; the `[nudge]` lines are the app compensating, and [`../dotnet/F10-dotnet.md`](../dotnet/F10-dotnet.md) has the measured failure counts before judging a local run. The reference run is in [`../reference-transcript.md`](../reference-transcript.md).
@@ -38,7 +30,7 @@ A plain chat completion, no tools, no loop. The itinerary is fluent, generic, ig
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: A lovely three-day plan with zero tool calls. That is the reason this feature exists.
@@ -69,7 +61,7 @@ def run_agent(messages, max_iterations=12):
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: Print each tool call as it happens. You should see `search_trails` and `check_campsites` fire, then an itinerary that names real trails (Trail of the Cedars, Iceberg Lake) and real campgrounds. Invented names mean a tool result did not reach the model.
@@ -88,7 +80,7 @@ def get_weather(park: str = "Glacier National Park") -> str:
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: `get_weather` is called and the forecast shapes the plan rather than decorating it: the hardest day lands on the 14th or 15th and the 16th gets something short or sheltered, with a sentence saying why. Compare the sample in `../expected-output.md`. Failing looks like the same three trails plus a line reading "expect rain on the 16th".
@@ -111,7 +103,7 @@ def get_trail_conditions(trail_id: str | None = None) -> str:
 Run:
 
 ```bash
-python main.py Plan me a 2-day trip in Glacier National Park for September 14-15 that includes the Avalanche Lake Trail \(trail-0117\).
+uv run main.py Plan me a 2-day trip in Glacier National Park for September 14-15 that includes the Avalanche Lake Trail \(trail-0117\).
 ```
 
 Check: The model calls `get_trail_conditions` with `trail-0117`, gets the four bridge-is-out reports, and the itinerary drops or flags the trail for that reason. Three failure modes, in ascending order of embarrassment: it never calls the tool; it calls it, reads "bridge is OUT", and schedules the trail anyway (`llama3.2` does this; tighten the closure instruction in the system prompt, and if it persists that is your argument for a stronger model); it drops the trail but invents a reason without calling. The system prompt in `complete/` has the closure rule that fixed the second case.

@@ -1,11 +1,11 @@
 """Finished demo, matching the demo script in docs/slides/outlines:
-  python main.py                                    the Sperry Chalet question, grounded
-  python main.py "Is the Avalanche Lake Trail open right now?"
-  python main.py --no-context                       step 1: the confident wrong answer
-  python main.py --alpha 1.0                        pure cosine, the wrong-park neighbors
-  python main.py --retrieval-only                   print the score table and stop
-  python main.py --top-k 8 "your question"          vary retrieval depth
-  python main.py --model qwen3:32b                  a bigger model, if you have the memory
+  uv run main.py                                    the Sperry Chalet question, grounded
+  uv run main.py "Is the Avalanche Lake Trail open right now?"
+  uv run main.py --no-context                       step 1: the confident wrong answer
+  uv run main.py --alpha 1.0                        pure cosine, the wrong-park neighbors
+  uv run main.py --retrieval-only                   print the score table and stop
+  uv run main.py --top-k 8 "your question"          vary retrieval depth
+  uv run main.py --model qwen3:32b                  a bigger model, if you have the memory
 
 Retrieval is hybrid: normalized cosine similarity blended with a BM25-lite
 lexical score, so a distinctive proper noun like "Sperry" counts for something.

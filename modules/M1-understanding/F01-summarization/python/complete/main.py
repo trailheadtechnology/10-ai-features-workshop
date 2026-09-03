@@ -1,8 +1,8 @@
 """Finished demo, matching the demo script in docs/slides/outlines:
-  python main.py                              the naive prompt (the book report)
-  python main.py --briefing                   3-bullet hiker briefing
-  python main.py --headline                   one-line trail status for a card UI
-  python main.py --briefing --audience ranger
+  uv run main.py                              the naive prompt (the book report)
+  uv run main.py --briefing                   3-bullet hiker briefing
+  uv run main.py --headline                   one-line trail status for a card UI
+  uv run main.py --briefing --audience ranger
   Any non-flag argument is a path to a different trip report.
 """
 

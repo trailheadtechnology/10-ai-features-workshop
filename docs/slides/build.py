@@ -34,8 +34,11 @@ puts a label to its left; several Flow lines stack as rows and reveal row by
 row), and any other paragraph is body text. `**bold**` and `` `code` ``
 render as bold and Consolas runs. A `Notes:` paragraph becomes the speaker
 notes; everything after it up to the next `##` is also notes (that is where
-the per-feature demo scripts live), and every slide of a reveal sequence
-carries the same notes. Everything before the first `##` is the outline's
+the per-feature demo scripts live). In a reveal sequence a line that is exactly
+`~` splits the notes: the chunk before the first `~` goes on the first reveal
+slide, the next chunk on the second, and so on, so each slide carries only the
+new thing to say. Without any `~` every slide of the sequence carries the same
+notes. Everything before the first `##` is the outline's
 own preamble (module runsheet) and is skipped.
 
 The theme comes from template.pptx (extracted from the Power of Ten deck:
@@ -238,12 +241,19 @@ def swap_repo_url(slide):
                     r.text = r.text.replace(REPO_OLD, REPO_NEW)
 
 
-def set_notes(slide, notes):
-    """One paragraph per beat; `code` spans (full CLI commands) render in Consolas."""
-    if not notes:
+def set_notes(slide, notes, clear_empty=False):
+    """One paragraph per beat; `code` spans (full CLI commands) render in Consolas.
+
+    Empty notes leave the slide alone unless clear_empty is set, which the
+    reveal splitter uses so a slide with nothing new to say has blank notes.
+    """
+    if not notes and not clear_empty:
         return
     tf = slide.notes_slide.notes_text_frame
     tf.clear()
+    if not notes:
+        return
+    notes = "\n".join(l for l in notes.split("\n") if l.strip() != "~")
     for i, line in enumerate(notes.split("\n")):
         p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
         add_rich(p, line)
@@ -586,9 +596,25 @@ def emit(prs, s):
                 out.append(content_slide(prs, s, items_upto=k))
             if s.get("difficulty"):
                 out.append(content_slide(prs, s, show_difficulty=True))
-    for slide in out:
-        set_notes(slide, s["notes"])
+    for slide, notes in zip(out, split_notes(s["notes"], len(out))):
+        set_notes(slide, notes, clear_empty=len(out) > 1)
     return out
+
+
+def split_notes(notes, n):
+    """Distribute a Notes block across the n slides of a reveal sequence.
+
+    A line that is exactly `~` separates chunks; chunk k goes to reveal slide k,
+    so each slide's notes hold only the new thing to say. With no `~` the whole
+    block goes on every slide (the old behavior). Fewer chunks than slides leaves
+    the trailing slides without notes; extra chunks fold into the last slide.
+    """
+    chunks = [c.strip() for c in re.split(r"(?m)^~\s*$", notes or "")]
+    if len(chunks) == 1:
+        return [notes] * n
+    if len(chunks) > n:
+        chunks = chunks[:n - 1] + ["\n".join(chunks[n - 1:])]
+    return chunks + [""] * (n - len(chunks))
 
 
 def build(outline, target):

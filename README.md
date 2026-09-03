@@ -55,10 +55,10 @@ Before the workshop, do the pre-work in [`SETUP.md`](SETUP.md). It's mostly "ins
 ```
 ├── SETUP.md                  # attendee pre-work, please do this before Sept 23
 ├── workshop.slnx             # every .NET starter and complete project; dotnet build once
+├── pyproject.toml            # the Python track's one dependency; uv sync once at the root
 ├── docs/
 │   ├── decision-framework.md # the closing leadership framework
 │   ├── runsheet.md           # instructor: what to have open, what to run, what to cut
-│   ├── soak-2026-09-03.md    # measured results against the real Azure deployment
 │   └── slides/               # decks, outlines, and the instructor demo scripts
 └── modules/
     └── MN-theme/             # a module: three related features, one hands-on period
@@ -70,7 +70,7 @@ Before the workshop, do the pre-work in [`SETUP.md`](SETUP.md). It's mostly "ins
             ├── data/         # everything the lab and the code read
             ├── http/         # FNN-http.md walkthrough plus ollama.http / azure.http: raw requests, any language
             ├── dotnet/       # FNN-dotnet.md walkthrough plus starter/ and complete/ projects
-            ├── python/       # FNN-python.md walkthrough, requirements.txt, starter/main.py, complete/main.py
+            ├── python/       # FNN-python.md walkthrough, starter/main.py, complete/main.py (uv run main.py)
             └── typescript/   # FNN-typescript.md walkthrough, package.json, starter/index.ts, complete/index.ts
 ```
 

@@ -1,10 +1,10 @@
 """Review queue: the model drafts, a human decides, and every decision is logged
 to decisions.jsonl.
 
-  python main.py                            review the queue: [a]pprove / [e]dit / [r]eject / [s]kip
-  python main.py --policy                   print the routing policy table and exit
-  python main.py --auto-approve-dry-run     non-interactive run for testing and CI
-  python main.py ../../data/inquiries.jsonl any queue file works
+  uv run main.py                            review the queue: [a]pprove / [e]dit / [r]eject / [s]kip
+  uv run main.py --policy                   print the routing policy table and exit
+  uv run main.py --auto-approve-dry-run     non-interactive run for testing and CI
+  uv run main.py ../../data/inquiries.jsonl any queue file works
 
 SAFETY INVARIANT, load-bearing, do not weaken:
 emergencies never reach the model. The policy table below routes them to

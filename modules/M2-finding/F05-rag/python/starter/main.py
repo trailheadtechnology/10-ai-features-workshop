@@ -2,7 +2,7 @@
 This is the "plain chatbot" from step 1 of the demo script. It answers
 confidently. It is also wrong: the model puts Sperry Chalet in California
 and guesses at fire rules the park wrote down years ago.
-Run: python main.py ["your question"]
+Run: uv run main.py ["your question"]
 """
 
 import sys

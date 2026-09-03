@@ -5,20 +5,12 @@ Two scripts, both reading from [`../data/`](../data/):
 - `starter/main.py`: today's baseline. Keyword search, no AI at all: lowercase the query, keep words of three letters or more, count whole-word hits in each trail's name and description.
 - `complete/main.py`: the finished demo as shown on stage. `nomic-embed-text` through the SDK's embeddings call, the 30 trail descriptions embedded once and cached to `embeddings.json` next to the script, cosine similarity in one visible function, top 5 with scores.
 
-Setup once, from this `python/` directory. A virtual environment is not optional on a modern macOS or Linux Python (`pip install` outside one is refused), and activating it is what puts `python` and `pip` on your path:
+No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-Then, with the venv active, from `complete/`. (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
-
-```bash
-python main.py                                   # dog-friendly waterfall hike, not too steep
-python main.py somewhere quiet to take my kids
-python main.py an easy hike to a great view
+uv run main.py                                   # dog-friendly waterfall hike, not too steep
+uv run main.py somewhere quiet to take my kids
+uv run main.py an easy hike to a great view
 ```
 
 Run `starter` first, get junk, then run `complete` on the same words. Delete `embeddings.json` to re-embed live and show the timing. The recorded rankings, including Taft Point at 0.4876 for the kids query, are in [`../expected-output.md`](../expected-output.md).
@@ -36,8 +28,8 @@ The starter is today's search box: lowercase, split into words, count whole-word
 Run:
 
 ```bash
-python main.py
-python main.py somewhere quiet to take my kids
+uv run main.py
+uv run main.py somewhere quiet to take my kids
 ```
 
 Check: Junk for the first, one trail ("kids") for the second. Compare the keyword blocks in `../expected-output.md`.
@@ -76,7 +68,7 @@ for score, trail in results:
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: The gentle shaded waterfall trails at the top for the demo query, scores around 0.77. Compare `../expected-output.md`.
@@ -88,8 +80,8 @@ The three test queries and their expected top hits are in `../data/queries.json`
 Run:
 
 ```bash
-python main.py somewhere quiet to take my kids
-python main.py an easy hike to a great view
+uv run main.py somewhere quiet to take my kids
+uv run main.py an easy hike to a great view
 ```
 
 Check: The expected trail is in your top 3 for each query. Stretch: filter on the metadata you already have (`features` contains `dog-friendly`, `distance_mi < 6`) before ranking, or blend the keyword count into the score. Either is a few lines, and either fixes Taft Point in a way no better model would.

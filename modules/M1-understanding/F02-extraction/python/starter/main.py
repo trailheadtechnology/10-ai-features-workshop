@@ -1,7 +1,7 @@
 """Demo starting point: the naive approach. Ask for JSON in the prompt, get
 back whatever the model feels like: prose preamble, markdown fences, drifting
 field names. This is what the parsed, typed response replaces.
-Run: python main.py [path-to-trip-report.md]
+Run: uv run main.py [path-to-trip-report.md]
 """
 
 import sys

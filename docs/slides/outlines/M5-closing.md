@@ -13,7 +13,9 @@ Notes: Ten features, ten cards, one table: docs/decision-framework.md.
 - ❌ "Where can we add AI?"
 - ✅ "What problems can AI best solve for our users?"
 
-Notes: Every feature today started with a stuck user, and the AI showed up as the answer rather than the premise.
+Notes: Where we started this morning.
+~
+Every feature today started with a stuck user, and the AI showed up as the answer rather than the premise.
 
 ## The Framework, All Ten Rows
 
@@ -28,7 +30,26 @@ Icon (scatter): F08 Detect
 Icon (shield-check): F09 Approve
 Icon (robot): F10 Agent
 
-Notes: One cell per advance: name each feature as it lands, a few seconds apiece — the day, replayed in ten beats.
+Notes: One cell per advance: name each feature as it lands, a few seconds apiece. The day, replayed in ten beats.
+Summarize: the bridge surfaced from forty reports.
+~
+Extract: a database row your code validated.
+~
+Sentiment: measured, and the free model held on everything but sarcasm.
+~
+Search: what users mean, not what they type.
+~
+RAG: the campfire answer, cited, and the chunk boundary that nearly broke it.
+~
+Recommend: more like this, and the daypack that taught you about complements.
+~
+Route: the emergency at the top of its own queue, every run.
+~
+Detect: the washout from three reports, not a one-star review.
+~
+Approve: the model types, a person decides, the log proves it.
+~
+Agent: the loop that planned the trip and checked the bridge.
 The full table lives in decision-framework.md: # · Feature · When · Think · Difficulty, the same three fields as every card today. (Paste the real table over this slide, or demo it from the repo.)
 Don't read it. Let it sit on screen while you explain how to use it, which is the next section. It's dense on purpose; it's a reference, and they have it in the repo.
 
@@ -40,7 +61,15 @@ Don't read it. Let it sit on screen while you explain how to use it, which is th
 - Local agent: all four tools < 1 run in 5
 - Every number: an `expected-output.md`
 
-Notes: A free local model matched the frontier model on ordinary reviews and lost only on the sarcastic ones. Better chunking, not a bigger model, moved RAG's flagship question. The classifier caught both emergencies every run; the drafting model failed the emergency every run. The runs are checked in behind every number.
+Notes: A free local model matched the frontier model on ordinary reviews and lost only on the sarcastic ones.
+~
+Better chunking, not a bigger model, moved RAG's flagship question.
+~
+The classifier caught both emergencies every run; the drafting model failed the emergency every run.
+~
+The local agent reached all four planning tools in fewer than one run in five. That is why the capstone runs on a frontier model.
+~
+The runs are checked in behind every number.
 This is the credibility slide. "We ran it and here is what happened" is a stronger pitch than "the vendor says."
 
 ## [static] What We Didn't Do Today, on Purpose
@@ -65,7 +94,11 @@ Notes: The recap is actions, not topics. Four moves, each one slide, each someth
 - Mark the rows your users would recognize
 - Row 0: list the ten things they hate doing
 
-Notes: Go down the column and mark every row that describes a problem your users actually have. The Row 0 exercise makes the features pick themselves.
+Notes: Go down the "when" column.
+~
+Mark every row that describes a problem your users actually have.
+~
+Row 0 is the same exercise before any feature: list the ten things they hate doing, and the features pick themselves.
 This is the workshop's framing question turned into a Monday-morning exercise. It happens in a meeting room, not a codebase.
 
 ## Sort by Cost, Cheapest First
@@ -73,15 +106,18 @@ This is the workshop's framing question turned into a Monday-morning exercise. I
 - The cheapest marked row = your first AI feature
 - Rows 1–8: mostly free local models
 
-Notes: Sort your marked rows by the cost column; the top of that list is the first feature, and the one-liner column is how you pitch it.
-The local-model finding is worth repeating here; it changes the budget conversation before it starts.
+Notes: Sort your marked rows by the difficulty column, easiest first; the top of that list is the first feature, and the Think column is how you pitch it.
+~
+Rows 1 through 8 mostly run on free local models. Worth repeating here; it changes the budget conversation before it starts.
 
 ## Lead with the Human in the Loop
 
 - Row 9 de-risks the rest
 - Say where the human sits · what gets logged
 
-Notes: Leading with the human-in-the-loop design is usually what gets the other rows approved.
+Notes: Row 9 de-risks the rest. Leading with the human-in-the-loop design is usually what gets the other rows approved.
+~
+Say where the human sits and what gets logged, before anyone asks.
 
 ## Pitch One Feature, Not a Strategy
 
@@ -90,8 +126,13 @@ Notes: Leading with the human-in-the-loop design is usually what gets the other 
 - How you'll measure it
 - Ask for one feature
 
-Notes: Lead with how often the problem happens. Say what it costs in days or weeks and what it costs to run; say what runs local and what needs a paid model, and why; say the labeled sample and the error you're tuning never to make.
-This is the shape of the conversation the framework enables: a small, measurable, de-risked ask. Reference feature 03's recipe: labeled sample, run both, count disagreements, price the errors. It generalizes.
+Notes: Lead with the user's problem in their words, and how often it happens.
+~
+Name the row. Say what it costs in days or weeks and what it costs to run; say what runs local and what needs a paid model, and why.
+~
+Say how you'll measure it: the labeled sample and the error you're tuning never to make. Reference feature 03's recipe: labeled sample, run both, count disagreements, price the errors. It generalizes.
+~
+Ask for one feature. This is the shape of the conversation the framework enables: a small, measurable, de-risked ask.
 
 ## [static] Everything Is in the Repo
 

@@ -5,22 +5,14 @@ Two scripts, both reading from [`../data/`](../data/):
 - `starter/main.py`: one client, one question, no context: the confident wrong answer from step 1 of the demo.
 - `complete/main.py`: the finished demo as shown on stage. Hybrid retrieval over `../data/chunks.jsonl` (normalized cosine blended with a BM25-lite lexical score, alpha visible), the score table with both signals and the margin, the grounded prompt with the pinned date in the refusal clause, citation validation with one retry and then stripping, and generation on Azure OpenAI or the local model.
 
-Setup once, from this `python/` directory. A virtual environment is not optional on a modern macOS or Linux Python (`pip install` outside one is refused), and activating it is what puts `python` and `pip` on your path:
+No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-Then, with the venv active, from `complete/`. (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
-
-```bash
-python main.py                                    # the Sperry Chalet question, grounded
-python main.py "Is the Avalanche Lake Trail open right now?"
-python main.py --no-context                       # step 1: the confident wrong answer
-python main.py --alpha 1.0 --top-k 8 --retrieval-only   # pure cosine: the wrong-park neighbors
-python main.py --model qwen3:32b                  # a bigger local model, if you have the memory
+uv run main.py                                    # the Sperry Chalet question, grounded
+uv run main.py "Is the Avalanche Lake Trail open right now?"
+uv run main.py --no-context                       # step 1: the confident wrong answer
+uv run main.py --alpha 1.0 --top-k 8 --retrieval-only   # pure cosine: the wrong-park neighbors
+uv run main.py --model qwen3:32b                  # a bigger local model, if you have the memory
 ```
 
 Retrieval always runs locally on `nomic-embed-text`; the first run embeds 250 chunks (about 40 seconds) and caches them to `embeddings.json` next to the script. Every number in the retrieval table matches the .NET demo to four decimals, and the measured story behind the chunking, the alpha, the date rule, and the 32B comparison is in [`../expected-output.md`](../expected-output.md) and [`../dotnet/F05-dotnet.md`](../dotnet/F05-dotnet.md).
@@ -40,7 +32,7 @@ No retrieval, no context. Ask the Sperry Chalet question and read the answer, th
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: Fluent, specific, and wrong about a fire regulation.
@@ -77,8 +69,8 @@ combined = alpha * semantic_norm[cid] + (1 - alpha) * lexical_norm[cid]
 Run:
 
 ```bash
-python main.py --top-k 8 --alpha 1.0 --retrieval-only
-python main.py --top-k 8 --retrieval-only
+uv run main.py --top-k 8 --alpha 1.0 --retrieval-only
+uv run main.py --top-k 8 --retrieval-only
 ```
 
 Check: At alpha 1.0, five of eight chunks are from the wrong park. At the default 0.6, the wrong-park chunks are replaced by Glacier documents that name Sperry and the margin over rank 2 grows from 0.16 to 0.23. Try the rephrasings listed in `../expected-output.md`.
@@ -138,7 +130,7 @@ Check: Run the unanswerable question a few times: the model will eventually atta
 Run:
 
 ```bash
-for i in $(seq 20); do python main.py | tail -3 | head -1; done
+for i in $(seq 20); do uv run main.py | tail -3 | head -1; done
 ```
 
 Check: Three correct cited answers, a refusal on the fourth, and no invalid citation reaching the output unflagged. Over 20 runs, count how many open with "Yes" before saying fires are banned; the measured rate for `llama3.2` is 40%, and it is 0% for the 32B model at 18x the latency (`--model qwen3:32b`, if you have the memory). Stretch: write ten more questions with the chunk that should win, sweep alpha from 0 to 1, and defend your alpha with recall@3 rather than with the Sperry question.

@@ -1,7 +1,7 @@
 """Demo starting point: keyword search over the trail slice. Split the query into
 words and count how many appear, as whole words, in each trail's name and
 description.
-Run: python main.py <query>          (defaults to the demo query)
+Run: uv run main.py <query>          (defaults to the demo query)
 
 Matching on words alone has no access to meaning. A description saying the
 trail avoids the steep section still matches "steep", and a trail whose text

@@ -1,5 +1,5 @@
 """Demo starting point: one chat client, one classify function, one review.
-Run: python main.py [review-id]
+Run: uv run main.py [review-id]
 Ids come from ../../data/easy.jsonl and ../../data/hard.jsonl. The default is
 gr-0007, a hard-set review whose sarcasm ("five-star experience, truly") points
 the opposite way from its two-star rating.

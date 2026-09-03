@@ -1,5 +1,5 @@
 """Demo starting point: one chat client, one call, one naive prompt.
-Run: python main.py [path-to-trip-report.md]
+Run: uv run main.py [path-to-trip-report.md]
 """
 
 import sys

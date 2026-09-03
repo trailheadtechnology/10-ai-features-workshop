@@ -5,21 +5,13 @@ Two scripts, both reading from [`../data/`](../data/):
 - `starter/main.py`: the "you might also like" box, picking five trails at random. Which is the current feature.
 - `complete/main.py`: the finished demo as shown on stage. Same trail vectors as feature 04 (cached to `embeddings.json`), "more like this" as nearest neighbors of one item's vector, and `--gear` for the same trick over product reviews, where the top hit for the Cascade 65 is the Cascade 40.
 
-Setup once, from this `python/` directory. A virtual environment is not optional on a modern macOS or Linux Python (`pip install` outside one is refused), and activating it is what puts `python` and `pip` on your path:
+No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-Then, with the venv active, from `complete/`. (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
-
-```bash
-python main.py                        # "more like this" for Avalanche Lake Trail
-python main.py trail-0008             # any trail id works
-python main.py Trail of the Cedars    # so does any name (or part of one)
-python main.py --gear Cascade 65      # the same trick on gear, from review text
+uv run main.py                        # "more like this" for Avalanche Lake Trail
+uv run main.py trail-0008             # any trail id works
+uv run main.py Trail of the Cedars    # so does any name (or part of one)
+uv run main.py --gear Cascade 65      # the same trick on gear, from review text
 ```
 
 Real output for all four commands, including the neighbors that are obviously wrong, is in [`../expected-output.md`](../expected-output.md).
@@ -37,7 +29,7 @@ This is the recommendation feature most apps ship: five trails picked at random 
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: Nothing about the five relates to Avalanche Lake Trail.
@@ -68,7 +60,7 @@ for score, trail in hits:
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: Gunsight Lake Approach at 0.7849 on top for Avalanche Lake Trail. Read the difficulty column: the target is a moderate family walk and most neighbors are hard. Difficulty is not in the description text, so the embedding cannot see it.
@@ -80,8 +72,8 @@ Run the other targets from `../F06-lab.md`, compare against the acceptable sets 
 Run:
 
 ```bash
-python main.py trail-0008
-python main.py Trail of the Cedars
+uv run main.py trail-0008
+uv run main.py Trail of the Cedars
 ```
 
 Check: Substantial overlap with the acceptable sets, and a sentence from you on whether you would ship each list. Stretch: average two trails' vectors and rank against the average, or filter to the same park or an easier difficulty before ranking. `complete/` also has `--gear`, where the top hit for the Cascade 65 pack is the Cascade 40 pack: substitutes, not complements.

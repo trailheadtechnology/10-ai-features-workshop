@@ -5,20 +5,12 @@ Two scripts, both reading from [`../data/`](../data/):
 - `starter/main.py`: deliberately unsafe. Every draft goes straight out, nothing is logged, and nothing treats an emergency differently except a sentence in the system prompt that the model is free to ignore.
 - `complete/main.py`: the finished demo as shown on stage. A policy table decides the lane by error cost; emergencies never reach the model (the gate sits above the API call, in code); a review loop with approve / edit / reject / skip; every decision appended to `decisions.jsonl` with the draft, the final text, and the edit distance; approved text queued to `outbox/`.
 
-Setup once, from this `python/` directory. A virtual environment is not optional on a modern macOS or Linux Python (`pip install` outside one is refused), and activating it is what puts `python` and `pip` on your path:
+No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-Then, with the venv active, from `complete/`. (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
-
-```bash
-python main.py                            # review the queue interactively
-python main.py --policy                   # print the routing policy table and exit
-python main.py --auto-approve-dry-run     # non-interactive run for testing
+uv run main.py                            # review the queue interactively
+uv run main.py --policy                   # print the routing policy table and exit
+uv run main.py --auto-approve-dry-run     # non-interactive run for testing
 ```
 
 The emergency row is the demo's punchline: `inq-0013` never reaches the model at all. The starter, run on the same queue, hands the overdue-hiker message to the model and gets a warm reassuring reply back; the measured 3/3 is in [`../expected-output.md`](../expected-output.md). `decisions.jsonl` and `outbox/` are written next to the script and are gitignored.
@@ -36,7 +28,7 @@ The starter drafts a reply to all six inquiries and prints each as sent, with no
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: Five usable drafts you would want to touch before sending, and a warm, reassuring, useless note to the overdue hiker's wife. In the recorded runs the model ignored the escalation instruction 3/3, and even with the instruction moved to the top it wrote `ESCALATE` and then the note anyway. One run of the starter makes the case for the whole feature.
@@ -65,7 +57,7 @@ if lane == "human-only":
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: `inq-0013` prints `NO DRAFT` and no model call is made for it. Keep the `ESCALATE` prefix check after the call too, as a backstop for emergencies that arrive miscategorized; it is never the control, because it runs after the model has had its say.
@@ -97,8 +89,8 @@ with decisions_path.open("a") as f:
 Run:
 
 ```bash
-python main.py
-python main.py --auto-approve-dry-run   # non-interactive, for a quick check
+uv run main.py
+uv run main.py --auto-approve-dry-run   # non-interactive, for a quick check
 ```
 
 Check: Approve one, edit one, reject one, then read `decisions.jsonl`: six lines, one of them the escalation with no draft. Compare `../expected-output.md`. Stretch: compute the edit distance between draft and your edited version and sketch what threshold would earn a category promotion from draft-mode to auto-send.

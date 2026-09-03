@@ -5,20 +5,12 @@ Two scripts, both reading from [`../data/`](../data/):
 - `starter/main.py`: the naive approach: ask for JSON in the prompt and print whatever comes back, preamble, markdown fences, drifting field names and all.
 - `complete/main.py`: the finished demo as shown on stage. A pydantic `TripFacts` model with nullable fields and per-field descriptions, handed to `.parse()` so the reply comes back typed. Then the validator: grounding checks for names, strict date parsing, range and zero checks for the numbers, and rejected fields coerced to `null` before anything would be stored.
 
-Setup once, from this `python/` directory. A virtual environment is not optional on a modern macOS or Linux Python (`pip install` outside one is refused), and activating it is what puts `python` and `pip` on your path:
+No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-Then, with the venv active, from `complete/`. (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
-
-```bash
-python main.py                              # both reports: extract, validate, show what we would store
-python main.py ../../data/tr-0011.md         # just the sparse one, for the null check
-python main.py ../../../F01-summarization/data/trip-reports/tr-0002.md   # any report path works
+uv run main.py                              # both reports: extract, validate, show what we would store
+uv run main.py ../../data/tr-0011.md         # just the sparse one, for the null check
+uv run main.py ../../../F01-summarization/data/trip-reports/tr-0002.md   # any report path works
 ```
 
 Run the sparse report three or four times. The output moves, and that is the demo: some runs come back clean, and some hand you `0` or "early last month", which is what the validator is for. The measured runs are in [`../expected-output.md`](../expected-output.md).
@@ -36,7 +28,7 @@ The starter asks for JSON in prose. Run it twice on `tr-0007.md` and compare: fi
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: Two runs, two shapes.
@@ -73,7 +65,7 @@ facts = response.choices[0].message.parsed
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: A populated object, no parsing step, and the values match the `tr-0007.md` block in `../expected-output.md` (Sperry Chalet Trail, 2026-07-04, 12.8 mi, 3400 ft).
@@ -85,7 +77,7 @@ Check: A populated object, no parsing step, and the values match the `tr-0007.md
 Run:
 
 ```bash
-python main.py ../../data/tr-0011.md
+uv run main.py ../../data/tr-0011.md
 ```
 
 Check: Most missing facts come back `null`, and you can name the ones that did not. That list is what the next step is for.
@@ -120,7 +112,7 @@ def valid_date(field, value):
 Run:
 
 ```bash
-python main.py ../../data/tr-0011.md   # several times
+uv run main.py ../../data/tr-0011.md   # several times
 ```
 
 Check: Every rejected field prints a reason, and "what we would store" has `null` where the model had `0` or prose. Zero is the dangerous one: it is a value, and a pipeline will store it without complaint. Stretch: add a per-field confidence, or extract an array of records for a multi-day report.

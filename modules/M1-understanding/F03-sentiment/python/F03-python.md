@@ -5,20 +5,12 @@ Two scripts, both reading from [`../data/`](../data/):
 - `starter/main.py`: one client, one `classify` function, one review (`gr-0007`, the sarcastic two-star). Prints the review and what `phi3` says.
 - `complete/main.py`: the finished demo as shown on stage. Both review sets through both models with the byte-identical four-line prompt, a table with disagreements flagged, accuracy per set against `reference-labels.json`, and the disagreement list with a verdict on who was right.
 
-Setup once, from this `python/` directory. A virtual environment is not optional on a modern macOS or Linux Python (`pip install` outside one is refused), and activating it is what puts `python` and `pip` on your path:
+No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-Then, with the venv active, from `complete/`. (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
-
-```bash
-python main.py            # both sets, both models
-python main.py --easy     # easy set only (demo steps 3 and 4)
-python main.py --hard     # hard set only (demo step 5)
+uv run main.py            # both sets, both models
+uv run main.py --easy     # easy set only (demo steps 3 and 4)
+uv run main.py --hard     # hard set only (demo step 5)
 ```
 
 Without the Azure variables, `llama3.2` stands in for the big model so the whole comparison runs offline; that pairing nearly ties (9/10 easy for both, 7/10 vs 8/10 hard); against the workshop's `gpt-4.1` deployment the frontier model scores 10/10 on both sets, and both results are in [`../expected-output.md`](../expected-output.md). Keep the prompt's line breaks exactly as they are: reflowing it onto one line costs `phi3` measured accuracy.
@@ -38,7 +30,7 @@ One client, one `classify` function, one review: `gr-0007`, two stars, "five-sta
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: `phi3 says: negative`. Try `gr-0034` or any other id from `easy.jsonl` / `hard.jsonl`.
@@ -63,7 +55,7 @@ print(f"phi3 {correct}/{total}")
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: 9/10 on the easy set in the recorded runs. Yours may differ by one.
@@ -82,7 +74,7 @@ big_label = classify(*big, review["text"])
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: Two columns of labels for the hard set. Recorded: 7/10 for `phi3`, 10/10 for `gpt-4.1` on Azure, and 8/10 for the `llama3.2` stand-in. The frontier model earns its price on this slice; the local stand-in would have told you the gap is one review wide.

@@ -5,22 +5,14 @@ Two scripts, both reading from [`../data/`](../data/):
 - `starter/main.py`: no model, no network. Loads the precomputed vectors from `../data/embeddings-0117.json`, averages them into a centroid, ranks every report by cosine distance from it. Runs with Ollama down.
 - `complete/main.py`: the finished demo as shown on stage. Embeds live with the `classification:` task prefix, derives the threshold from the corpus (mean plus sigma standard deviations), and applies the alert rule: two or more flagged reports within a 14-day window. One alert fires, three genuine washout reports in it.
 
-Setup once, from this `python/` directory. A virtual environment is not optional on a modern macOS or Linux Python (`pip install` outside one is refused), and activating it is what puts `python` and `pip` on your path:
+No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-Then, with the venv active, from `complete/`. (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
-
-```bash
-python main.py                  # trail-0117, live embeddings, distance table + cluster alerts
-python main.py --raw            # same trail with the task prefix removed
-python main.py --trail 0042     # the bear-activity trail
-python main.py --sigma 1.5      # tighter threshold
-python main.py --window 30      # wider clustering window, in days
+uv run main.py                  # trail-0117, live embeddings, distance table + cluster alerts
+uv run main.py --raw            # same trail with the task prefix removed
+uv run main.py --trail 0042     # the bear-activity trail
+uv run main.py --sigma 1.5      # tighter threshold
+uv run main.py --window 30      # wider clustering window, in days
 ```
 
 Embeddings are the only model calls; everything after them is arithmetic. The recorded ranking and the single alert are in [`../expected-output.md`](../expected-output.md).
@@ -38,7 +30,7 @@ Lab steps 1 and 2 are already in the starter, and it needs no model: it loads th
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: Washout reports rise toward the top, but not cleanly: routine reports about parking or wildflowers are mixed in. Compare the ranking in `../expected-output.md`. That is what the technique does out of the box.
@@ -57,7 +49,7 @@ vectors = [normalize(d.embedding) for d in response.data]
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: The first washout report sits around rank 11 (`complete/ --raw` reproduces this). Then set the prefix to `"classification: "` and re-run: it jumps to rank 2 and the mud reports settle to the bottom. Reading the model card is engineering work.
@@ -88,7 +80,7 @@ while i < len(flagged):
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: Exactly one alert on trail-0117, three genuine washout reports in it (`cr-0429`, `cr-0436`, `cr-0464`), lone outliers ignored. Count the model calls: 40 embeddings, zero chat completions. Stretch: build the centroid only from reports before the washout window and watch all eight washout reports reach the top 10; or run `--trail 0042` and catch the bear-activity spike, which separates more sharply.

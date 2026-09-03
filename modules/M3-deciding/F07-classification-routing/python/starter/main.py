@@ -1,5 +1,5 @@
 """Starting point: classify a single inquiry.
-Run: python main.py [inquiry-id]     (default inq-0005)
+Run: uv run main.py [inquiry-id]     (default inq-0005)
 
 The answer comes back as free text, so nothing here stops the model from
 returning a label that does not exist, a sentence of explanation, or a

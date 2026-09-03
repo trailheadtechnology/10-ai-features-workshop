@@ -5,19 +5,11 @@ Two scripts, both reading from [`../data/`](../data/):
 - `starter/main.py`: classify a single inquiry and print the free-text label, with nothing stopping the model from returning a label that does not exist.
 - `complete/main.py`: the finished demo as shown on stage. Every inquiry in the slice classified through structured output into a Python `Enum`, so the model can only return a label the routing table knows; emergencies printed first; accuracy against the reference labels and, separately, emergency recall, which is the number that matters.
 
-Setup once, from this `python/` directory. A virtual environment is not optional on a modern macOS or Linux Python (`pip install` outside one is refused), and activating it is what puts `python` and `pip` on your path:
+No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-Then, with the venv active, from `complete/`. (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
-
-```bash
-python main.py             # all 20, scored
-python main.py inq-0013    # (starter) one inquiry
+uv run main.py             # all 20, scored
+uv run main.py inq-0013    # (starter) one inquiry
 ```
 
 The taxonomy lives in the prompt string, and editing those descriptions changes behavior more than any code. Temperature is pinned at 0 so a scored run means something. The recorded 17/20 with 2/2 emergencies is in [`../expected-output.md`](../expected-output.md).
@@ -35,9 +27,9 @@ One inquiry, free-text label. Try `inq-0035`, the ambiguous one, and watch the a
 Run:
 
 ```bash
-python main.py
-python main.py inq-0035
-python main.py inq-0013
+uv run main.py
+uv run main.py inq-0035
+uv run main.py inq-0013
 ```
 
 Check: A label per run, and at least one that is not exactly one of the seven category names.
@@ -79,7 +71,7 @@ print(f"Emergency recall: {caught}/{len(emergency_ids)}")
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: Recorded: 17/20 and 2/2. Print each miss with what the model said and what the reference says; that list drives the next step.
@@ -97,7 +89,7 @@ Check: Recorded: 17/20 and 2/2. Print each miss with what the model said and wha
 Run:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 Check: Lab step 3, the success check: both emergencies classified `emergency`, `inq-0035` in `unsure`, and your accuracy at or above where it started. Judge every taxonomy edit on emergency recall first. Stretch: add a `priority` field to the result type, or a confidence score routed to `unsure` below a threshold.

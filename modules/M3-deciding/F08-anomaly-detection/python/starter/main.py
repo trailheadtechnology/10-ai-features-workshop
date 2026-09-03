@@ -1,5 +1,5 @@
 """Starting point: ranks trail reports by distance from the trail's baseline.
-Run: python main.py
+Run: uv run main.py
 
 Makes no model calls and needs no network. The vectors in
 ../../data/embeddings-0117.json were precomputed with nomic-embed-text so this

@@ -1,6 +1,6 @@
 """Finished demo, matching the demo script in docs/slides/outlines:
-  python main.py dog-friendly waterfall hike, not too steep
-  python main.py somewhere quiet to take my kids
+  uv run main.py dog-friendly waterfall hike, not too steep
+  uv run main.py somewhere quiet to take my kids
 Embeds every trail description once, embeds the query, ranks by cosine
 similarity, prints the top 5.
 """

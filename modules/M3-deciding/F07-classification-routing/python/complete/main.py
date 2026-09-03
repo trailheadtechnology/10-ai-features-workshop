@@ -1,6 +1,6 @@
 """Classifies every inquiry in ../../data/inquiries-slice.jsonl and scores the
 result against ../../data/reference-labels.json.
-Run: python main.py
+Run: uv run main.py
 
 The category comes back as a Python Enum through structured output, so the
 model can only return a label the routing table already knows how to handle.

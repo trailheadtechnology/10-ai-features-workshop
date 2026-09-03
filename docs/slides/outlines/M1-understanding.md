@@ -22,8 +22,13 @@ Icon (gauge): F03 Sentiment
 
 Notes: One model call + one careful instruction; the rhythm is three demos, then your lab hour.
 Three features, one shape: a single chat call and a carefully written instruction. No vector database, no training, no cloud.
+01: forty trip reports become a three-bullet briefing.
+~
+02: the same prose becomes a database row, and your code decides whether to believe it.
+~
+03: three hundred reviews get a label, and you measure which model deserves the money.
 The thread to watch all module: asked for something it cannot find, a model supplies something plausible rather than nothing. 01 invents a closure, 02 invents a distance, 03 believes the sarcasm. A better model does not fix it; a tighter instruction, a null-able schema, and checking code do.
-Set the rhythm expectation out loud: three quick demos with a card for your boss after each, then the room builds for an hour — 01 recommended, 02 and 03 for anyone with time left.
+Set the rhythm expectation out loud: three quick demos with a card for your boss after each, then the room builds for an hour: 01 recommended, 02 and 03 for anyone with time left.
 
 ---
 
@@ -42,16 +47,16 @@ The concept needs no slide: one chat call, a document, an instruction. "Summariz
 - Grounding lines — without them, ~half of runs invent a closure
 - Same call, new shape: a one-line trail status
 
-Notes: A required "hazards" slot with nothing honest to put in it is an invitation to make something up. The invented bear-related closure happens on the *clean* report; numbers are in `expected-output.md`. Point at the Ollama endpoint at the end: there was no API key, and no data left the room.
-
-Demo script (~8 min; the reshape in step 6 is the first cut):
-1. Open a raw trip report from `data/trip-reports/` on screen and scroll through it slowly, so the room feels the problem before seeing the fix.
-2. Starter project: `IChatClient` wired to Ollama via Microsoft.Extensions.AI. One method, one prompt: "Summarize this trip report."
-3. Run it and get a faithful, generic, useless book report, then name the failure out loud: right model, wrong instruction.
-4. Iterate the prompt live into the hiker-focused version (conditions, hazards, crowding, ignore everything else). Run again. This is the payoff: three bullets, and the bridge warning surfaces.
-5. Point at the last two lines of that prompt, the grounding lines. Without them, this exact prompt run against the clean report invented a bear-related trail closure in roughly half of runs, because a required "hazards" slot with nothing honest to put in it is an invitation to make something up. The numbers and the failing outputs are in `expected-output.md`.
-6. Change the shape: same call, but output a one-line "trail status" headline for a card UI. Same feature, different product surface.
-7. Point at the Ollama endpoint in the code. This ran entirely on the laptop, with no API key and no data leaving the room.
+Notes: ~8 min · Terminal 2 · `cd modules/M1-understanding/F01-summarization/dotnet`
+Files: `tr-0004.md` = the story's report, bridge buried mid-text · `tr-0001.md` = clean report, nothing closed (hallucination bait)
+Flags: none = naive "Summarize this" · `--briefing` = 3 hiker bullets · `--headline` = one-line trail card · `--audience ranger` = same report, different reader
+1. Open `data/tr-0004.md`, scroll. The bridge is one sentence, mid-report.
+2. Before: `cd starter && dotnet run -- ../../data/tr-0004.md`. Book report. Right model, wrong instruction.
+3. After: `cd ../complete && dotnet run -- --briefing`. Same report, three bullets, washout leads. Show the prompt.
+4. `dotnet run -- --briefing ../../data/tr-0001.md`: the clean report, nothing closed. Last two prompt lines: 11 of 24 became 1 of 24.
+5. `dotnet run -- --headline`: one line for a card.
+6. Line 11: `localhost:11434`. No key, nothing left the room.
+Cut: 5, then 4.
 
 ## F01 · Summarization · Leadership Card
 
@@ -60,8 +65,11 @@ Demo script (~8 min; the reshape in step 6 is the first cut):
 
 Difficulty: easy
 
-Notes: Reviews, tickets, reports, meeting notes, threads. One call per document. Row 1 of the framework.
-If asked about cost: days of work, free local models, no new infrastructure.
+Notes: Reviews, tickets, reports, meeting notes, threads. One call per document.
+~
+The line for your boss; read it. Row 1 of the framework.
+~
+Easy. If asked about cost: days of work, free local models, no new infrastructure.
 
 ---
 
@@ -78,8 +86,21 @@ Flow: Trip report -> Prompt: fields, types, examples, "null when absent" -> llam
 - The `null` rule and the validator are the feature
 - A rejected record is a good outcome
 
-Notes: JSON mode guarantees syntax, not truth. A silently stored zero is the bug.
-The last box is the one people skip. Say plainly that extraction without validation is a data-corruption feature.
+Notes: The input is prose: the same trip report from 01.
+~
+The prompt is the schema in words: fields, types, examples, and "null when absent."
+~
+llama3.2 in JSON mode. JSON mode guarantees syntax, not truth.
+~
+Parse and validate against the schema. This is the box people skip.
+~
+Store, or reject and log. A silently stored zero is the bug.
+~
+The model writes JSON; your code decides whether to believe it.
+~
+The null rule and the validator are the feature. Say plainly that extraction without validation is a data-corruption feature.
+~
+A rejected record is a good outcome; it is the pipeline telling you the truth.
 
 ## [demo] **DEMO** · F02 Extraction
 
@@ -91,15 +112,15 @@ The last box is the one people skip. Say plainly that extraction without validat
 - Run it 3×: better ≠ guaranteed
 - The last mile is a validator — ordinary code
 
-Notes: After the schema fix, something else usually still slips: `elevation_gain_ft: 0` where the honest answer is `null`, or "early last month" as a date. Zero is the dangerous miss: it is a value, and a pipeline will store it without complaint. Ship the schema plus a rejection rule.
-
-Demo script (~10 min; the break-it beat in step 4 is the first cut):
-1. Show the same messy trip report from feature 01. This time the goal isn't a summary, it's a database row.
-2. Define a C# record (`TripFacts`: trail, park, date, distance, wildlife, conditions) and use Microsoft.Extensions.AI's typed-response support to request it directly. The schema is code.
-3. Run it: prose in, populated .NET object out, with no parsing step. This is the payoff moment.
-4. Break it on purpose: run a report that never mentions distance, and watch the model invent `distance_mi: 5.0`.
-5. Fix it in the schema with nullable fields and "null when not stated" descriptions. Re-run: the invented distance usually goes away, and something else usually doesn't. Run it two or three times live so the room sees the variance rather than one lucky result. Then say the quiet part: this is better, and it is not a guarantee. The last mile is a validator that rejects a date like "early last month" and a `0` that should have been `null`, which is ordinary code your team already knows how to write.
-6. Zoom out: loop over ten reports and print rows. That's an ingestion pipeline in thirty lines, and the "trail stats" panel is now just a query.
+Notes: ~10 min · Terminal 2 · `cd modules/M1-understanding/F02-extraction/dotnet`
+Files: `tr-0007.md` = full report, every field present · `tr-0011.md` = sparse report, no distance stated (the null test)
+Args: a report path; complete with no args runs both
+1. Same kind of report as 01. This time the goal is a database row.
+2. Before: `cd starter && dotnet run -- ../../data/tr-0007.md`. JSON asked for in the prompt. Fences, preamble, drifting field names.
+3. After: `cd ../complete && dotnet run -- ../../data/tr-0007.md`. `TripFacts` record, typed response, no parsing.
+4. `dotnet run -- ../../data/tr-0011.md`, three times. Nulls where there is nothing, and watch what still slips.
+5. Point at the validator: PASS or REJECT. A rejected record is a good outcome.
+Cut: 4's repeats.
 
 ## F02 · Extraction · Leadership Card
 
@@ -108,8 +129,11 @@ Demo script (~10 min; the break-it beat in step 4 is the first cut):
 
 Difficulty: medium
 
-Notes: Invoices, resumes, support emails, contracts, legacy records. Row 2.
-If asked about cost: days to a working pipeline; the real work is schema design and spot-checking accuracy.
+Notes: Invoices, resumes, support emails, contracts, legacy records.
+~
+The line for your boss. Row 2.
+~
+Medium. If asked about cost: days to a working pipeline; the real work is schema design and spot-checking accuracy.
 
 ---
 
@@ -128,15 +152,15 @@ No concept slide: this is classification, and the demo IS the lesson — the day
 - The hard set through both — diff on screen
 - 📊 `phi3` 9/10 · 7/10 — `gpt-4.1` 10/10 · 10/10
 
-Notes: Both halves of the argument hold: ordinary reviews barely need the big model, and the sarcastic slice does, 7/10 vs 10/10, with every disagreement going the frontier model's way. The local stand-in (`llama3.2`) came within one review of phi3, so a comparison against the wrong big model would have said the gap barely exists. Side finding worth 20 seconds: reflowing the identical prompt onto one line dropped phi3 to 7/10 and 4/10. Small models are sensitive to formatting.
-Close with the decision recipe: labeled sample, run both, count disagreements, price the errors. That recipe generalizes to every feature today.
-
-Demo script (~10 min; the hard-set diff in step 5 is the heart — cut step 4's Azure easy-run first if behind):
-1. Show the Cascade 65's reviews and point at a 4-star review with furious text, which is the whole case for reading the text rather than the stars.
-2. Starter project: one classify method whose prompt returns exactly `positive | negative | mixed`. Because of Microsoft.Extensions.AI, the same code runs against both providers, and the swap is one line in DI registration. Say that out loud, since it's the provider-flexibility slide made real.
-3. Run 20 easy reviews through `phi3` locally, where it is fast, free, and correct, and let the small model win the first round.
-4. Run the same 20 through `gpt-4.1` on Foundry and get the same labels on nine of ten (the frontier model also gets the deadpan four-star rave that `phi3` calls mixed), which is the first payoff: on ordinary reviews you'd have paid for very little.
-5. Now the hard set, sarcasm and mixed reviews. Run both and diff the labels on screen. Second payoff: `phi3` drops to 7/10 and `gpt-4.1` holds at 10/10, and every disagreement is one the frontier model gets right. This is the slice that earns its price, and you know that because you measured it rather than assumed it. Check `expected-output.md` for what happened when this was built, and be ready for the room's answer to differ from yours.
+Notes: ~10 min · Terminal 1 (Azure) · `cd modules/M1-understanding/F03-sentiment/dotnet`
+Files: `easy.jsonl` = 10 plain reviews · `hard.jsonl` = 10 sarcastic or split reviews · `reference-labels.json` = the hand labels
+Flags: `--easy` / `--hard` = one set; none = both · starter takes a review id (default gr-0007, the sarcastic one)
+1. Open `data/hard.jsonl`. Find a two-star review with glowing text. Stars lie.
+2. Before: `cd starter && dotnet run`. One method, one label, gr-0007. Show the DI line: the swap is one line.
+3. After: `cd ../complete && dotnet run -- --easy`. phi3 9/10, gpt-4.1 10/10. Paid for one review.
+4. `dotnet run -- --hard`: phi3 7/10, gpt-4.1 10/10. Diff on screen. Every miss goes the frontier model's way.
+5. The recipe: labeled sample, run both, count disagreements, price the errors.
+Cut: 3, go straight to 4.
 
 ## F03 · Sentiment · Leadership Card
 
@@ -145,8 +169,11 @@ Demo script (~10 min; the hard-set diff in step 5 is the heart — cut step 4's 
 
 Difficulty: easy
 
-Notes: Reviews, NPS verbatims, tickets, mentions, survey answers. Row 3.
-If asked about cost: days; the classifier is trivial, the diligence is a labeled sample and an error count.
+Notes: Reviews, NPS verbatims, tickets, mentions, survey answers.
+~
+The line for your boss, and today you measured it. Row 3.
+~
+Easy. If asked about cost: days; the classifier is trivial, the diligence is a labeled sample and an error count.
 
 ---
 

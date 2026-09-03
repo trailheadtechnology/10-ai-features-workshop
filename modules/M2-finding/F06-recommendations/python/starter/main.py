@@ -1,5 +1,5 @@
 """Demo starting point: the "you might also like" box, picking trails at random.
-Run: python main.py [trail id or name]   (default: trail-0117, Avalanche Lake Trail)
+Run: uv run main.py [trail id or name]   (default: trail-0117, Avalanche Lake Trail)
 """
 
 import json
