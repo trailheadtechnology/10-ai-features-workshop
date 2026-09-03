@@ -14,6 +14,9 @@ decisions.jsonl
 # Local review notes
 findings.md
 
+# Instructor-only notes (contain secrets)
+*.local.md
+
 # Python and Node
 __pycache__/
 .venv/
