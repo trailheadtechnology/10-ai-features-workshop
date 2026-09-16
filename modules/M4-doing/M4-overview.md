@@ -26,7 +26,7 @@ That is the entire idea. It goes last because an agent fails in every way the fi
 
 Reliability turns out to be the whole engineering problem. Across roughly two dozen local runs while building this, the model called a tool with the literal argument `[insert trail IDs here]`, announced it had called every necessary tool and then wrote nothing, emitted tool calls as plain text so none of them executed, and once read the reports saying a bridge was washed out and scheduled the closed trail anyway. Before any scaffolding was added, fewer than one run in five reached all four planning tools.
 
-The .NET walkthrough, `dotnet/F10-dotnet.md`, carries those counts as measured fact, because they are the honest answer to "should we ship an agent?" The answer is yes, provided you ship it with a step budget, validated arguments, tools that return errors instead of throwing, a persisted trace, and a human approving anything irreversible, which is another way of saying that feature 09 comes along for the ride.
+The .NET lab, `dotnet/F10-dotnet.md`, carries those counts as measured fact, because they are the honest answer to "should we ship an agent?" The answer is yes, provided you ship it with a step budget, validated arguments, tools that return errors instead of throwing, a persisted trace, and a human approving anything irreversible, which is another way of saying that feature 09 comes along for the ride.
 
 It is also the one feature where the workshop pays for a frontier model rather than running local, and the numbers above are the reason for that choice, not a preference for the cloud.
 

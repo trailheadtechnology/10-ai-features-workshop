@@ -48,7 +48,7 @@ Each module's overview is the menu: what the three features are, which one is Re
 
 All ten features work through one fictional product: Trailhead Guides, a national-park trip-planning app with a messy, realistic corpus of trip reports, gear reviews, trail descriptions, park regulations, and visitor inquiries. Every feature folder carries the data its lab reads in its own `data/`, described in that feature's lab doc, so you meet each dataset when its feature does. The data is synthetic; where a real park name appears, every rule attached to it is fiction, and nobody should plan an actual trip from it.
 
-During the workshop, open the module overview to pick a feature, then open that feature's `FNN-lab.md`: the goal, the steps, the success checks, and a table of three languages. `dotnet/`, `python/`, and `typescript/` each have a `starter/` to edit and a `complete/` answer key. Every language has its own `FNN-<language>.md` walkthrough of the same steps, and every language checks against the same `expected-output.md`. The spec (`FNN-spec.md`) is the short read before the lab: the user problem, the concept, and the leadership beat. The instructor's demo scripts live with the slides, in `docs/slides/outlines/`.
+During the workshop, open the module overview to pick a feature, then open that feature's `FNN-lab.md`: the goal, the input, the model, and a link to the lab for each language. `dotnet/`, `python/`, and `typescript/` each have that language's full lab (`FNN-<language>.md`: the steps, success checks, and stretch goals, with the exact calls, imports, and run commands inline), a `starter/` to edit, and a `complete/` answer key. Every language checks against the same `expected-output.md`. The spec (`FNN-spec.md`) is the short read before the lab: the user problem, the concept, and the leadership beat. The instructor's demo scripts live with the slides, in `docs/slides/outlines/`.
 
 Feature 00 is the exception: its lab is a raw-HTTP smoke test (`http/smoke-test.http`) that checks your environment is wired up before the day starts, not a coding track. Every other feature runs only in .NET, Python, or TypeScript.
 
@@ -61,18 +61,19 @@ Before the workshop, do the pre-work in [`SETUP.md`](SETUP.md). It's mostly "ins
 ├── docs/
 │   ├── decision-framework.md # the closing leadership framework
 │   ├── runsheet.md           # instructor: what to have open, what to run, what to cut
+│   ├── labs/                 # lab sources (FNN.md) and build_labs.py, which writes every FNN-lab.md and FNN-<language>.md
 │   └── slides/               # decks, outlines, and the instructor demo scripts
 └── modules/
     └── MN-theme/             # a module: three related features, one hands-on period
         ├── MN-overview.md    # the menu: which feature is Recommended, what each lab costs
         └── FNN-feature/      # one AI feature
             ├── FNN-spec.md   # the read-first page: problem, concept, leadership beat
-            ├── FNN-lab.md    # attendee: goal, steps, success checks, stretch, what is in data/
+            ├── FNN-lab.md    # attendee landing page: goal, input, model, links to the three language labs
             ├── expected-output.md
             ├── data/         # everything the lab and the code read
-            ├── dotnet/       # FNN-dotnet.md walkthrough plus starter/ and complete/ projects
-            ├── python/       # FNN-python.md walkthrough, starter/main.py, complete/main.py (uv run main.py)
-            └── typescript/   # FNN-typescript.md walkthrough, package.json, starter/index.ts, complete/index.ts
+            ├── dotnet/       # FNN-dotnet.md full lab plus starter/ and complete/ projects
+            ├── python/       # FNN-python.md full lab, starter/main.py, complete/main.py (uv run main.py)
+            └── typescript/   # FNN-typescript.md full lab, package.json, starter/index.ts, complete/index.ts
 ```
 
 ## How the Models Are Called

@@ -11,7 +11,7 @@ There is no code to write. Every step below is one request to send and one thing
 
 ### Step 1: Open the request file
 
-1. Open `http/smoke-test.http` in your editor. This file ships with the workshop and was written by hand for this lab. It holds three plain HTTP requests, one per model you need today, and each request is a block that starts with a `###` comment line, then the method and URL, then headers, then a JSON body. The bodies are the same ones the curl commands below send, so the file is the request and there is nothing behind it.
+1. Open `http/smoke-test.http` in your editor. This file ships with the workshop and was written by hand for this lab. It holds three plain HTTP requests, one per model you need today. Each request is a block: a `###` comment line, then the method and URL, then headers, then a JSON body. The bodies are the same ones the curl commands below send. The file is the whole request; nothing sits behind it.
 2. Make sure Ollama is running. On macOS and Windows, look for the Ollama icon in the menu bar or system tray. On Linux, run `ollama serve` in a terminal if nothing is already listening on port 11434.
 3. If you use curl instead of the editor, open a terminal in this folder.
 
