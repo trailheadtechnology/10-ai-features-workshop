@@ -210,7 +210,7 @@ Notes: The textbook version: a recommender system predicts what a user will pref
 - Cascade 65 → Cascade 40: substitutes, not complements
 
 Notes: ~6 min · `cd modules/M2-finding/F06-recommendations/dotnet`
-Files: `trails.json` = 30 trails · `trail-embeddings.json` = 04's vectors, precomputed · `gear-reviews.jsonl` = 300 reviews
+Files: `trails.json` = 30 trails · `trail-embeddings.json` = precomputed vectors for this 30-trail slice (not 04's full set) · `gear-reviews.jsonl` = 300 reviews
 Args: a trail id or name (default trail-0117, Avalanche Lake) · `--gear <product>` = same trick over review text
 1. Avalanche Lake Trail page. What belongs at the bottom of this screen?
 2. Before: `cd starter && dotnet run`. Random picks. That is what most apps ship.
