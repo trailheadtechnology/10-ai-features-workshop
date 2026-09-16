@@ -18,8 +18,8 @@ Check: every field populated, matching the `tr-0007.md` block in [`../expected-o
 
 Send request 2 three or four times. `tr-0011.md` never names the trail and gives no distance, elevation, or exact date. Write down every field that came back with a value the report does not contain.
 
-Check: most missing facts are `null`, and you can name the ones that were not. `../expected-output.md` records `elevation_gain_ft: 0` and `date_hiked: "early last month"`.
+Check: most missing facts are `null`, and you can name the ones that were not. `../expected-output.md` records `elevation_gain_ft: 0` and `date_hiked: "last month (exact date not specified)"`.
 
-### Lab Step 3: Fix the Schema, Then Validate in Code
+### Lab Steps 3 to 5: Fix the Schema, Then Validate in Code
 
 First tighten the descriptions in the schema (`"null, never 0, if the report gives no figure"` is the fix for the zero). Then, in your language, write the validator for what the schema cannot express: reject dates that do not parse in an explicit format, measurements of 0, and names that do not appear in the source text, and coerce each to `null`. The rules are in any of the `complete/` projects; the .NET one is [`../dotnet/complete/Program.cs`](../dotnet/complete/Program.cs).

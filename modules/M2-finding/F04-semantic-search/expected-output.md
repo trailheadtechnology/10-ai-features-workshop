@@ -2,7 +2,7 @@
 
 Every number below came from a real run: `nomic-embed-text` on Ollama, the 30 descriptions in `trails-slice.json`, cosine similarity in plain code. Your scores should land within a few thousandths of these. Embedding models are deterministic in a way chat models are not, so unlike feature 01, you can compare digits.
 
-The keyword results come from `dotnet/starter`, which is the baseline this feature exists to beat: lowercase the query, keep words of three letters or more, count whole-word hits in each trail's name plus description.
+The keyword results come from any track's `starter/` (all three run the same keyword search), which is the baseline this feature exists to beat: lowercase the query, keep words of three letters or more, count whole-word hits in each trail's name plus description.
 
 ## Cosine Similarity, in Case You Want the Pseudocode
 

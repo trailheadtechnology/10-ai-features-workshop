@@ -1,5 +1,5 @@
 # Environment check: three requests, three JSON responses, cleared for the day.
-# Works in VS Code (REST Client extension) and JetBrains IDEs. Curl versions in README.md.
+# Works in VS Code (REST Client extension) and JetBrains IDEs. Curl versions in F00-lab.md.
 #
 # For request 3, paste the key handed out in the room over <KEY FROM INSTRUCTOR>.
 

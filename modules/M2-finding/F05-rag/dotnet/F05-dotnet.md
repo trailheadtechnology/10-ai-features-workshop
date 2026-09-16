@@ -132,7 +132,7 @@ Both projects run fully offline against Ollama. See [../expected-output.md](../e
 
 The steps in [`../F05-lab.md`](../F05-lab.md), done in .NET: start from `starter/Program.cs` and end where `complete/Program.cs` is. Edit the starter in place (or copy it first); `complete/` is the answer key, and its comments say why each piece is there. Run from the `starter/` directory with `dotnet run`; the flags shown for later steps are the ones `complete/` supports, so add the same argument parsing or hard-code the value.
 
-### Step 1: Run the Starter: The Confident Wrong Answer
+### Step 1: Run the Starter: The Confident Wrong Answer (lab step 0)
 
 No retrieval, no context. Ask the Sperry Chalet question and read the answer, then open `../data/park-docs/glacier-backcountry-camping-guide.md` Section 4.2 and read the actual rule. Everything that follows exists because of this gap.
 
@@ -144,7 +144,7 @@ dotnet run
 
 Check: Fluent, specific, and wrong about a fire regulation.
 
-### Step 2: Embed the Chunks and Retrieve the Top 3 by Cosine (lab step 1)
+### Step 2: Embed the Chunks and Retrieve the Top 3 by Cosine (lab steps 1, 2, and 3)
 
 Load `../data/chunks.jsonl` (250 chunks with `chunk_id`, `source`, `text`), embed them with `nomic-embed-text` in batches of 32, cache the vectors (about 40 seconds the first time), embed the question, and print the top 3 with scores. If retrieval does not find the right material here, no prompt later can save you.
 
@@ -168,7 +168,7 @@ foreach (var (c, s) in top) Console.WriteLine($"{s:F4}  {c.chunk_id}");
 
 Check: `glacier-backcountry-camping-guide:04.2` at rank 1 with cosine 0.7422, and the margin over rank 2 is small. Print the scores; the margin is the story.
 
-### Step 3: Blend in a Lexical Score so "Sperry" Counts (lab step 2)
+### Step 3: Blend in a Lexical Score so "Sperry" Counts (stretch goal: keyword score)
 
 Cosine alone puts Acadia and Yosemite campfire sections in the top 8, because the embedder collapses "campfire regulations" from five parks onto nearly the same point. Add a BM25-lite score: tokenize, weight each query word by how few chunks contain it, min-max both signals to 0..1, and combine with an alpha. The full tokenizer, stop-word list, and BM25 formula are in `complete/`; the shape is below. The commands below use the flags `complete/` has; in your own copy, change the `alpha` and top-k variables by hand.
 
@@ -188,7 +188,7 @@ dotnet run -- --top-k 8 --retrieval-only
 
 Check: At alpha 1.0, five of eight chunks are from the wrong park. At the default 0.6, the wrong-park chunks are replaced by Glacier documents that name Sperry and the margin over rank 2 grows from 0.16 to 0.23. Try the rephrasings listed in `../expected-output.md`.
 
-### Step 4: Build the Grounded Prompt and Generate (lab step 3)
+### Step 4: Build the Grounded Prompt and Generate (lab step 4)
 
 Context in, citations out, refusal when the context is silent. Two details are load-bearing and both are measured in `../expected-output.md`: the exact refusal string, and today's date inside the refusal clause (not in the rules block), so "is the trail open right now?" is answered from a dated notice rather than refused.
 
@@ -218,7 +218,7 @@ var answer = (await chatClient.GetResponseAsync(prompt)).Text;
 
 Check: The right answer (no wood fires at Sperry, year-round) with `[glacier-backcountry-camping-guide:04.2]` cited. Ask "Is the Avalanche Lake Trail open right now?" too; without the date line it was refused in 10 runs out of 18.
 
-### Step 5: Validate the Citations (lab step 4)
+### Step 5: Validate the Citations (lab step 5, plus the citation-repair stretch goal)
 
 A citation is only a string the model typed. Pull every bracketed token with a colon out of the answer and check it against the ids you actually retrieved. Fail loudly on a mismatch: `complete/` retries once with the legal ids spelled out and then strips whatever is still wrong, so a bad receipt never reaches the visitor.
 
@@ -235,14 +235,16 @@ if (bad.Count > 0) Console.WriteLine($"!! CITATION CHECK FAILED: {string.Join(",
 
 Check: Run the unanswerable question a few times: the model will eventually attach an invented chunk id to its own refusal, and the check catches it. Every run should end with a `[citations: N valid, M invalid]` line.
 
-### Step 6: Run All Four Questions, Then Run Question 1 Twenty Times (lab steps 5 and 6)
+### Step 6: Run All Four Questions, Then Run Question 1 Twenty Times (lab steps 6 and 7)
 
 `../data/questions.json` has three answerable questions and one that is not. Then loop the Sperry question: a wrong answer one run in five is invisible in a single run and is the only defect in this feature that could hurt somebody.
 
 Run:
 
 ```bash
-for i in $(seq 20); do dotnet run 2>/dev/null | grep -A3 "^Q:" | tail -2; done
+for i in $(seq 20); do dotnet run 2>/dev/null | tail -3; done
 ```
+
+The last three lines of each run are the answer, a blank line, and the `[citations: ...]` summary from step 5.
 
 Check: Three correct cited answers, a refusal on the fourth, and no invalid citation reaching the output unflagged. Over 20 runs, count how many open with "Yes" before saying fires are banned; the measured rate for `llama3.2` is 40%, and it is 0% for the 32B model at 18x the latency (`--model qwen3:32b`, if you have the memory). Stretch: write ten more questions with the chunk that should win, sweep alpha from 0 to 1, and defend your alpha with recall@3 rather than with the Sperry question.

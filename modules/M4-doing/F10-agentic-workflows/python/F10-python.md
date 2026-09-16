@@ -5,7 +5,7 @@ Two scripts, both reading from [`../data/`](../data/):
 - `starter/main.py`: the trip request as a plain chat completion, no tools, no loop: a fluent generic itinerary that checks nothing and books nothing.
 - `complete/main.py`: the finished demo as shown on stage. Five tools as ordinary functions over `../data/` (`search_trails`, `get_weather`, `get_trail_conditions`, `check_campsites`, `request_permit`), their definitions loaded from `../data/tool-definitions.json` so the model sees exactly what the `.http` lab sends, a hand-written tool-calling loop with a step budget of 12, the permit gate that waits for a human yes, and the nudge logic for a model that stops early.
 
-No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
+No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names.)
 
 ```bash
 uv run main.py                                       # the capstone request
@@ -17,11 +17,11 @@ There is no agent framework here on purpose: the loop is the same one `../http/a
 
 Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` (endpoint `https://trailhead-ai-workshop.openai.azure.com`, the deployment name the feature uses, and the key handed out in the room) and the agent switches to Azure OpenAI through the SDK's `AzureOpenAI` client; leave them unset and it runs against Ollama.
 
-The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), the Python equivalent of the .NET demo's Microsoft.Extensions.AI clients: swapping the provider is a different constructor and nothing else.
+The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), so swapping the provider later is a different constructor and nothing else.
 
 ## Lab Walkthrough: From `starter/` to `complete/`
 
-The steps in [`../F10-lab.md`](../F10-lab.md), done in Python: start from `starter/main.py` and end where `complete/main.py` is. Edit the starter in place (or copy it first); `complete/` is the answer key, and its comments say why each piece is there. Run from the `starter/` directory with the venv active; the flags shown for later steps are the ones `complete/` supports, so add the same argument parsing or hard-code the value.
+The steps in [`../F10-lab.md`](../F10-lab.md), done in Python: start from `starter/main.py` and end where `complete/main.py` is. Edit the starter in place (or copy it first); `complete/` is the answer key, and its comments say why each piece is there. Run `uv run main.py` from the `starter/` directory (the repo root `pyproject.toml` and one `uv sync` there cover every feature, no venv to activate); the flags shown for later steps are the ones `complete/` supports, so add the same argument parsing or hard-code the value.
 
 ### Step 1: Run the Starter: A Plan with No Tools
 
@@ -37,7 +37,7 @@ Check: A lovely three-day plan with zero tool calls. That is the reason this fea
 
 ### Step 2: Two Tools and the Loop
 
-This is lab step 1, the round-trip that `../http/azure.http` walks by hand. Write `search_trails` and `check_campsites` as ordinary functions over `../data/trails.json` and `../data/mock-apis/campsites.json`, load their definitions from `../data/tool-definitions.json` (the two entries you need), and write the loop: send the messages with the `tools` array, read the tool calls out of the reply, run them, append the results, repeat until the reply is prose. Give the loop a step budget; it is the only thing that stops a model that keeps deciding to call one more tool.
+This is lab steps 1 and 2, the round-trip that `../http/azure.http` walks by hand. Write `search_trails` and `check_campsites` as ordinary functions over `../data/trails.json` and `../data/mock-apis/campsites.json`, load their definitions from `../data/tool-definitions.json` (the two entries you need), and write the loop: send the messages with the `tools` array, read the tool calls out of the reply, run them, append the results, repeat until the reply is prose. Give the loop a step budget; it is the only thing that stops a model that keeps deciding to call one more tool.
 
 ```python
 TOOLS = [t for t in load("tool-definitions.json")["tools"] if t["function"]["name"] in ("search_trails", "check_campsites")]
@@ -66,7 +66,7 @@ uv run main.py
 
 Check: Print each tool call as it happens. You should see `search_trails` and `check_campsites` fire, then an itinerary that names real trails (Trail of the Cedars, Iceberg Lake) and real campgrounds. Invented names mean a tool result did not reach the model.
 
-### Step 3: Add Get_weather and Ask for a Trip on the Rain Day (lab step 2)
+### Step 3: Add Get_weather and Ask for a Trip on the Rain Day (lab step 3)
 
 Write the function over `../data/mock-apis/weather.json`, add its definition to the tools array (write the JSON schema yourself before copying it from `tool-definitions.json`; the description is the model's only manual), and ask for September 14 to 16. The 16th is a rain day: 49/33, 70 percent, 18 mph.
 
@@ -85,7 +85,7 @@ uv run main.py
 
 Check: `get_weather` is called and the forecast shapes the plan rather than decorating it: the hardest day lands on the 14th or 15th and the 16th gets something short or sheltered, with a sentence saying why. Compare the sample in `../expected-output.md`. Failing looks like the same three trails plus a line reading "expect rain on the 16th".
 
-### Step 4: Add Get_trail_conditions and Ask for the Closed Trail (lab step 3)
+### Step 4: Add Get_trail_conditions and Ask for the Closed Trail (lab step 4)
 
 The function reads `../data/condition-reports.jsonl` and returns the newest four reports for a trail id; make it return an error string, not throw, when the id is missing or malformed, and let it resolve a trail name too. Add it, then ask for a trip that includes Avalanche Lake Trail (`trail-0117`). The catalog says nothing about the bridge; only this tool does.
 

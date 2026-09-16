@@ -33,7 +33,7 @@ Check: A paragraph or two about the author's gear and their day. Nothing a hiker
 
 ### Step 2: Rewrite the Prompt Into the 3-bullet Briefing (lab step 2)
 
-Replace the naive prompt with one that demands exactly three bullets (conditions, hazards or closures, crowding) and nothing else. Start with just that, and run it four or five times on the clean report before adding anything: a prompt that requires a hazard bullet will invent one from a bear sighting or the word "avalanche" in the trail name. When you see that happen, add the last three lines below. They give the model a legal way to report nothing, and they are the only reason the finished prompt is trustworthy.
+Replace the naive prompt with one that demands exactly three bullets (conditions, hazards or closures, crowding) and nothing else. Start with just that, and run it four or five times on the clean report before adding anything: a prompt that requires a hazard bullet will invent one from a bear sighting or the word "avalanche" in the trail name. When you see that happen, add the two lines below that begin "Report only what the trip report states" and end with "when it says none." They give the model a legal way to report nothing, and they are the only reason the finished prompt is trustworthy.
 
 ```csharp
 var prompt = $"""
@@ -56,7 +56,7 @@ Run:
 dotnet run   # several times
 ```
 
-Check: Three bullets, and on `tr-0001.md` the hazards bullet says nothing is closed, every run. The measured invention rate without the last three lines is in `../expected-output.md`.
+Check: Three bullets, and on `tr-0001.md` the hazards bullet says nothing is closed, every run. The measured invention rate with and without those two lines is in `../expected-output.md`.
 
 ### Step 3: Run the Buried-Hazard Report Through the Same Prompt (lab step 3)
 

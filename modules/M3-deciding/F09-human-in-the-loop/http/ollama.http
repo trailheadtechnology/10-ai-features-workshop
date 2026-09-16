@@ -1,11 +1,11 @@
 # Lab 09: draft replies for a routed inquiry queue, against Ollama (llama3.2).
-# The system prompt is the same one both .NET projects use. The inquiry text and
-# the park-doc excerpt are inlined, so every request runs as-is.
+# The system prompt is the same one every code track's starter/ and complete/ use.
+# The inquiry text and the park-doc excerpt are inlined, so every request runs as-is.
 #
-# Requests 1 and 2 are the everyday cases: boilerplate and a rules answer that has
-# to cite its source. Request 3 is the emergency, where the prompt tells the model
-# to escalate instead of drafting. Request 4 is the repair attempt. Read
-# expected-output.md after you run 3 and 4, not before.
+# Requests 1 to 3 are the everyday cases: boilerplate, a rules answer that has
+# to cite its source, and a closure question. Request 4 is the emergency, where
+# the prompt tells the model to escalate instead of drafting. Request 5 is the
+# repair attempt. Read expected-output.md after you run 4 and 5, not before.
 
 ### 1. Easy boilerplate: is the Mist Trail open? (inq-0002)
 POST http://localhost:11434/api/chat

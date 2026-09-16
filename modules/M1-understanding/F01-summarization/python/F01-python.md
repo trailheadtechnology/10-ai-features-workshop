@@ -5,7 +5,7 @@ Two scripts, both reading the trip reports in [`../data/`](../data/):
 - `starter/main.py`: the demo's starting point. One `OpenAI` client pointed at Ollama, one call, the naive "Summarize this trip report" prompt. Run it on `tr-0001.md` and read the book report.
 - `complete/main.py`: the finished demo as shown on stage. Same call, three prompts selected by flag: the naive one, the 3-bullet hiker briefing with the grounding lines, and the one-line headline for a card UI. `--audience ranger` swaps who the briefing is for.
 
-No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
+No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names.)
 
 ```bash
 uv run main.py                              # naive prompt on the buried-hazard report
@@ -15,11 +15,11 @@ uv run main.py --briefing --audience ranger
 uv run main.py ../../data/tr-0001.md        # any report path works
 ```
 
-The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), which is the same trick the TypeScript version uses and the Python equivalent of the .NET demo's `IChatClient`: switching to Azure OpenAI later is a different constructor and nothing else. Real output and the measured hazard-invention rate behind the briefing prompt's last two lines are in [`../expected-output.md`](../expected-output.md).
+The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), which is the same trick the TypeScript version uses: switching to Azure OpenAI later is a different constructor and nothing else. Real output and the measured hazard-invention rate behind the briefing prompt's last two lines are in [`../expected-output.md`](../expected-output.md).
 
 ## Lab Walkthrough: From `starter/` to `complete/`
 
-The steps in [`../F01-lab.md`](../F01-lab.md), done in Python: start from `starter/main.py` and end where `complete/main.py` is. Edit the starter in place (or copy it first); `complete/` is the answer key, and its comments say why each piece is there. Run from the `starter/` directory with the venv active; the flags shown for later steps are the ones `complete/` supports, so add the same argument parsing or hard-code the value.
+The steps in [`../F01-lab.md`](../F01-lab.md), done in Python: start from `starter/main.py` and end where `complete/main.py` is. Edit the starter in place (or copy it first); `complete/` is the answer key, and its comments say why each piece is there. Run `uv run main.py` from the `starter/` directory; the flags shown for later steps are the ones `complete/` supports, so add the same argument parsing or hard-code the value.
 
 ### Step 1: Run the Starter As-Is and Read the Book Report
 
@@ -35,7 +35,7 @@ Check: A paragraph or two about the author's gear and their day. Nothing a hiker
 
 ### Step 2: Rewrite the Prompt Into the 3-bullet Briefing (lab step 2)
 
-Replace the naive prompt with one that demands exactly three bullets (conditions, hazards or closures, crowding) and nothing else. Start with just that, and run it four or five times on the clean report before adding anything: a prompt that requires a hazard bullet will invent one from a bear sighting or the word "avalanche" in the trail name. When you see that happen, add the last three lines below. They give the model a legal way to report nothing, and they are the only reason the finished prompt is trustworthy.
+Replace the naive prompt with one that demands exactly three bullets (conditions, hazards or closures, crowding) and nothing else. Start with just that, and run it four or five times on the clean report before adding anything: a prompt that requires a hazard bullet will invent one from a bear sighting or the word "avalanche" in the trail name. When you see that happen, add the two lines below that begin "Report only what the trip report states" and end with "when it says none." They give the model a legal way to report nothing, and they are the only reason the finished prompt is trustworthy.
 
 ```python
 prompt = f"""You are helping a hiker planning to hike this trail within the next week.
@@ -56,7 +56,7 @@ Run:
 uv run main.py   # several times
 ```
 
-Check: Three bullets, and on `tr-0001.md` the hazards bullet says nothing is closed, every run. The measured invention rate without the last three lines is in `../expected-output.md`.
+Check: Three bullets, and on `tr-0001.md` the hazards bullet says nothing is closed, every run. The measured invention rate with and without those two lines is in `../expected-output.md`.
 
 ### Step 3: Run the Buried-Hazard Report Through the Same Prompt (lab step 3)
 

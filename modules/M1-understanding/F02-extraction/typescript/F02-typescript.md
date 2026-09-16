@@ -13,15 +13,15 @@ npm run complete -- ../data/tr-0011.md          # just the sparse one, for the n
 npm run complete -- ../../F01-summarization/data/tr-0002.md   # any report path works
 ```
 
-Run the sparse report three or four times. The output moves, and that is the demo: some runs come back clean, and some hand you `0` or "early last month", which is what the validator is for. The measured runs are in [`../expected-output.md`](../expected-output.md).
+Run the sparse report three or four times. The output moves, and that is the demo: some runs come back clean, and some hand you `0` or "last month", which is what the validator is for. The measured runs are in [`../expected-output.md`](../expected-output.md).
 
-The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), the TypeScript equivalent of the .NET demo's Microsoft.Extensions.AI clients: swapping the provider is a different constructor and nothing else. `tsx` runs the `.ts` files directly, so there is no build step.
+The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), so swapping the provider later is a different constructor and nothing else. `tsx` runs the `.ts` files directly, so there is no build step.
 
 ## Lab Walkthrough: From `starter/` to `complete/`
 
 The steps in [`../F02-lab.md`](../F02-lab.md), done in TypeScript: start from `starter/index.ts` and end where `complete/index.ts` is. Edit the starter in place (or copy it first); `complete/` is the answer key, and its comments say why each piece is there. Run with `npm run starter` from the `typescript/` directory; the flags shown for later steps are the ones `complete/` supports, so add the same argument parsing or hard-code the value.
 
-### Step 1: Run the Starter and Look at What "JSON in the Prompt" Gets You
+### Step 1: Run the Starter and Look at What "JSON in the Prompt" Gets You (lab step 0)
 
 The starter asks for JSON in prose. Run it twice on `tr-0007.md` and compare: field names drift, there may be a preamble or a markdown fence, and nothing guarantees it parses. This is what the schema replaces.
 
@@ -74,7 +74,7 @@ Check: A populated object, no parsing step, and the values match the `tr-0007.md
 
 ### Step 3: Run the Sparse Report and Count What It Made up (lab step 2)
 
-`tr-0011.md` never names the trail, gives no distance, no elevation, and no exact date. Run it three or four times and write down every field that came back with a value the report does not contain. The recorded runs in `../expected-output.md` show `elevation_gain_ft: 0` and `date_hiked: "early last month"`.
+`tr-0011.md` never names the trail, gives no distance, no elevation, and no exact date. Run it three or four times and write down every field that came back with a value the report does not contain. The recorded runs in `../expected-output.md` show `elevation_gain_ft: 0` and `date_hiked: "last month (exact date not specified)"`.
 
 Run:
 
@@ -84,7 +84,7 @@ npm run starter -- ../data/tr-0011.md
 
 Check: Most missing facts come back `null`, and you can name the ones that did not. That list is what the next step is for.
 
-### Step 4: Fix What the Schema Can Fix, Then Write the Validator for the Rest (lab step 3)
+### Step 4: Fix What the Schema Can Fix, Then Write the Validator for the Rest (lab steps 3 to 5)
 
 First tighten the descriptions (the "null, never 0" wording above is that fix). Then add rules in code for what the schema cannot express: a date must parse in an explicit format, a measurement of 0 is not a measurement, a name must appear in the source text. Anything that fails is coerced to `null` before it could reach a database. The two rules below catch the two recorded failures; `complete/` has all five plus the grounding check, and the small `Verdict` type they return (field, value, passed, reason, optional normalized value) is defined there too.
 

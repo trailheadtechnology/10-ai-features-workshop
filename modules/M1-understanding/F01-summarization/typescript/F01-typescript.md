@@ -17,7 +17,7 @@ npm run complete -- --briefing --audience ranger
 npm run complete -- ../data/tr-0001.md          # any report path works
 ```
 
-The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), which is the same trick the Python version uses and the TypeScript equivalent of the .NET demo's `IChatClient`: switching to Azure OpenAI later is a different constructor and nothing else. Real output and the measured hazard-invention rate behind the briefing prompt's last two lines are in [`../expected-output.md`](../expected-output.md).
+The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), which is the same trick the Python version uses: switching to Azure OpenAI later is a different constructor and nothing else. Real output and the measured hazard-invention rate behind the briefing prompt's last two lines are in [`../expected-output.md`](../expected-output.md).
 
 ## Lab Walkthrough: From `starter/` to `complete/`
 
@@ -37,7 +37,7 @@ Check: A paragraph or two about the author's gear and their day. Nothing a hiker
 
 ### Step 2: Rewrite the Prompt Into the 3-bullet Briefing (lab step 2)
 
-Replace the naive prompt with one that demands exactly three bullets (conditions, hazards or closures, crowding) and nothing else. Start with just that, and run it four or five times on the clean report before adding anything: a prompt that requires a hazard bullet will invent one from a bear sighting or the word "avalanche" in the trail name. When you see that happen, add the last three lines below. They give the model a legal way to report nothing, and they are the only reason the finished prompt is trustworthy.
+Replace the naive prompt with one that demands exactly three bullets (conditions, hazards or closures, crowding) and nothing else. Start with just that, and run it four or five times on the clean report before adding anything: a prompt that requires a hazard bullet will invent one from a bear sighting or the word "avalanche" in the trail name. When you see that happen, add the two lines below that begin "Report only what the trip report states" and end with "when it says none." They give the model a legal way to report nothing, and they are the only reason the finished prompt is trustworthy.
 
 ```typescript
 const prompt = `You are helping a hiker planning to hike this trail within the next week.
@@ -58,7 +58,7 @@ Run:
 npm run starter   # several times
 ```
 
-Check: Three bullets, and on `tr-0001.md` the hazards bullet says nothing is closed, every run. The measured invention rate without the last three lines is in `../expected-output.md`.
+Check: Three bullets, and on `tr-0001.md` the hazards bullet says nothing is closed, every run. The measured invention rate with and without those two lines is in `../expected-output.md`.
 
 ### Step 3: Run the Buried-Hazard Report Through the Same Prompt (lab step 3)
 

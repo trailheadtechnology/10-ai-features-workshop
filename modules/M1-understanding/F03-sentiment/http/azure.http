@@ -19,7 +19,7 @@ api-key: <KEY FROM INSTRUCTOR>
   "temperature": 0
 }
 
-### 2. Hard set, gr-0004: two stars aimed at the manual, five-star product (reference: positive)
+### 2. Hard set, gr-0004: two stars aimed at the manual, five-star product (reference: mixed)
 POST https://trailhead-ai-workshop.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-10-21
 Content-Type: application/json
 api-key: <KEY FROM INSTRUCTOR>

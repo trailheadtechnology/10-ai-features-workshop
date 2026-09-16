@@ -14,7 +14,7 @@ Send request 1, which is "Summarize this trip report" on `tr-0001.md`, the clean
 
 ### Lab Step 2: Request 2, the Improved Prompt on the Same Report
 
-Request 2 is the 3-bullet briefing prompt on the same report. Send it four or five times, not once: the point of the clean report is that there is no closure in it, and a prompt that demands a hazards bullet will invent one. If yours does, look at the last three lines of request 2's prompt, which give the model a legal way to report nothing, and make sure your own version keeps them.
+Request 2 is the 3-bullet briefing prompt on the same report. Send it four or five times, not once: the point of the clean report is that there is no closure in it, and a prompt that demands a hazards bullet will invent one. If yours does, look at the two lines of request 2's prompt that begin "Report only what the trip report states" and end "when it says none". They give the model a legal way to report nothing; make sure your own version keeps them.
 
 Check: three bullets, and the hazards bullet says nothing is closed, every run.
 

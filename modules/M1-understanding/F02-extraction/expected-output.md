@@ -56,9 +56,9 @@ Exact values vary run to run; the checks below are what has to be true. These sa
 - In the run above, `elevation_gain_ft` came back `0` instead of `null`. That is a near-miss hallucination: zero is a value, and a pipeline would happily insert it. Some runs return `null` correctly. If you see `0`, tighten the description ("null, never 0, when the report gives no figure") and re-run.
 - Other runs populated `conditions` with `["fine", "some wet spots"]` and `hazards` with the fellow doing "the arm-windmill thing". Also defensible: the report does mention wet spots and a slip. Empty arrays and those entries are both passing; a fabricated bear sighting is not.
 
-## The .NET Starter (`dotnet run` from `dotnet/starter/`, the Failure You're Supposed to Get)
+## The Starter (any track's `starter/`, the Failure You're Supposed to Get)
 
-The naive prompt, no schema. Real output:
+The naive prompt, no schema, byte-identical on all three tracks. Real output (this recorded run happened to be the .NET build):
 
 ````text
 Here's the extracted trip report details as JSON:
@@ -74,9 +74,9 @@ Here's the extracted trip report details as JSON:
 
 Three problems in the first six lines: a prose preamble your parser has to strip, a markdown fence around the payload, and a nested shape the model invented on the spot. Run it twice and the field names change. Nothing here is wrong, exactly. It just isn't a contract, and no database insert can consume it.
 
-## The .NET complete demo (`dotnet run` from `dotnet/complete/`)
+## The Complete Demo (any track's `complete/`)
 
-Real output from a run where the model behaved and the validator had nothing to do:
+Real output from a run where the model behaved and the validator had nothing to do. The prompt and the schema descriptions are identical on all three tracks, so the shape is the same everywhere; this recorded run happened to be the .NET build:
 
 ```text
 == tr-0007.md ==

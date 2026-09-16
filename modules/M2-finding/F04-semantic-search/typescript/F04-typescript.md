@@ -16,13 +16,13 @@ npm run complete -- an easy hike to a great view
 
 Run `starter` first, get junk, then run `complete` on the same words. Delete `embeddings.json` to re-embed live and show the timing. The recorded rankings, including Taft Point at 0.4876 for the kids query, are in [`../expected-output.md`](../expected-output.md).
 
-The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), the TypeScript equivalent of the .NET demo's Microsoft.Extensions.AI clients: swapping the provider is a different constructor and nothing else. `tsx` runs the `.ts` files directly, so there is no build step.
+The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), so swapping the provider later is a different constructor and nothing else. `tsx` runs the `.ts` files directly, so there is no build step.
 
 ## Lab Walkthrough: From `starter/` to `complete/`
 
 The steps in [`../F04-lab.md`](../F04-lab.md), done in TypeScript: start from `starter/index.ts` and end where `complete/index.ts` is. Edit the starter in place (or copy it first); `complete/` is the answer key, and its comments say why each piece is there. Run with `npm run starter` from the `typescript/` directory; the flags shown for later steps are the ones `complete/` supports, so add the same argument parsing or hard-code the value.
 
-### Step 1: Run the Keyword Baseline
+### Step 1: Run the Keyword Baseline (lab step 0)
 
 The starter is today's search box: lowercase, split into words, count whole-word hits. Run the demo query and then the kids query. This is what you are beating.
 
@@ -35,7 +35,7 @@ npm run starter -- somewhere quiet to take my kids
 
 Check: Junk for the first, one trail ("kids") for the second. Compare the keyword blocks in `../expected-output.md`.
 
-### Step 2: Embed the 30 Descriptions Once (lab step 1)
+### Step 2: Embed the 30 Descriptions Once (lab step 2)
 
 Replace the keyword scoring with an embedding client and embed every trail's description. `nomic-embed-text` returns a 768-float vector per text; keep them in a dictionary keyed by trail id. Time it: it is seconds, and it happens once.
 
@@ -50,7 +50,7 @@ const vectors = Object.fromEntries(trails.map((t, i) => [t.id, embeddings[i]]));
 
 Check: 30 vectors of 768 floats. Print one and look at it: it is just numbers. `complete/` caches them to `embeddings.json`; keep the cache keyed by id and delete it if the text or the model changes.
 
-### Step 3: Embed the Query, Write Cosine Similarity, Print the Top 5 (lab step 2)
+### Step 3: Embed the Query, Write Cosine Similarity, Print the Top 5 (lab step 3)
 
 The query goes through the same model as the catalog (vectors from two models are not comparable, and cosine will still return confident numbers if you mix them). Cosine similarity fits in one visible function.
 
@@ -77,7 +77,7 @@ npm run starter
 
 Check: The gentle shaded waterfall trails at the top for the demo query, scores around 0.77. Compare `../expected-output.md`.
 
-### Step 4: Run the Other Two Queries and Read the Scores, Not Just the Order (lab step 3)
+### Step 4: Run the Other Two Queries and Read the Scores, Not Just the Order (lab step 4)
 
 The three test queries and their expected top hits are in `../data/queries.json`. The kids query is the one to sit with: the top hit is Taft Point, a cliff edge, at 0.4876. Perfect topical match, terrible advice, and the score is a third lower than query one's.
 

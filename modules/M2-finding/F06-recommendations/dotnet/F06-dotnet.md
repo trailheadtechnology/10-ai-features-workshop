@@ -36,12 +36,12 @@ dotnet run
 
 Check: Nothing about the five relates to Avalanche Lake Trail.
 
-### Step 2: Get a Vector for Every Trail (lab step 1, first half)
+### Step 2: Get a Vector for Every Trail (lab step 2)
 
-If you did feature 04, this is the same code and the same model. If you did not, `../data/trail-embeddings.json` has the 30 vectors precomputed (keyed by trail id, embedded from `description`) and you can load them instead of calling the model at all.
+If you did feature 04, this is the same code and the same model, but not the same trails: `../data/trails.json` is a different 30-trail slice from the same 200-trail catalog (the two share 7 trails), so feature 04's cached vectors do not cover it. Either embed live, or load `../data/trail-embeddings.json`, which holds all 30 vectors precomputed for this slice (keyed by trail id, embedded from `description`), instead of calling the model at all.
 
 ```csharp
-// Option A: embed live (same as feature 04)
+// Option A: embed live (same call as feature 04)
 var embeddings = await generator.GenerateAsync(trails.Select(t => t.Description));
 var vectors = trails.Zip(embeddings).ToDictionary(p => p.First.Id, p => p.Second.Vector.ToArray());
 // Option B: precomputed
@@ -49,9 +49,9 @@ var vectors = JsonSerializer.Deserialize<Dictionary<string, float[]>>(
     await File.ReadAllTextAsync("../../data/trail-embeddings.json"))!;
 ```
 
-Check: Whichever way, `vectors["trail-0117"]` is 768 floats. If you loaded the precomputed file, check its top-level shape first; it may wrap the vectors in an object.
+Check: Whichever way, `vectors["trail-0117"]` is 768 floats. If you loaded the precomputed file, it is a flat id-to-vector dictionary: each key is a trail id and each value is the 768-float array.
 
-### Step 3: Rank Every Other Trail by Similarity to the Target (lab step 1, second half)
+### Step 3: Rank Every Other Trail by Similarity to the Target (lab steps 3 and 4)
 
 "More like this" is feature 04's search with the query vector replaced by the target trail's own vector. Skip the target itself, take five.
 
@@ -72,7 +72,7 @@ dotnet run
 
 Check: Gunsight Lake Approach at 0.7849 on top for Avalanche Lake Trail. Read the difficulty column: the target is a moderate family walk and most neighbors are hard. Difficulty is not in the description text, so the embedding cannot see it.
 
-### Step 4: Do the Other Two Targets and Judge Whether You Would Ship Them (lab steps 2 and 3)
+### Step 4: Do the Other Two Targets and Judge Whether You Would Ship Them (lab steps 5 and 6)
 
 Run the other targets from `../F06-lab.md`, compare against the acceptable sets in `../expected-output.md` (there is more than one right answer), and then read your own output as a product owner. One target in this slice has no real neighbors at all; a shipping product should show nothing rather than five weak guesses.
 

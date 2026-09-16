@@ -51,7 +51,7 @@ The steps in [`../F08-lab.md`](../F08-lab.md), done in .NET: start from `starter
 
 ### Step 1: Run the Starter: Centroid Distance from Precomputed Vectors
 
-Lab steps 1 and 2 are already in the starter, and it needs no model: it loads the 40 vectors in `../data/embeddings-0117.json` (embedded with the `classification:` prefix), averages them into a centroid, and ranks every report by cosine distance from it. Read the top of the list.
+Lab steps 1 through 4 are already in the starter, and it needs no model: it loads the 40 vectors in `../data/embeddings-0117.json` (embedded with the `classification:` prefix), averages them into a centroid, and ranks every report by cosine distance from it. Read the top of the list.
 
 Run:
 
@@ -61,7 +61,7 @@ dotnet run
 
 Check: Washout reports rise toward the top, but not cleanly: routine reports about parking or wildflowers are mixed in. Compare the ranking in `../expected-output.md`. That is what the technique does out of the box.
 
-### Step 2: Embed Live, First Without the Task Prefix (lab step 3, first half)
+### Step 2: Embed Live, First Without the Task Prefix (lab step 5, then the first stretch goal)
 
 Replace the precomputed file with a live embedding call, and deliberately embed the bare text. `nomic-embed-text` expects a task prefix on every input; without one it still returns a well-formed vector, so nothing throws, but the vectors land off-distribution and the ranking degrades. Watch where the first washout report lands.
 
@@ -81,7 +81,7 @@ dotnet run
 
 Check: The first washout report sits around rank 11 (`complete/ --raw` reproduces this). Then set the prefix to `"classification: "` and re-run: it jumps to rank 2 and the mud reports settle to the bottom. Reading the model card is engineering work.
 
-### Step 3: Derive a Threshold and Add the Alert Rule (lab step 3, second half, and where the feature actually lives)
+### Step 3: Derive a Threshold and Add the Alert Rule (lab steps 6 and 7, and where the feature actually lives)
 
 A threshold from the corpus (mean plus one standard deviation) flags outliers; the alert rule requires two or more flagged reports within 14 days of each other. One outlier is a rambling hiker; several in a week that also sit near each other is an event.
 

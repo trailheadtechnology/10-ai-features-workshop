@@ -50,7 +50,7 @@ dotnet run
 
 Check: `phi3 says: negative`. Try `gr-0034` or any other id from `easy.jsonl` / `hard.jsonl`.
 
-### Step 2: Loop the Easy Set and Score It Against the Reference Labels (lab step 1)
+### Step 2: Loop the Easy Set and Score It Against the Reference Labels (lab steps 1 and 2)
 
 Replace the single review with a loop over `easy.jsonl`, look each id up in `reference-labels.json`, and count matches.
 
@@ -78,7 +78,7 @@ dotnet run
 
 Check: 9/10 on the easy set in the recorded runs. Yours may differ by one.
 
-### Step 3: Add the Second Model and Run the Hard Set Through Both (lab step 2)
+### Step 3: Add the Second Model and Run the Hard Set Through Both (lab steps 3 and 4)
 
 Build a second client: Azure OpenAI if you have the room key in `AZURE_OPENAI_KEY` (with `AZURE_OPENAI_ENDPOINT=https://trailhead-ai-workshop.openai.azure.com` and `AZURE_OPENAI_DEPLOYMENT=gpt-4.1`), otherwise `llama3.2` on the same Ollama as a stand-in. Nothing in `classify` changes; that is the provider-swap point of the whole module. Then run `hard.jsonl` through both.
 
@@ -98,7 +98,7 @@ dotnet run
 
 Check: Two columns of labels for the hard set. Recorded: 7/10 for `phi3`, 10/10 for `gpt-4.1` on Azure, and 8/10 for the `llama3.2` stand-in. The frontier model earns its price on this slice; the local stand-in would have told you the gap is one review wide.
 
-### Step 4: Print the Disagreement List and Call Each One (lab step 3, the success check)
+### Step 4: Print the Disagreement List and Call Each One (lab step 5, the success check)
 
 Every review where the two models differ, with the reference label and a verdict on who was right. This list is the actual deliverable of the feature: it is what tells you which slice of your traffic needs the expensive model.
 

@@ -41,7 +41,7 @@ The emergency row is the demo's punchline. `inq-0013` never reaches the model at
 
 The steps in [`../F09-lab.md`](../F09-lab.md), done in .NET: start from `starter/Program.cs` and end where `complete/Program.cs` is. Edit the starter in place (or copy it first); `complete/` is the answer key, and its comments say why each piece is there. Run from the `starter/` directory with `dotnet run`; the flags shown for later steps are the ones `complete/` supports, so add the same argument parsing or hard-code the value.
 
-### Step 1: Run the Starter and Read Every Draft, Especially the Sixth (lab step 1)
+### Step 1: Run the Starter and Read Every Draft, Especially the Sixth (lab step 0)
 
 The starter drafts a reply to all six inquiries and prints each as sent, with no review and no log. Read them as an editor, and then read the one for `inq-0013`, the woman whose husband is four hours overdue. The system prompt tells the model to output `ESCALATE:` for emergencies. Watch what it does instead.
 
@@ -53,13 +53,13 @@ dotnet run
 
 Check: Five usable drafts you would want to touch before sending, and a warm, reassuring, useless note to the overdue hiker's wife. In the recorded runs the model ignored the escalation instruction 3/3, and even with the instruction moved to the top it wrote `ESCALATE` and then the note anyway. One run of the starter makes the case for the whole feature.
 
-### Step 2: Fill in the Policy Worksheet Before Writing More Code (lab step 2)
+### Step 2: Fill in the Policy Worksheet Before Writing More Code (lab step 1)
 
 Open `../policy-worksheet.md`, and for each of feature 07's categories choose auto-send, draft-for-approval, or human-only, and write one sentence of justification based on what a wrong answer costs and whether it can be undone. This is half the lab and it is judgment, not typing. The reference policy in `../expected-output.md` puts every reversible category in draft-for-approval and emergency in human-only.
 
 Check: A completed table with a reason per row. Your lanes may differ from the reference; your justifications are what count.
 
-### Step 3: Put the Policy in Code, Above the API Call
+### Step 3: Put the Policy in Code, Above the API Call (lab steps 2 and 3)
 
 The gate. A lookup from category to lane, defaulting to human-only for anything unknown, and a check that runs before any request is built. A human-only message is escalated and logged without a single token being spent on it. This is the difference between a prompt instruction (a request) and a policy lane (a guarantee).
 
@@ -87,7 +87,7 @@ dotnet run
 
 Check: `inq-0013` prints `NO DRAFT` and no model call is made for it. Keep the `ESCALATE` prefix check after the call too, as a backstop for emergencies that arrive miscategorized; it is never the control, because it runs after the model has had its say.
 
-### Step 4: Add the Review Loop and the Audit Trail (lab step 3)
+### Step 4: Add the Review Loop and the Audit Trail (lab steps 4 to 6)
 
 Instead of printing "SENT", show the draft and ask: approve, edit, reject, or skip. Approved and edited text goes to an outbox; every decision, including the escalations, appends a line to `decisions.jsonl` with the draft, the final text, the reviewer, and the lane. `complete/` also records the edit distance between draft and final, which is the number that later tells you whether a lane has earned promotion.
 

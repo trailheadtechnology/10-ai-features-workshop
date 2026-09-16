@@ -17,7 +17,7 @@ There is no agent framework here on purpose: the loop is the same one `../http/a
 
 Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` (endpoint `https://trailhead-ai-workshop.openai.azure.com`, the deployment name the feature uses, and the key handed out in the room) and the agent switches to Azure OpenAI through the SDK's `AzureOpenAI` client; leave them unset and it runs against Ollama.
 
-The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), the TypeScript equivalent of the .NET demo's Microsoft.Extensions.AI clients: swapping the provider is a different constructor and nothing else. `tsx` runs the `.ts` files directly, so there is no build step.
+The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), so swapping the provider later is a different constructor and nothing else. `tsx` runs the `.ts` files directly, so there is no build step.
 
 ## Lab Walkthrough: From `starter/` to `complete/`
 
@@ -37,7 +37,7 @@ Check: A lovely three-day plan with zero tool calls. That is the reason this fea
 
 ### Step 2: Two Tools and the Loop
 
-This is lab step 1, the round-trip that `../http/azure.http` walks by hand. Write `search_trails` and `check_campsites` as ordinary functions over `../data/trails.json` and `../data/mock-apis/campsites.json`, load their definitions from `../data/tool-definitions.json` (the two entries you need), and write the loop: send the messages with the `tools` array, read the tool calls out of the reply, run them, append the results, repeat until the reply is prose. Give the loop a step budget; it is the only thing that stops a model that keeps deciding to call one more tool.
+This is lab steps 1 and 2, the round-trip that `../http/azure.http` walks by hand. Write `search_trails` and `check_campsites` as ordinary functions over `../data/trails.json` and `../data/mock-apis/campsites.json`, load their definitions from `../data/tool-definitions.json` (the two entries you need), and write the loop: send the messages with the `tools` array, read the tool calls out of the reply, run them, append the results, repeat until the reply is prose. Give the loop a step budget; it is the only thing that stops a model that keeps deciding to call one more tool.
 
 ```typescript
 const TOOLS: ChatCompletionTool[] = load("tool-definitions.json").tools.filter((t: any) => ["search_trails", "check_campsites"].includes(t.function.name));
@@ -67,7 +67,7 @@ npm run starter
 
 Check: Print each tool call as it happens. You should see `search_trails` and `check_campsites` fire, then an itinerary that names real trails (Trail of the Cedars, Iceberg Lake) and real campgrounds. Invented names mean a tool result did not reach the model.
 
-### Step 3: Add Get_weather and Ask for a Trip on the Rain Day (lab step 2)
+### Step 3: Add Get_weather and Ask for a Trip on the Rain Day (lab step 3)
 
 Write the function over `../data/mock-apis/weather.json`, add its definition to the tools array (write the JSON schema yourself before copying it from `tool-definitions.json`; the description is the model's only manual), and ask for September 14 to 16. The 16th is a rain day: 49/33, 70 percent, 18 mph.
 
@@ -87,7 +87,7 @@ npm run starter
 
 Check: `get_weather` is called and the forecast shapes the plan rather than decorating it: the hardest day lands on the 14th or 15th and the 16th gets something short or sheltered, with a sentence saying why. Compare the sample in `../expected-output.md`. Failing looks like the same three trails plus a line reading "expect rain on the 16th".
 
-### Step 4: Add Get_trail_conditions and Ask for the Closed Trail (lab step 3)
+### Step 4: Add Get_trail_conditions and Ask for the Closed Trail (lab step 4)
 
 The function reads `../data/condition-reports.jsonl` and returns the newest four reports for a trail id; make it return an error string, not throw, when the id is missing or malformed, and let it resolve a trail name too. Add it, then ask for a trip that includes Avalanche Lake Trail (`trail-0117`). The catalog says nothing about the bridge; only this tool does.
 

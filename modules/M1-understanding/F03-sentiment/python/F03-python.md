@@ -5,7 +5,7 @@ Two scripts, both reading from [`../data/`](../data/):
 - `starter/main.py`: one client, one `classify` function, one review (`gr-0007`, the sarcastic two-star). Prints the review and what `phi3` says.
 - `complete/main.py`: the finished demo as shown on stage. Both review sets through both models with the byte-identical four-line prompt, a table with disagreements flagged, accuracy per set against `reference-labels.json`, and the disagreement list with a verdict on who was right.
 
-No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names, same as the .NET starter.)
+No setup here: the repo root has the `pyproject.toml`, and `uv sync` there (see [`SETUP.md`](../../../../SETUP.md)) is the one install for all ten features. `uv run` finds it from any folder. From `complete/`: (`starter/main.py` takes no flags, at most the one positional argument its header comment names.)
 
 ```bash
 uv run main.py            # both sets, both models
@@ -17,11 +17,11 @@ Without the Azure variables, `llama3.2` stands in for the big model so the whole
 
 Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` (endpoint `https://trailhead-ai-workshop.openai.azure.com`, the deployment name the feature uses, and the key handed out in the room) and the big model switches to Azure OpenAI through the SDK's `AzureOpenAI` client; leave them unset and it runs against Ollama.
 
-The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), the Python equivalent of the .NET demo's Microsoft.Extensions.AI clients: swapping the provider is a different constructor and nothing else.
+The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), so swapping the provider later is a different constructor and nothing else.
 
 ## Lab Walkthrough: From `starter/` to `complete/`
 
-The steps in [`../F03-lab.md`](../F03-lab.md), done in Python: start from `starter/main.py` and end where `complete/main.py` is. Edit the starter in place (or copy it first); `complete/` is the answer key, and its comments say why each piece is there. Run from the `starter/` directory with the venv active; the flags shown for later steps are the ones `complete/` supports, so add the same argument parsing or hard-code the value.
+The steps in [`../F03-lab.md`](../F03-lab.md), done in Python: start from `starter/main.py` and end where `complete/main.py` is. Edit the starter in place (or copy it first); `complete/` is the answer key, and its comments say why each piece is there. Run `uv run main.py` from the `starter/` directory (the repo root `pyproject.toml` and one `uv sync` there cover every feature, no venv to activate); the flags shown for later steps are the ones `complete/` supports, so add the same argument parsing or hard-code the value.
 
 ### Step 1: Run the Starter on the Sarcastic Review
 
@@ -35,7 +35,7 @@ uv run main.py
 
 Check: `phi3 says: negative`. Try `gr-0034` or any other id from `easy.jsonl` / `hard.jsonl`.
 
-### Step 2: Loop the Easy Set and Score It Against the Reference Labels (lab step 1)
+### Step 2: Loop the Easy Set and Score It Against the Reference Labels (lab steps 1 and 2)
 
 Replace the single review with a loop over `easy.jsonl`, look each id up in `reference-labels.json`, and count matches.
 
@@ -60,7 +60,7 @@ uv run main.py
 
 Check: 9/10 on the easy set in the recorded runs. Yours may differ by one.
 
-### Step 3: Add the Second Model and Run the Hard Set Through Both (lab step 2)
+### Step 3: Add the Second Model and Run the Hard Set Through Both (lab steps 3 and 4)
 
 Build a second client: Azure OpenAI if you have the room key in `AZURE_OPENAI_KEY` (with `AZURE_OPENAI_ENDPOINT=https://trailhead-ai-workshop.openai.azure.com` and `AZURE_OPENAI_DEPLOYMENT=gpt-4.1`), otherwise `llama3.2` on the same Ollama as a stand-in. Nothing in `classify` changes; that is the provider-swap point of the whole module. Then run `hard.jsonl` through both.
 
@@ -79,7 +79,7 @@ uv run main.py
 
 Check: Two columns of labels for the hard set. Recorded: 7/10 for `phi3`, 10/10 for `gpt-4.1` on Azure, and 8/10 for the `llama3.2` stand-in. The frontier model earns its price on this slice; the local stand-in would have told you the gap is one review wide.
 
-### Step 4: Print the Disagreement List and Call Each One (lab step 3, the success check)
+### Step 4: Print the Disagreement List and Call Each One (lab step 5, the success check)
 
 Every review where the two models differ, with the reference label and a verdict on who was right. This list is the actual deliverable of the feature: it is what tells you which slice of your traffic needs the expensive model.
 

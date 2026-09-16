@@ -46,7 +46,7 @@ Both guardrails are visible in `complete/Program.cs`: `MaximumIterationsPerReque
 
 Two pieces of scaffolding in `complete/Program.cs` exist purely because of that, and both are labelled in the source. First, every tool parameter has a default and returns a helpful error instead of throwing, so a malformed call cannot kill the run. Second, a nudge loop: when the response comes back and a required tool has not been called yet, the app says which ones are missing and lets the loop continue, up to three times, plus one more turn asking for the itinerary if the model finished its calls and then went quiet. The `[nudge]` lines in the reference transcript are the app talking, not the model.
 
-Even with all of that, the run captured in `../reference-transcript.md` was the good one out of a batch, and several later runs still fell apart. The scaffolding is there for the local model, not for the demo. Pointed at the workshop's Microsoft Foundry deployment (`gpt-4.1`), the same code sequenced the tools in the prescribed order on every run tried while building this (weather, search, a conditions check on every candidate, campsites, then the permit only when a backcountry site was involved), with zero `[nudge]` lines, and on the closed-trail request it checked `trail-0117` first, read the closure, and planned a partial hike to the creek with the closure stated plainly. The Python and TypeScript ports behaved the same way. If you see `[nudge]` lines against Azure, something changed. This is the concrete reason the feature card says model choice stops being negotiable here. A dropped or malformed tool call breaks the loop instead of gently degrading the answer.
+Even with all of that, the run captured in `../reference-transcript.md` was the good one out of a batch, and several later runs still fell apart. The scaffolding is there for the local model, not for the demo. Pointed at the workshop's Microsoft Foundry deployment (`gpt-5.5`), the same code sequenced the tools in the prescribed order on every run tried while building this (weather, search, a conditions check on every candidate, campsites, then the permit only when a backcountry site was involved), with zero `[nudge]` lines, and on the closed-trail request it checked `trail-0117` first, read the closure, and planned a partial hike to the creek with the closure stated plainly. The Python and TypeScript ports behaved the same way. If you see `[nudge]` lines against Azure, something changed. This is the concrete reason the feature card says model choice stops being negotiable here. A dropped or malformed tool call breaks the loop instead of gently degrading the answer.
 
 ## Lab Walkthrough: From `starter/` to `complete/`
 
@@ -66,7 +66,7 @@ Check: A lovely three-day plan with zero tool calls. That is the reason this fea
 
 ### Step 2: Two Tools and the Loop
 
-This is lab step 1, the round-trip that `../http/azure.http` walks by hand. Write `search_trails` and `check_campsites` as ordinary functions over `../data/trails.json` and `../data/mock-apis/campsites.json`, load their definitions from `../data/tool-definitions.json` (the two entries you need), and write the loop: send the messages with the `tools` array, read the tool calls out of the reply, run them, append the results, repeat until the reply is prose. Give the loop a step budget; it is the only thing that stops a model that keeps deciding to call one more tool.
+This is lab steps 1 and 2, the round-trip that `../http/azure.http` walks by hand. Write `search_trails` and `check_campsites` as ordinary functions over `../data/trails.json` and `../data/mock-apis/campsites.json`, load their definitions from `../data/tool-definitions.json` (the two entries you need), and write the loop: send the messages with the `tools` array, read the tool calls out of the reply, run them, append the results, repeat until the reply is prose. Give the loop a step budget; it is the only thing that stops a model that keeps deciding to call one more tool.
 
 ```csharp
 // Microsoft.Extensions.AI runs the loop for you; the budget is the one setting to keep.
@@ -89,7 +89,7 @@ dotnet run
 
 Check: Print each tool call as it happens. You should see `search_trails` and `check_campsites` fire, then an itinerary that names real trails (Trail of the Cedars, Iceberg Lake) and real campgrounds. Invented names mean a tool result did not reach the model.
 
-### Step 3: Add Get_weather and Ask for a Trip on the Rain Day (lab step 2)
+### Step 3: Add Get_weather and Ask for a Trip on the Rain Day (lab step 3)
 
 Write the function over `../data/mock-apis/weather.json`, add its definition to the tools array (write the JSON schema yourself before copying it from `tool-definitions.json`; the description is the model's only manual), and ask for September 14 to 16. The 16th is a rain day: 49/33, 70 percent, 18 mph.
 
@@ -112,7 +112,7 @@ dotnet run
 
 Check: `get_weather` is called and the forecast shapes the plan rather than decorating it: the hardest day lands on the 14th or 15th and the 16th gets something short or sheltered, with a sentence saying why. Compare the sample in `../expected-output.md`. Failing looks like the same three trails plus a line reading "expect rain on the 16th".
 
-### Step 4: Add Get_trail_conditions and Ask for the Closed Trail (lab step 3)
+### Step 4: Add Get_trail_conditions and Ask for the Closed Trail (lab step 4)
 
 The function reads `../data/condition-reports.jsonl` and returns the newest four reports for a trail id; make it return an error string, not throw, when the id is missing or malformed, and let it resolve a trail name too. Add it, then ask for a trip that includes Avalanche Lake Trail (`trail-0117`). The catalog says nothing about the bridge; only this tool does.
 
