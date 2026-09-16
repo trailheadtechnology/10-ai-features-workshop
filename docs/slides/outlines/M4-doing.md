@@ -98,7 +98,7 @@ Cut: 4 if the first run already hit the bridge.
 ## [static] Lab 4: ~50 Minutes · Everyone
 
 - `modules/M4-doing/F10-agentic-workflows/`
-- `http/azure.http` — **you are the loop**
+- `dotnet/` · `python/` · `typescript/` — **you are the loop**
 - Step 1: the two-tool round-trip, written for you
 - Step 2: add `get_weather` — do something about the 16th
 - Step 3: `trail-0117` — dropped, for a tool-given reason

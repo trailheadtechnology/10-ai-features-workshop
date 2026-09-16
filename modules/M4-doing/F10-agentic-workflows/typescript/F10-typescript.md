@@ -13,7 +13,7 @@ npm run complete -- Plan me a trip on Avalanche Lake Trail in September
 npm run complete -- --yes <request>                         # auto-approve the permit gate
 ```
 
-There is no agent framework here on purpose: the loop is the same one `../http/azure.http` walks by hand, about thirty lines, and reading it is the fastest way to see what frameworks hide. Without the Azure variables it runs on `llama3.2`, which is much weaker at sequencing five tools; the `[nudge]` lines are the app compensating, and [`../dotnet/F10-dotnet.md`](../dotnet/F10-dotnet.md) has the measured failure counts before judging a local run. The reference run is in [`../reference-transcript.md`](../reference-transcript.md).
+There is no agent framework here on purpose: the loop is about thirty lines, and reading it is the fastest way to see what frameworks hide. Without the Azure variables it runs on `llama3.2`, which is much weaker at sequencing five tools; the `[nudge]` lines are the app compensating, and [`../dotnet/F10-dotnet.md`](../dotnet/F10-dotnet.md) has the measured failure counts before judging a local run. The reference run is in [`../reference-transcript.md`](../reference-transcript.md).
 
 Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` (endpoint `https://trailhead-ai-workshop.openai.azure.com`, the deployment name the feature uses, and the key handed out in the room) and the agent switches to Azure OpenAI through the SDK's `AzureOpenAI` client; leave them unset and it runs against Ollama.
 
@@ -37,7 +37,7 @@ Check: A lovely three-day plan with zero tool calls. That is the reason this fea
 
 ### Step 2: Two Tools and the Loop
 
-This is lab steps 1 and 2, the round-trip that `../http/azure.http` walks by hand. Write `search_trails` and `check_campsites` as ordinary functions over `../data/trails.json` and `../data/mock-apis/campsites.json`, load their definitions from `../data/tool-definitions.json` (the two entries you need), and write the loop: send the messages with the `tools` array, read the tool calls out of the reply, run them, append the results, repeat until the reply is prose. Give the loop a step budget; it is the only thing that stops a model that keeps deciding to call one more tool.
+This is lab steps 1 and 2, the round-trip lab step 2 walks through. Write `search_trails` and `check_campsites` as ordinary functions over `../data/trails.json` and `../data/mock-apis/campsites.json`, load their definitions from `../data/tool-definitions.json` (the two entries you need), and write the loop: send the messages with the `tools` array, read the tool calls out of the reply, run them, append the results, repeat until the reply is prose. Give the loop a step budget; it is the only thing that stops a model that keeps deciding to call one more tool.
 
 ```typescript
 const TOOLS: ChatCompletionTool[] = load("tool-definitions.json").tools.filter((t: any) => ["search_trails", "check_campsites"].includes(t.function.name));

@@ -181,7 +181,7 @@ Easy. If asked about cost: days; the classifier is trivial, the diligence is a l
 
 - ⭐ Recommended: **F01 Summarization**
 - ⛰️ Challenge: **F02 Extraction** · **F03 Sentiment**
-- `FNN-lab.md` · `http/ollama.http` · `expected-output.md` · `data/`
+- `FNN-lab.md` · `dotnet/` · `python/` · `typescript/` · `expected-output.md` · `data/`
 - ✅ Done = your output similar to `expected-output.md`
 
 Notes: Start with 01 regardless of experience: one endpoint, one prompt, two reports; everything else today assumes you've made one model call and seen what comes back. New to this? Budget the full time and do the stretch goal.

@@ -1,6 +1,6 @@
 # What Passing Looks Like
 
-Exact values vary run to run; the checks below are what has to be true. These samples came from actual `llama3.2` runs of `http/ollama.http`.
+Exact values vary run to run; the checks below are what has to be true. These samples came from actual `llama3.2` runs of the extraction prompt and schema.
 
 ## Request 1: Fact-Rich Report tr-0007 (Expect Every Field Populated)
 

@@ -16,7 +16,7 @@ Then there's the part most tutorials skip. The classic extraction failure is a m
 
 ## The Lab
 
-The hands-on lab is [F02-lab.md](F02-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `http/`, `dotnet/`, `python/`, and `typescript/`. It is a Challenge lab, for anyone who finished the module's Recommended lab and wants another.
+The hands-on lab is [F02-lab.md](F02-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `dotnet/`, `python/`, and `typescript/`. It is a Challenge lab, for anyone who finished the module's Recommended lab and wants another.
 
 ## Leadership Beat
 

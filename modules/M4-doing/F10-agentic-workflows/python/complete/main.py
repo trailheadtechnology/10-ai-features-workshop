@@ -11,7 +11,7 @@ AZURE_OPENAI_DEPLOYMENT are set; otherwise Ollama llama3.2, which is much
 weaker at sequencing five tools. See ../F10-python.md before judging a local run.
 
 There is no agent framework here on purpose. The loop is the same one the lab's
-http/azure.http walks by hand: send the messages with the tools array, read the tool
+F10-lab.md walks by hand: send the messages with the tools array, read the tool
 calls out of the reply, run them, append the results, repeat.
 """
 

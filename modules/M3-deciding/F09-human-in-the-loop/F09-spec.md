@@ -14,7 +14,7 @@ The design question is where to put the human, and the answer comes from error c
 
 ## The Lab
 
-The hands-on lab is [F09-lab.md](F09-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `http/`, `dotnet/`, `python/`, and `typescript/`. It is a Challenge lab, for anyone who finished the module's Recommended lab and wants another.
+The hands-on lab is [F09-lab.md](F09-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `dotnet/`, `python/`, and `typescript/`. It is a Challenge lab, for anyone who finished the module's Recommended lab and wants another.
 
 ## Leadership Beat
 

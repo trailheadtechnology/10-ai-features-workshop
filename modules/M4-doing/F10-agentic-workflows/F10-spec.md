@@ -14,7 +14,7 @@ This is the capstone because it composes the day. The agent searches trails sema
 
 ## The Lab
 
-The hands-on lab is [F10-lab.md](F10-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `http/`, `dotnet/`, `python/`, and `typescript/`. Everyone attempts it: it is the only feature in Module 4, so there is no Recommended-or-Challenge choice here.
+The hands-on lab is [F10-lab.md](F10-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `dotnet/`, `python/`, and `typescript/`. Everyone attempts it: it is the only feature in Module 4, so there is no Recommended-or-Challenge choice here.
 
 ## Leadership Beat
 

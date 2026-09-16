@@ -20,7 +20,7 @@ The model strategy is hybrid in a second sense, on purpose. Retrieval runs on fr
 
 ## The Lab
 
-The hands-on lab is [F05-lab.md](F05-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `http/`, `dotnet/`, `python/`, and `typescript/`. It is a Challenge lab, for anyone who finished the module's Recommended lab and wants another.
+The hands-on lab is [F05-lab.md](F05-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `dotnet/`, `python/`, and `typescript/`. It is a Challenge lab, for anyone who finished the module's Recommended lab and wants another.
 
 ## Leadership Beat
 

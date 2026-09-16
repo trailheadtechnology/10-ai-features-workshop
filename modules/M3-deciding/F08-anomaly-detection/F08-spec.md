@@ -16,7 +16,7 @@ The pattern generalizes to any stream of routine text: support tickets, log mess
 
 ## The Lab
 
-The hands-on lab is [F08-lab.md](F08-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `http/`, `dotnet/`, `python/`, and `typescript/`. It is a Challenge lab, for anyone who finished the module's Recommended lab and wants another.
+The hands-on lab is [F08-lab.md](F08-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `dotnet/`, `python/`, and `typescript/`. It is a Challenge lab, for anyone who finished the module's Recommended lab and wants another.
 
 ## Leadership Beat
 

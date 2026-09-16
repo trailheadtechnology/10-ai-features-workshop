@@ -14,7 +14,7 @@ Two design decisions carry the feature. The first is that the taxonomy is the pr
 
 ## The Lab
 
-The hands-on lab is [F07-lab.md](F07-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `http/`, `dotnet/`, `python/`, and `typescript/`. It is the Recommended lab for its module: start here unless you have a reason not to.
+The hands-on lab is [F07-lab.md](F07-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `dotnet/`, `python/`, and `typescript/`. It is the Recommended lab for its module: start here unless you have a reason not to.
 
 ## Leadership Beat
 

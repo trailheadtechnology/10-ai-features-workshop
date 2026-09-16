@@ -251,7 +251,7 @@ Medium. If asked about cost: drafting is trivial; the approval UI, audit trail, 
 
 - ⭐ Recommended: **F07 Classification & Routing**
 - ⛰️ Challenge: **F08 Anomaly Detection** · **F09 Human-in-the-Loop**
-- `FNN-lab.md` · `http/ollama.http` · `expected-output.md` · `data/`
+- `FNN-lab.md` · `dotnet/` · `python/` · `typescript/` · `expected-output.md` · `data/`
 - ✅ Done = 2/2 emergencies caught — 19/20 with a miss is a fail
 
 Notes: 07 is structured output with an enum plus an honest scoring pass; the number that matters is emergency recall, not overall accuracy.

@@ -238,7 +238,7 @@ Easy. If asked about cost: nearly free once search exists; days from scratch.
 
 - ⭐ Recommended: **F04 Semantic Search**
 - ⛰️ Challenge: **F05 RAG** (☁️ room key) · **F06 Recommendations**
-- `FNN-lab.md` · `http/` · `expected-output.md` · `data/`
+- `FNN-lab.md` · `dotnet/` · `python/` · `typescript/` · `expected-output.md` · `data/`
 - ✅ Done = your output similar to `expected-output.md`
 
 Notes: 04: embed 30 trails, embed a query, rank by cosine; keyword baseline provided. Two honest routes: if RAG is why you came, go straight to 05 and come back to 04 after — nobody should leave having never built the thing they came for. 06 is 04's code with the query swapped for an item.

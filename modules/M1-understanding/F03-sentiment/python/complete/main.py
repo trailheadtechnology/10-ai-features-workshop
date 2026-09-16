@@ -42,7 +42,7 @@ else:
 def classify(target: tuple[OpenAI, str], text: str) -> str:
     client, model = target
     # Both models get this exact prompt, and it is byte-identical to the one in
-    # ../../http/ollama.http and ../../http/azure.http, line breaks included. Reflowing these
+    # F03-lab.md, line breaks included. Reflowing these
     # four lines into one costs phi3 measured accuracy on both sets while leaving
     # llama3.2 unchanged, so varying the prompt shape and the model in the same
     # run measures nothing. See ../../expected-output.md.

@@ -26,7 +26,7 @@ print()
 # The whole feature is this function. The prompt carries it; the model is
 # swappable because everything upstream only sees the client and a model name.
 def classify(client: OpenAI, model: str, text: str) -> str:
-    # Keep this prompt byte-identical to the one in ../../http/ollama.http, line breaks
+    # Keep this prompt byte-identical to the one in F03-lab.md, line breaks
     # included. Reflowing these four lines into one costs phi3 measured accuracy
     # on both sets, so a comparison run against a reflowed prompt is not
     # comparing models. See ../../expected-output.md.

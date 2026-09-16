@@ -1,6 +1,6 @@
 # What Passing Looks Like
 
-Wording varies run to run. The drafts below are verbatim from an actual `llama3.2` run of `http/ollama.http` at `temperature: 0.2`, kept as they came out, typos of judgment and all. Read each one the way a ranger would: this is going out under your name in about four seconds.
+Wording varies run to run. The drafts below are verbatim from an actual `llama3.2` run of the drafting prompt, kept as they came out, typos of judgment and all. Read each one the way a ranger would: this is going out under your name in about four seconds.
 
 Annotations use the same four keys the review loop in `dotnet/complete` offers: **approve**, **edit**, **reject**, **skip**.
 
@@ -100,7 +100,7 @@ That is the disaster in the feature intro, and it does not require the model to 
 
 ### The Repair Attempt, and Why It Is Not a Repair
 
-Request 5 in `http/ollama.http` moves the escalation rule to the front of the system prompt, before the drafting instructions, and adds "write nothing after that line." Three runs, and the model escalated all three times:
+Moving the escalation rule to the front of the system prompt, before the drafting instructions, and adding "write nothing after that line," was tried across three runs, and the model escalated all three times:
 
 > ESCALATE: A missing person has been reported for Robert Ferris, last seen on the Highline Trail in Glacier National Park.
 

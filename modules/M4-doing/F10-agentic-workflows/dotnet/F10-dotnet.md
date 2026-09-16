@@ -66,7 +66,7 @@ Check: A lovely three-day plan with zero tool calls. That is the reason this fea
 
 ### Step 2: Two Tools and the Loop
 
-This is lab steps 1 and 2, the round-trip that `../http/azure.http` walks by hand. Write `search_trails` and `check_campsites` as ordinary functions over `../data/trails.json` and `../data/mock-apis/campsites.json`, load their definitions from `../data/tool-definitions.json` (the two entries you need), and write the loop: send the messages with the `tools` array, read the tool calls out of the reply, run them, append the results, repeat until the reply is prose. Give the loop a step budget; it is the only thing that stops a model that keeps deciding to call one more tool.
+This is lab steps 1 and 2, the round-trip lab step 2 walks through. Write `search_trails` and `check_campsites` as ordinary functions over `../data/trails.json` and `../data/mock-apis/campsites.json`, load their definitions from `../data/tool-definitions.json` (the two entries you need), and write the loop: send the messages with the `tools` array, read the tool calls out of the reply, run them, append the results, repeat until the reply is prose. Give the loop a step budget; it is the only thing that stops a model that keeps deciding to call one more tool.
 
 ```csharp
 // Microsoft.Extensions.AI runs the loop for you; the budget is the one setting to keep.

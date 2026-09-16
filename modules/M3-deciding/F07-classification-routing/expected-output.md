@@ -1,6 +1,6 @@
 # What Passing Looks Like
 
-Labels vary a little run to run; the checks below are what has to be true. Everything here came from an actual `llama3.2` run of the taxonomy in `http/ollama.http` over all 20 messages in `inquiries-slice.jsonl`, at temperature 0, scored against `reference-labels.json`.
+Labels vary a little run to run; the checks below are what has to be true. Everything here came from an actual `llama3.2` run of the taxonomy prompt over all 20 messages in `inquiries-slice.jsonl`, at temperature 0, scored against `reference-labels.json`.
 
 ## The Scoreboard from That Run
 

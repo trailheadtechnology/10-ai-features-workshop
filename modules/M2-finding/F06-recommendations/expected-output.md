@@ -13,7 +13,7 @@ overlap, not on an exact match.
 ## Cosine Sanity Check
 
 Before ranking anything, confirm your similarity function works. Using the
-vectors from request 2 in `http/ollama.http`:
+vectors for these three trail descriptions:
 
 | pair | cosine |
 | --- | --- |

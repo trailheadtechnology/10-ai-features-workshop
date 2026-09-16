@@ -5,7 +5,7 @@ Most AI conversations start with the technology: "we should add a chatbot," "we 
 
 ## Who It Is For, and What You Leave Able to Do
 
-You are involved in the creation of software for a living, you can make an HTTP request in your language of choice, and you want to know what shipping AI features looks like. No machine learning background is assumed, and no particular language or stack is required: the labs run from raw HTTP files or from .NET, Python, or TypeScript starters. The instructor will demo in C# and .NET.
+You are involved in the creation of software for a living and you want to know what shipping AI features looks like. No machine learning background is assumed, and no particular language is required: every lab runs from a .NET, Python, or TypeScript starter. The instructor will demo in C# and .NET.
 
 By the end of the day you will be able to identify a problem that is a good match for an AI solution, and:
 
@@ -48,7 +48,9 @@ Each module's overview is the menu: what the three features are, which one is Re
 
 All ten features work through one fictional product: Trailhead Guides, a national-park trip-planning app with a messy, realistic corpus of trip reports, gear reviews, trail descriptions, park regulations, and visitor inquiries. Every feature folder carries the data its lab reads in its own `data/`, described in that feature's lab doc, so you meet each dataset when its feature does. The data is synthetic; where a real park name appears, every rule attached to it is fiction, and nobody should plan an actual trip from it.
 
-During the workshop, open the module overview to pick a feature, then open that feature's `FNN-lab.md`: the goal, the steps, the success checks, and a table of four languages. `http/` is raw requests you can run from VS Code or port to any language; `dotnet/`, `python/`, and `typescript/` each have a `starter/` to edit and a `complete/` answer key. Every language has its own `FNN-<language>.md` walkthrough of the same steps, and every language checks against the same `expected-output.md`. The spec (`FNN-spec.md`) is the short read before the lab: the user problem, the concept, and the leadership beat. The instructor's demo scripts live with the slides, in `docs/slides/outlines/`.
+During the workshop, open the module overview to pick a feature, then open that feature's `FNN-lab.md`: the goal, the steps, the success checks, and a table of three languages. `dotnet/`, `python/`, and `typescript/` each have a `starter/` to edit and a `complete/` answer key. Every language has its own `FNN-<language>.md` walkthrough of the same steps, and every language checks against the same `expected-output.md`. The spec (`FNN-spec.md`) is the short read before the lab: the user problem, the concept, and the leadership beat. The instructor's demo scripts live with the slides, in `docs/slides/outlines/`.
+
+Feature 00 is the exception: its lab is a raw-HTTP smoke test (`http/smoke-test.http`) that checks your environment is wired up before the day starts, not a coding track. Every other feature runs only in .NET, Python, or TypeScript.
 
 Before the workshop, do the pre-work in [`SETUP.md`](SETUP.md). It's mostly "install Ollama and pull three models."
 
@@ -68,7 +70,6 @@ Before the workshop, do the pre-work in [`SETUP.md`](SETUP.md). It's mostly "ins
             ├── FNN-lab.md    # attendee: goal, steps, success checks, stretch, what is in data/
             ├── expected-output.md
             ├── data/         # everything the lab and the code read
-            ├── http/         # FNN-http.md walkthrough plus ollama.http / azure.http: raw requests, any language
             ├── dotnet/       # FNN-dotnet.md walkthrough plus starter/ and complete/ projects
             ├── python/       # FNN-python.md walkthrough, starter/main.py, complete/main.py (uv run main.py)
             └── typescript/   # FNN-typescript.md walkthrough, package.json, starter/index.ts, complete/index.ts
@@ -78,10 +79,10 @@ Before the workshop, do the pre-work in [`SETUP.md`](SETUP.md). It's mostly "ins
 
 Every model in this workshop sits behind an HTTP endpoint, and everything else is a wrapper around a POST.
 
-- **Ollama** is a local server. Once it is running, it listens on `http://localhost:11434` and answers two families of requests: its native API (`/api/chat`, `/api/embed`), which is what the `http/ollama.http` files use, and an OpenAI-compatible API under `/v1`, which is what the Python and TypeScript starters use through the official `openai` SDK. The model runs on your laptop; the request is a local HTTP call.
+- **Ollama** is a local server. Once it is running, it listens on `http://localhost:11434` and answers two families of requests: its native API (`/api/chat`, `/api/embed`), and an OpenAI-compatible API under `/v1`, which is what the Python and TypeScript starters use through the official `openai` SDK. The model runs on your laptop; the request is a local HTTP call.
 - **Microsoft Foundry** serves the workshop's `gpt-4.1` and `gpt-5.5` deployments the same way, at `https://trailhead-ai-workshop.openai.azure.com/openai/deployments/<name>/chat/completions` with an `api-key` header. That is the Azure OpenAI API, and it is the same request shape as Ollama's `/v1`, which is why the SDKs need only a different constructor to switch.
 
-So the `http/` track is not a simplification of the "real" way; it is the real way, with the SDK removed. Microsoft.Extensions.AI in .NET and the `openai` package in Python and TypeScript are conveniences over the same calls, and swapping a feature from local to cloud is a URL and a key.
+Every lab talks to these endpoints through an SDK (Microsoft.Extensions.AI in .NET, the `openai` package in Python and TypeScript); nothing about the underlying call changes, and swapping a feature from local to cloud is a URL and a key. Feature 00's smoke test is the one place in the workshop that sends a raw HTTP request, to confirm your environment can reach both endpoints before the day starts.
 
 ## Model Strategy
 
