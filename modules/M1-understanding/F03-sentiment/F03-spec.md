@@ -16,7 +16,7 @@ The comparison cuts both ways, though. Feed both models the corpus's hard cases 
 
 ## The Lab
 
-The hands-on lab is [F03-lab.md](F03-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `http/`, `dotnet/`, `python/`, and `typescript/`. It is a Challenge lab, for anyone who finished the module's Recommended lab and wants another.
+The hands-on lab is [F03-lab.md](F03-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `dotnet/`, `python/`, and `typescript/`. It is a Challenge lab, for anyone who finished the module's Recommended lab and wants another.
 
 ## Leadership Beat
 

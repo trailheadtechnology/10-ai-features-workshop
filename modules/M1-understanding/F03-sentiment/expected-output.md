@@ -47,7 +47,7 @@ Also worth knowing: both local models missed `gr-0021` the same way, calling the
 
 ## The Finding Nobody Was Looking for
 
-The prompt in `http/ollama.http` is wrapped across four short lines. Reflowing that identical prompt onto a single line, changing nothing but the newlines, moved `phi3` from 9/10 to 7/10 on the easy set and from 7/10 to 4/10 on the hard set. `llama3.2` scored the same either way (measured as 9/10 and 7/10 under the original `gr-0004` label; the relabel adds one to its hard score).
+The lab's prompt is wrapped across four short lines. Reflowing that identical prompt onto a single line, changing nothing but the newlines, moved `phi3` from 9/10 to 7/10 on the easy set and from 7/10 to 4/10 on the hard set. `llama3.2` scored the same either way (measured as 9/10 and 7/10 under the original `gr-0004` label; the relabel adds one to its hard score).
 
 Both variants were measured, twice, at temperature 0. Under the single-line prompt phi3's failure mode was a consistent retreat to `mixed` on anything containing a negative word, which is the worst possible error for a product team: it launders anger into ambivalence and flattens the trend line the feature exists to surface.
 

@@ -3,41 +3,31 @@
 Two scripts, both reading from [`../data/`](../data/):
 
 - `starter/index.ts`: one client, one `classify` function, one review (`gr-0007`, the sarcastic two-star). Prints the review and what `phi3` says.
-- `complete/index.ts`: the finished demo as shown on stage. Both review sets through both models with the byte-identical four-line prompt, a table with disagreements flagged, accuracy per set against `reference-labels.json`, and the disagreement list with a verdict on who was right.
+- `complete/index.ts`: the finished demo. Both review sets through both models with the byte-identical four-line prompt, a table with disagreements flagged, accuracy per set, and the disagreement list with a verdict on who was right.
 
 Setup once (`npm install` in this directory), then:
 
 ```bash
 npm run complete             # both sets, both models
-npm run complete -- --easy   # easy set only (demo steps 3 and 4)
-npm run complete -- --hard   # hard set only (demo step 5)
+npm run complete -- --easy   # easy set only (lab steps 3-4 shape)
+npm run complete -- --hard   # hard set only (lab step 5 shape)
 ```
 
-Without the Azure variables, `llama3.2` stands in for the big model so the whole comparison runs offline; that pairing nearly ties (9/10 easy for both, 7/10 vs 8/10 hard); against the workshop's `gpt-4.1` deployment the frontier model scores 10/10 on both sets, and both results are in [`../expected-output.md`](../expected-output.md). Keep the prompt's line breaks exactly as they are: reflowing it onto one line costs `phi3` measured accuracy.
-
-Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` (endpoint `https://trailhead-ai-workshop.openai.azure.com`, the deployment name the feature uses, and the key handed out in the room) and the big model switches to Azure OpenAI through the SDK's `AzureOpenAI` client; leave them unset and it runs against Ollama.
-
-The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), so swapping the provider later is a different constructor and nothing else. `tsx` runs the `.ts` files directly, so there is no build step.
+Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, `AZURE_OPENAI_DEPLOYMENT` (endpoint `https://trailhead-ai-workshop.openai.azure.com`, deployment `gpt-4.1`, key handed out in the room) to use Azure OpenAI as the big model via the SDK's `AzureOpenAI` client; leave them unset and `llama3.2` on Ollama stands in, so the whole comparison runs offline. The client is the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`); swapping providers later is a different constructor. `tsx` runs the `.ts` files directly, no build step.
 
 ## Lab Walkthrough: From `starter/` to `complete/`
 
-The steps in [`../F03-lab.md`](../F03-lab.md), done in TypeScript: start from `starter/index.ts` and end where `complete/index.ts` is. Edit the starter in place (or copy it first); `complete/` is the answer key, and its comments say why each piece is there. Run with `npm run starter` from the `typescript/` directory; the flags shown for later steps are the ones `complete/` supports, so add the same argument parsing or hard-code the value.
+The steps are in [`../F03-lab.md`](../F03-lab.md); this maps each onto `starter/index.ts` → `complete/index.ts`. Edit the starter in place (or copy it first); `complete/`'s comments say why each piece is there.
 
-### Step 1: Run the Starter on the Sarcastic Review
-
-One client, one `classify` function, one review: `gr-0007`, two stars, "five-star experience, truly". The prompt is the whole feature and it is byte-identical to `../ollama.http`; keep its line breaks, because reflowing it onto one line costs `phi3` measured accuracy.
-
-Run:
+### Lab step 0: run the starter
 
 ```bash
 npm run starter
 ```
 
-Check: `phi3 says: negative`. Try `gr-0034` or any other id from `easy.jsonl` / `hard.jsonl`.
+Check: `phi3 says: negative` on `gr-0007`.
 
-### Step 2: Loop the Easy Set and Score It Against the Reference Labels (lab steps 1 and 2)
-
-Replace the single review with a loop over `easy.jsonl`, look each id up in `reference-labels.json`, and count matches.
+### Lab steps 1-2: load reference labels, loop the easy set, score it
 
 ```typescript
 const labels: Record<string, { label: string }> = JSON.parse(readFileSync(resolve(DATA, "reference-labels.json"), "utf8"));
@@ -52,17 +42,9 @@ for (const line of lines("easy.jsonl")) {
 console.log(`phi3 ${correct}/${total}`);
 ```
 
-Run:
+Check: 9/10 on the easy set in the recorded runs; yours may differ by one.
 
-```bash
-npm run starter
-```
-
-Check: 9/10 on the easy set in the recorded runs. Yours may differ by one.
-
-### Step 3: Add the Second Model and Run the Hard Set Through Both (lab steps 3 and 4)
-
-Build a second client: Azure OpenAI if you have the room key in `AZURE_OPENAI_KEY` (with `AZURE_OPENAI_ENDPOINT=https://trailhead-ai-workshop.openai.azure.com` and `AZURE_OPENAI_DEPLOYMENT=gpt-4.1`), otherwise `llama3.2` on the same Ollama as a stand-in. Nothing in `classify` changes; that is the provider-swap point of the whole module. Then run `hard.jsonl` through both.
+### Lab steps 3-4: second client, hard set through both models
 
 ```typescript
 const big: Target = { client: new AzureOpenAI({ endpoint, apiKey: key, apiVersion: "2024-10-21", deployment }), model: deployment };
@@ -71,17 +53,9 @@ const small = await classify(smallTarget, review.text);
 const bigLabel = await classify(big, review.text);
 ```
 
-Run:
+Check: 7/10 for `phi3` on the hard set, 10/10 for `gpt-4.1`, 8/10 for the `llama3.2` stand-in.
 
-```bash
-npm run starter
-```
-
-Check: Two columns of labels for the hard set. Recorded: 7/10 for `phi3`, 10/10 for `gpt-4.1` on Azure, and 8/10 for the `llama3.2` stand-in. The frontier model earns its price on this slice; the local stand-in would have told you the gap is one review wide.
-
-### Step 4: Print the Disagreement List and Call Each One (lab step 5, the success check)
-
-Every review where the two models differ, with the reference label and a verdict on who was right. This list is the actual deliverable of the feature: it is what tells you which slice of your traffic needs the expensive model.
+### Lab step 5: disagreement list
 
 ```typescript
 for (const d of results.filter((r) => r.small !== r.big)) {
@@ -90,4 +64,4 @@ for (const d of results.filter((r) => r.small !== r.big)) {
 }
 ```
 
-Check: Your version of the two tables in `../expected-output.md`: accuracy per set per model, and the disagreements with your call on each. Stretch: change the label to `{overall, aspects: {comfort, durability, price}}` with structured output and see which model can go deeper.
+Check: your version of the two tables in `../expected-output.md`. Stretch: change the label to `{overall, aspects: {comfort, durability, price}}` with structured output.

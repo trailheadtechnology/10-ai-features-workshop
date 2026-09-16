@@ -1,6 +1,6 @@
 # What Passing Looks Like
 
-Wording varies run to run; the checks below are what has to be true. These samples came from actual `llama3.2` runs of `http/ollama.http`.
+Wording varies run to run; the checks below are what has to be true. These samples came from actual `llama3.2` runs of the lab's three prompts.
 
 ## Request 1: Naive Prompt on tr-0001 (The Failure You're Supposed to Get)
 

@@ -14,7 +14,7 @@ The craft is all in the instruction, because "summarize this" produces a book re
 
 ## The Lab
 
-The hands-on lab is [F01-lab.md](F01-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `http/`, `dotnet/`, `python/`, and `typescript/`. It is the Recommended lab for its module: start here unless you have a reason not to.
+The hands-on lab is [F01-lab.md](F01-lab.md): the goal, the steps, the success checks, and the stretch goal, with a walkthrough for each track in `dotnet/`, `python/`, and `typescript/`. It is the Recommended lab for its module: start here unless you have a reason not to.
 
 ## Leadership Beat
 
