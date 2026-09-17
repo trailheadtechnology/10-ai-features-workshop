@@ -424,7 +424,7 @@ This program prints the routing table, not JSON. Where the Check below says `{"c
 
 Pick either. Neither is built in `complete/`. The reasoning is in [`expected-output.md`](../expected-output.md) under "Stretch Goal".
 
-- **Add a priority field.** Add `priority` to the result type next to `category`, with its own small set of allowed values. Print it in the routing table. Priority is a second axis. It says how fast, and category says where. Mixing the two is how a lost inhaler ends up in line behind a lost wedding ring. **Check:** `inq-0006` (lost daypack with a child's inhaler) stays `lost-and-found` with a high priority.
+- **Add a priority field.** Add `priority` to the result type next to `category`, with its own small set of allowed values. Add a line to the prompt that says what each priority value means (for example, high when someone's safety or health is at risk), or the model rates almost everything high. Print it in the routing table. Priority is a second axis. It says how fast, and category says where. Mixing the two is how a lost inhaler ends up in line behind a lost wedding ring. **Check:** `inq-0006` (lost daypack with a child's inhaler) stays `lost-and-found` with a high priority.
 
   Give priority its own enum, built like `Category`, and add it to the record. Both go at the bottom of the file:
 

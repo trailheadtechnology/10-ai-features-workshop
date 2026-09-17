@@ -59,6 +59,23 @@ uv run main.py
 1. Open `../../data/reports-0117.jsonl`: `id`, `trail_id`, `date`, `text` per line.
 2. Read line by line, parse each line, keep the results in a list in file order.
 
+   The starter already does this. `DATA` is the `data/` folder two levels above `main.py`. The `reports` line reads the whole file, splits it into lines, skips blank ones, and turns each line into a dict with `json.loads`, so `r["id"]` and `r["text"]` work:
+
+   ```python
+   DATA = Path(__file__).resolve().parents[2] / "data"
+   ```
+
+   ```python
+   reports = [json.loads(l) for l in (DATA / "reports-0117.jsonl").read_text().splitlines() if l.strip()]
+   ```
+
+   To see the Check for yourself, you can add a temporary line below it and delete it afterward:
+
+   ```python
+   # Hint: temporary, prints the count and the first report
+   print(len(reports), reports[0]["id"], reports[0]["date"])
+   ```
+
 **Why:** the file is the 40 reports for trail-0117, dated 2025-05-04 to 2026-07-22, copied out of the workshop's 500-report stream in feature 10's data. Eight of the 40 are the planted washout: five from 2026-06-18 to 2026-06-24 (`cr-0429`, `cr-0431`, `cr-0436`, `cr-0438`, `cr-0443`) and three July follow-ups (`cr-0464`, `cr-0480`, `cr-0496`). The other 32 are mud, ice, bugs, wildflowers, parking, and blowdown.
 
 **Check:** the list has 40 entries. The first `id` is `cr-0009`, dated 2025-05-04.
@@ -67,8 +84,34 @@ uv run main.py
 
 **Do:**
 1. Open `../../data/embeddings-0117.json`. Its `embeddings` field maps report `id` to an array of 768 numbers.
+
+   The starter already does this inside its `vectors` line (item 3): `json.loads((DATA / "embeddings-0117.json").read_text())["embeddings"]` reads the file and pulls out the `id`-to-numbers dict.
+
 2. Write `normalize(vector)`: find its length (square every component, sum, square root), then divide every component by that length.
+
+   The starter already does this, as a function near the top of `main.py` (`import math` is at the top of the file):
+
+   ```python
+   def normalize(vector: list[float]) -> list[float]:
+       length = math.sqrt(sum(v * v for v in vector))
+       return [v / length for v in vector]
+   ```
+
 3. Normalize every vector as you load it, storing results in a dictionary keyed by `id`.
+
+   The starter already does this with a dict comprehension: for each `k, v` pair in the `embeddings` dict, the key stays the report `id` and the value becomes `normalize(v)`:
+
+   ```python
+   vectors = {k: normalize(v) for k, v in json.loads((DATA / "embeddings-0117.json").read_text())["embeddings"].items()}
+   ```
+
+   To see the Check for yourself, add a temporary line below it (a unit vector's length prints as `1.0` or very close to it):
+
+   ```python
+   # Hint: temporary, prints the key count, the size, and the length of one vector
+   first = next(iter(vectors.values()))
+   print(len(vectors), len(first), math.sqrt(sum(v * v for v in first)))
+   ```
 
 **Why:** the vectors were captured once from local Ollama with `nomic-embed-text`, from `"classification: " + text`, stored raw and unnormalized.
 
@@ -78,8 +121,31 @@ uv run main.py
 
 **Do:**
 1. Make an array of 768 zeros. This is the centroid.
+
+   The starter already does this. `dimensions` is the length of any one vector (768), and `[0.0] * dimensions` is a list of that many zeros:
+
+   ```python
+   dimensions = len(next(iter(vectors.values())))
+   centroid = [0.0] * dimensions
+   ```
+
 2. Loop over the 40 normalized vectors; for each vector and position `i`, add `vector[i] / 40` to `centroid[i]`.
+
+   The starter already does this. `enumerate(vector)` gives each position `i` together with its number `v`, and `len(vectors)` is 40:
+
+   ```python
+   for vector in vectors.values():
+       for i, v in enumerate(vector):
+           centroid[i] += v / len(vectors)
+   ```
+
 3. Normalize the centroid with the same function from step 2.
+
+   The starter already does this:
+
+   ```python
+   centroid = normalize(centroid)
+   ```
 
 **Check:** one 768-dimension unit vector for trail-0117. If your step 4 distances are off in the third decimal from `expected-output.md`, you skipped one of the two normalizations.
 
@@ -87,9 +153,39 @@ uv run main.py
 
 **Do:**
 1. Write `cosine_distance(a, b)`: 1 minus the dot product (this only works because both vectors are unit length).
+
+   The starter already does this, as a function below `normalize`. `zip(a, b)` walks both lists side by side, so `x * y` multiplies matching positions:
+
+   ```python
+   def cosine_distance(a: list[float], b: list[float]) -> float:
+       return 1.0 - sum(x * y for x, y in zip(a, b))
+   ```
+
 2. For each report, look up its vector by `id` and compute its distance from the centroid.
 3. Sort by distance, largest first.
+
+   The starter already does items 2 and 3 in one line. The inner part builds a `(distance, report)` pair for every report, looking up `vectors[r["id"]]`, and `sorted` with `key=lambda x: -x[0]` puts the largest distance first:
+
+   ```python
+   scored = sorted(((cosine_distance(vectors[r["id"]], centroid), r) for r in reports), key=lambda x: -x[0])
+   ```
+
 4. Print one line per report: distance to four decimals, `id`, `date`, and `text` cut to 62 characters.
+
+   The starter already does this at the bottom of `main.py`. `{distance:.4f}` is four decimals, and each pair in `scored` unpacks into `distance, report`:
+
+   ```python
+   print("  dist    id       date        report")
+   for distance, report in scored:
+       print(f"  {distance:.4f}  {report['id']}  {report['date']}  {truncate(report['text'], 62)}")
+   ```
+
+   The cut is a function below `cosine_distance`:
+
+   ```python
+   def truncate(text: str, n: int) -> str:
+       return text if len(text) <= n else text[: n - 1] + "…"
+   ```
 
 **Check:** `cr-0496` is rank 1 at `0.2561` and `cr-0429` is rank 2 at `0.2399`. Routine reports are mixed in with the washout reports and there is no gap anywhere in the distances. Washout reports ranked in the 30s mean the prefix is missing.
 
@@ -100,15 +196,17 @@ uv run main.py
 2. Build a list of strings, one per report in list order: `"classification: "` followed by the report's `text`.
 3. Embed all 40 strings in **one call** with model `nomic-embed-text`. Ollama listens on `http://localhost:11434`.
 
-   The starter imports no AI package. The client is the `openai` package (already installed by `uv sync`) pointed at Ollama. Add the import and the client near the top of `main.py`:
+   The starter imports no AI package. The client is the `openai` package (already installed by `uv sync`) pointed at Ollama. Add the import below the starter's `from pathlib import Path` line, and the client directly above the `DATA = ...` line. `api_key` can be any text; Ollama ignores it, but the package refuses to start without one:
 
    ```python
    from openai import OpenAI
+   ```
 
+   ```python
    client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
    ```
 
-   Then replace the `vectors = {...}` line that reads `embeddings-0117.json` with one embedding call for all 40 strings:
+   Then replace the `vectors = {...}` line that reads `embeddings-0117.json` with these three lines. The `input=[...]` list comprehension builds the 40 prefixed strings from item 2, in report order, and `client.embeddings.create` sends them all in one request:
 
    ```python
    prefix = "classification: "
@@ -118,7 +216,18 @@ uv run main.py
 
 4. Normalize each returned vector and keep it at the same index as its report. Replace the `id`-keyed dictionary with a plain list in report order, so anything that indexed by `id` now indexes by position.
 
-   `response.data` comes back in input order, so `vectors[i]` belongs to `reports[i]`. `vectors` is now a list, not a dict keyed by `id`, and three starter lines change to match: `dimensions = len(vectors[0])`, the centroid loop becomes `for vector in vectors:`, and the scoring line looks up by position:
+   `response.data` comes back in input order, so `vectors[i]` belongs to `reports[i]`. `vectors` is now a list, not a dict keyed by `id`, so `vectors.values()` no longer works. Replace the starter's centroid lines, from `dimensions = ...` down to `centroid = normalize(centroid)`, with:
+
+   ```python
+   dimensions = len(vectors[0])
+   centroid = [0.0] * dimensions
+   for vector in vectors:
+       for k, v in enumerate(vector):
+           centroid[k] += v / len(vectors)
+   centroid = normalize(centroid)
+   ```
+
+   Then replace the starter's `scored = ...` line so it looks up by position. `zip(vectors, reports)` pairs the first vector with the first report, the second with the second, and so on:
 
    ```python
    scored = sorted(((cosine_distance(v, centroid), r) for v, r in zip(vectors, reports)), key=lambda x: -x[0])
@@ -140,19 +249,31 @@ uv run main.py
 3. Set `threshold = mean + sigma * sd`, `sigma` defaulting to 1.0 (`--sigma` in `complete/`).
 4. Print `mean distance <mean> · sd <sd> · threshold mean+1sd = <threshold>`, all to four decimals.
 
-   After `scored`, compute the mean and population standard deviation of the 40 distances and print them:
+   Put `sigma` near the top of `main.py`, directly below the `DATA = ...` line:
 
    ```python
    sigma = 1.0
+   ```
+
+   Directly below the `scored = ...` line, compute the mean and the population standard deviation of the 40 distances. Each item in `scored` is a `(distance, report)` pair, so `for d, _ in scored` takes the distance as `d` and ignores the report (`_`). `** 2` squares, and `math.sqrt` is the square root:
+
+   ```python
    mean = sum(d for d, _ in scored) / len(scored)
    deviation = math.sqrt(sum((d - mean) ** 2 for d, _ in scored) / len(scored))
    threshold = mean + sigma * deviation
+   ```
+
+   Print it between the starter's `print(f"trail-0117 · ...")` header line and its `print("  dist    id       date        report")` line, so it lands above the table. `{sigma:g}` prints `1.0` as `1`:
+
+   ```python
    print(f"mean distance {mean:.4f} · sd {deviation:.4f} · threshold mean+{sigma:g}sd = {threshold:.4f}\n")
    ```
 
+   The starter's header line ends in `\n`, so a blank line prints above this one. That is fine; only the numbers matter.
+
 5. In the table, put a `!` in place of the first leading space of every row above the threshold, so columns stay aligned.
 
-   Change the row print in the table loop:
+   Replace the `print(...)` line inside the starter's `for distance, report in scored:` loop (the last line of `main.py`) with this one, keeping its four-space indent. `' !' if distance > threshold else '  '` picks one of the two 2-character prefixes:
 
    ```python
        print(f"{' !' if distance > threshold else '  '}{distance:.4f}  {report['id']}  {report['date']}  {truncate(report['text'], 62)}")
@@ -164,45 +285,93 @@ uv run main.py
 
 **Do:**
 1. Take every report above the threshold and sort by `date`, oldest first.
+
+   Everything in this step goes at the very bottom of `main.py`, after the table loop, with no indent. The comprehension keeps only the `(distance, report)` pairs above the threshold, and `key=lambda x: x[1]["date"]` sorts them by the report's `date` (ISO text like `2026-06-18` sorts oldest first):
+
+   ```python
+   flagged = sorted(((d, r) for d, r in scored if d > threshold), key=lambda x: x[1]["date"])
+   ```
+
 2. Print `7 of 40 reports above threshold. Clustering them within 14 days:` (window defaults to 14 days, `--window` in `complete/`).
+
+   Put `window` near the top of `main.py`, below the `sigma = 1.0` line from step 6:
+
+   ```python
+   window = 14
+   ```
+
+   Then, below the `flagged = ...` line:
+
+   ```python
+   print(f"\n{len(flagged)} of {len(scored)} reports above threshold. Clustering them within {window} days:\n")
+   ```
+
 3. Walk the sorted list: start a group at position `i`, move `j` forward while the date at `j` minus the date at `j-1` is 14 days or less. The group is positions `i` up to but not including `j`. `date` is a string; parse it to a real date before subtracting (ISO strings sort correctly as text but do not subtract).
+
+   `date.fromisoformat` from the standard library turns the ISO string into a real date, and subtracting two of those gives a `timedelta` whose `.days` is the gap. Add the import at the top of `main.py`, below `import math`:
+
+   ```python
+   from datetime import date
+   ```
+
+   Then, below the print from item 2, start the counter and the outer loop. `flagged[j][1]["date"]` is the `date` of the report in pair `j` (`[0]` is the distance, `[1]` is the report), and `flagged[i:j]` is a new list of positions `i` up to but not including `j`:
+
+   ```python
+   alerts = 0
+   i = 0
+   while i < len(flagged):
+       j = i + 1
+       while j < len(flagged) and (date.fromisoformat(flagged[j][1]["date"]) - date.fromisoformat(flagged[j - 1][1]["date"])).days <= window:
+           j += 1
+       group = flagged[i:j]
+   ```
+
+   Items 4 to 6 go inside this `while i < len(flagged):` loop, indented four spaces like `group = ...`.
+
 4. If the group holds 2+ reports, print `ALERT trail-0117: <count> anomalous reports between <first date> and <last date>`, then one line per report (`id`, `date`, text cut to 70 characters).
+
+   `complete/` names the trail in a variable so the last stretch goal can change it. Put it near the top of `main.py`, directly below the `DATA = ...` line:
+
+   ```python
+   trail = "0117"
+   ```
+
+   Then, below `group = flagged[i:j]`, at the same indent. `group[0]` is the first pair and `group[-1]` the last, and `for _, r in group` takes each report and ignores its distance:
+
+   ```python
+       if len(group) >= 2:
+           alerts += 1
+           print(f"  ALERT trail-{trail}: {len(group)} anomalous reports between {group[0][1]['date']} and {group[-1][1]['date']}")
+           for _, r in group:
+               print(f"        {r['id']} {r['date']}  {truncate(r['text'], 70)}")
+   ```
+
 5. If the group holds 1 report, print `(ignored) <id> <date> is a lone outlier, not an event`.
+
+   Directly below the `if` block, lined up with the `if`:
+
+   ```python
+       else:
+           print(f"  (ignored) {group[0][1]['id']} {group[0][1]['date']} is a lone outlier, not an event")
+   ```
+
 6. Set `i = j` and repeat until the list is used up.
+
+   Last line inside the `while i < len(flagged):` loop, lined up with the `if` and `else`. Without it the loop never ends:
+
+   ```python
+       i = j
+   ```
+
 7. Print `<N> alert(s). Model calls: 40 embeddings, 0 chat completions.`
 
-`date.fromisoformat` from the standard library turns the ISO string into a real date, and subtracting two of those gives a `timedelta` whose `.days` is the gap. Add the import at the top:
+   After the loop, with no indent, as the last line of `main.py`:
 
-```python
-from datetime import date
-```
+   ```python
+   print(f"\n{alerts} alert(s). Model calls: {len(reports)} embeddings, 0 chat completions.")
+   ```
 
-Then, after the table, the alert rule. `complete/` prints `trail-{trail}` because it takes `--trail`; hard-coding `trail-0117` in the starter is fine.
-
-```python
-window = 14
-flagged = sorted(((d, r) for d, r in scored if d > threshold), key=lambda x: x[1]["date"])
-print(f"\n{len(flagged)} of {len(scored)} reports above threshold. Clustering them within {window} days:\n")
-
-alerts = 0
-i = 0
-while i < len(flagged):
-    j = i + 1
-    while j < len(flagged) and (date.fromisoformat(flagged[j][1]["date"]) - date.fromisoformat(flagged[j - 1][1]["date"])).days <= window:
-        j += 1
-    group = flagged[i:j]
-    if len(group) >= 2:
-        alerts += 1
-        print(f"  ALERT trail-0117: {len(group)} anomalous reports between {group[0][1]['date']} and {group[-1][1]['date']}")
-        for _, r in group:
-            print(f"        {r['id']} {r['date']}  {truncate(r['text'], 70)}")
-    else:
-        print(f"  (ignored) {group[0][1]['id']} {group[0][1]['date']} is a lone outlier, not an event")
-    i = j
-print(f"\n{alerts} alert(s). Model calls: {len(reports)} embeddings, 0 chat completions.")
-```
-
-Run:
+Put together, the bottom of `main.py` is the `flagged` line, the item 2 print, then the loop, with the final print below it. Run:
 
 ```bash
 uv run main.py
@@ -225,10 +394,49 @@ Pick any. Each one is already built in `complete/`, and [`expected-output.md`](.
   ```
 
   **Check:** bare, `cr-0429` drops to rank 11, the threshold moves to `0.2789`, and two alerts fire, one on October 2025 mud and one on May 2026 glacier lilies. Not one washout report is flagged. Nothing throws and the table still looks reasonable. Put the prefix back and `cr-0429` returns to rank 2 with three washout reports in the top 5.
+
+  Change the one `prefix` line you added in step 5. Nothing else changes, because every input is built as `prefix + r["text"]`:
+
+  ```python
+  # Hint: the step 5 line, with an empty string instead of "classification: "
+  prefix = ""
+  ```
+
 - **Tune the threshold.** Run with `sigma` at 1.5 (`--sigma 1.5`). **Check:** 4 reports are flagged instead of 7. Neither setting is correct. The value is a business choice about how much review you can afford.
+
+  Change the `sigma` line you added in step 6:
+
+  ```python
+  # Hint: the step 6 line, with a new value
+  sigma = <new sigma>
+  ```
+
 - **Build the baseline before the anomalies arrived.** Build the centroid in step 3 from only the 32 reports dated before 2026-06-18, then score all 40 against it. **Why:** eight of the 40 reports are about the bridge; in the main path they pull the centroid toward themselves and partly hide. **Check:** all eight washout reports (`cr-0429`, `cr-0431`, `cr-0436`, `cr-0438`, `cr-0443`, `cr-0464`, `cr-0480`, `cr-0496`) land in the top 10.
+
+  Only the centroid loop changes. First pick out the vectors whose report is older than the cutoff (`zip(vectors, reports)` pairs each vector with its report), then average only those. Put it in place of the `for vector in vectors:` loop from step 5, keep `centroid = normalize(centroid)` after it, and leave the `scored = ...` line alone so all 40 are still scored. `date` is the import you added in step 7:
+
+  ```python
+  # Hint: filter with zip, then divide by the smaller count
+  baseline = [v for v, r in zip(vectors, reports) if date.fromisoformat(r["date"]) < date.fromisoformat("<cutoff date>")]
+  for vector in baseline:
+      for k, v in enumerate(vector):
+          centroid[k] += v / len(baseline)
+  ```
+
 - **Run the other trail.** Point step 1 at `../../data/reports-0042.jsonl` (`--trail 0042` in `complete/`): the 25 `trail-0042` lines from feature 10's stream, dated 2025-05-04 to 2026-07-07. The planted event is bear activity, four reports from 2026-06-25 to 2026-07-02 (`cr-0446`, `cr-0449`, `cr-0453`, `cr-0455`). There are no precomputed vectors for this trail, so this goal needs Ollama. **Check:** `cr-0446` is rank 1 at `0.3067` with a visible gap to second place, the threshold is `0.2292`, and one alert fires on `cr-0446` and `cr-0449`, 2026-06-25 to 2026-06-27.
-  Change the `trail-0117` labels to `trail-0042` too.
+
+  Set `trail = "0042"` (the line you added in step 7) and build the file name from it. This replaces the starter's `reports = ...` line:
+
+  ```python
+  reports = [json.loads(l) for l in (DATA / f"reports-{trail}.jsonl").read_text().splitlines() if l.strip()]
+  ```
+
+  The step 7 ALERT line already uses `trail`. The starter's header line still says `trail-0117`; put `trail` into it too:
+
+  ```python
+  # Hint: same idea as the ALERT line in step 7
+  print(f"trail-{trail} · {len(reports)} reports · <rest of the header>")
+  ```
 
 ## What Is in This Folder
 

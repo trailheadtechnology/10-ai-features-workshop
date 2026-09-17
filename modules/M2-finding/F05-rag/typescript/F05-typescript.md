@@ -317,7 +317,7 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
 
   **Check:** the top 3 do not change, the rank-1 margin grows from 0.1630 to 0.2321, Acadia disappears from ranks 4 through 8, and ranks 4-6 become Glacier documents that name Sperry Chalet. Then try the rephrasings listed in `expected-output.md`.
 - **Repair a bad citation.** When step 5 finds an invalid id, send the prompt again with an extra line that lists the 3 legal ids and asks for a rewrite. If the second answer is still wrong, replace the bad id with `invalid-citation-removed`. One exception: when the answer is the refusal sentence with a citation attached, just delete the citation and skip the retry. **Check:** no invalid id ever reaches the printed answer, and the refusal string comes back word for word.
-- **Point generation at the cloud.** Build the chat client from `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` when they're set, falling back to `llama3.2` when they're not. The endpoint is `https://trailhead-ai-workshop.openai.azure.com`, the deployment is the name the feature uses, and the key is handed out in the room. Retrieval stays local either way.
+- **Point generation at the cloud.** Do the keyword-score stretch goal first: the Check below assumes the blended ranking. Build the chat client from `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` when they're set, falling back to `llama3.2` when they're not. The endpoint is `https://trailhead-ai-workshop.openai.azure.com`, the deployment is the name the feature uses, and the key is handed out in the room. Retrieval stays local either way.
 
   No extra package: `AzureOpenAI` ships in the same `openai` package the starter imports, and it exposes the same `chat.completions.create` call, so `generate()` does not change. Only the client and model name it uses do. Retrieval keeps using `ollama`. This replaces the `chatClient` and `chatModel` declarations from step 4, and the import replaces the starter's `import OpenAI from "openai";`:
 
@@ -338,7 +338,7 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
   }
   ```
 
-  With the three variables exported, the first line printed names the deployment.
+  With the three variables exported, a `[generation: ...]` line printed before the answer names the deployment.
 
   Then ask a question whose answer is spread across three chunks from two documents:
 

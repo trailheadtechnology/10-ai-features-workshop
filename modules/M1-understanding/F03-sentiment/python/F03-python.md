@@ -50,11 +50,40 @@ it mentions. Reply with only the label.
 Review: Absolutely love it when the mesh blew out at the pinky toe inside two weeks the second day of a trip. Five-star experience, truly, if the stars are measuring my personal growth through adversity. Rating it what it deserves.
 ```
 
+The starter already does this. It picks the id from the command line (or `gr-0007`), reads both data files into one list of dicts, finds the matching review, prints it, and classifies it:
+
+```python
+wanted = sys.argv[1] if len(sys.argv) > 1 else "gr-0007"
+reviews = [json.loads(line) for name in ("easy.jsonl", "hard.jsonl") for line in (DATA / name).read_text().splitlines() if line.strip()]
+review = next(r for r in reviews if r["id"] == wanted)
+
+print(f"{review['product']} ({review['rating']} stars), reviewed by {review['reviewer']}")
+print(review["text"])
+print()
+```
+
+```python
+print(f"phi3 says: {classify(client, 'phi3', review['text'])}")
+```
+
+`sys.argv[1]` is the first word after `main.py` on the command line. Each line of a `.jsonl` file is one JSON object, and `json.loads` turns it into a dict, so `review["text"]` is the review text. Run it from the `starter/` folder:
+
 ```bash
 uv run main.py
 ```
 
 **Why:** the four line breaks matter; every later step sends this same prompt and only changes the text after `Review: `.
+
+The prompt lives inside the starter's `classify` function. The starter already does this; the `f` before the triple quotes makes `{text}` the place where the review goes:
+
+```python
+    prompt = f"""Classify this gear review as exactly one word: positive, negative, or mixed.
+Positive means the reviewer is happy with the product, negative means unhappy,
+mixed means genuinely both. Judge the review text only; ignore any star rating
+it mentions. Reply with only the label.
+
+Review: {text}"""
+```
 
 **Check:** `phi3 says: negative`. The review has two stars and says "five-star experience, truly". That is sarcasm, and the small model gets it right. Pass a different id (`gr-0034`, for instance) to classify a different review.
 
@@ -66,11 +95,39 @@ uv run main.py gr-0034
 
 **Do:**
 1. Open `../../data/easy.jsonl` (relative to `starter/`; the starter already has a constant pointing at that `data/` folder, so reuse it): 10 reviews where text and stars agree, one JSON object per line (`id`, `product`, `rating`, `reviewer`, `text`).
+
+   The starter already does this. `DATA` is a `Path`, and `/` joins folder and file names, so `DATA / "easy.jsonl"` is the easy file:
+
+   ```python
+   DATA = Path(__file__).resolve().parents[2] / "data"
+   ```
+
 2. Read it one line at a time, skip blanks, parse each line into a list.
+
+   The starter's `reviews = ...` line already does this for both files at once. For the easy file alone, put this below the `DATA = ...` line. It is a list comprehension: `json.loads(line)` for every line that is not blank:
+
+   ```python
+   # Hint: one dict per non-blank line of the easy file
+   easy = [json.loads(line) for line in (DATA / "easy.jsonl").read_text().splitlines() if line.strip()]
+   ```
+
+   `complete/` skips the list: its loop in step 2 reads the file line by line directly, so you can delete `easy` once the check below passes.
+
 3. Open `../../data/reference-labels.json`: one object keyed by review `id`, each value a `set` (`easy`/`hard`), a `label`, and on hard cases a `rationale`.
 4. Parse it into a dictionary keyed by `id`. You only need `label` in code.
 
-`DATA` already points at `../../data/`.
+`DATA` already points at `../../data/`. Put this below your `easy = ...` line (it is the same in `complete/main.py`). `json.loads` turns the whole file into a dict of dicts, so `labels["gr-0002"]["label"]` gives you one label:
+
+```python
+labels = json.loads((DATA / "reference-labels.json").read_text())
+```
+
+To see the check below, print the counts once and then delete the line:
+
+```python
+# Hint: print what you loaded
+print(len(easy), easy[0]["id"], len(labels), labels["gr-0002"]["label"])
+```
 
 **Why:** `gr-0004`'s label changed from `positive` to `mixed`. `gpt-4.1` called it `mixed` on every soak-test run, and a reread agreed that a two-star review which praises the product is split. `expected-output.md` tells that story.
 
@@ -80,12 +137,33 @@ uv run main.py gr-0034
 
 **Do:**
 1. Keep the starter's classify function as-is: one review text in, one prompt out, `phi3`, temperature 0.
+
+   The starter already does this. `client` and `model` are passed in, and `temperature=0` is set on every call:
+
+   ```python
+   def classify(client: OpenAI, model: str, text: str) -> str:
+   ```
+
+   ```python
+       response = client.chat.completions.create(model=model, messages=[{"role": "user", "content": prompt}], temperature=0)
+   ```
+
 2. The starter already does this: lowercase the reply, look for `positive`/`negative`/`mixed`, keep whichever shows up first (or the trimmed reply if none do).
+
+   The starter already does this, at the end of `classify`. `found` is a list of `(position, label)` pairs for the labels that appear in the reply, and `min` picks the pair with the smallest position:
+
+   ```python
+       raw = (response.choices[0].message.content or "").lower()
+       # Small models sometimes wrap the label in a sentence; keep the first label mentioned.
+       found = [(raw.index(l), l) for l in ("positive", "negative", "mixed") if l in raw]
+       return min(found)[1] if found else raw.strip()
+   ```
+
 3. Loop over the easy list, classify each review's `text`, look up the reference label by `id`.
 4. Print one row per review: `id`, reference label, `phi3` label.
 5. Count matches; print `phi3 N/10`.
 
-`client` is the starter's Ollama client. Replace the starter's single-review block (everything after `classify`) with steps 1 and 2 together:
+`client` is the starter's Ollama client. Delete the starter's single-review lines (from `wanted = ...` down to the first `print()`, and the last line, `print(f"phi3 says: ...")`) and your step 1 lines (`easy = ...`, `labels = ...`, and the print). Keep `classify`, and put this at the bottom of the file, below it, so the function exists before the loop calls it. It covers steps 1 and 2 together. `:<9` pads a value to 9 characters so the columns line up, and `correct += label == reference` adds 1 when they match (`True` counts as 1):
 
 ```python
 labels = json.loads((DATA / "reference-labels.json").read_text())
@@ -113,9 +191,19 @@ print(f"phi3 {correct}/{total}")
 
    The endpoint is `https://trailhead-ai-workshop.openai.azure.com`, the deployment is `gpt-4.1`, and the key is handed out in the room.
 
+   Set them in the terminal you run `uv run` from (they last until you close it; skip this to use the `llama3.2` fallback):
+
+   ```bash
+   export AZURE_OPENAI_ENDPOINT=https://trailhead-ai-workshop.openai.azure.com
+   export AZURE_OPENAI_KEY=<KEY FROM INSTRUCTOR>
+   export AZURE_OPENAI_DEPLOYMENT=gpt-4.1
+   ```
+
+   In Python, `os.environ.get("NAME")` reads one of them and returns `None` when it is not set. The code under item 2 does the reading.
+
 2. Build a second chat client from those three variables, falling back to `llama3.2` when any is missing; name it `azure:<deployment>` or `llama3.2` for printing.
 
-   The starter imports only `OpenAI`. The Azure client is a second class in the same `openai` package (already in the root `pyproject.toml`, nothing to install), so change the import and add `os` and `dataclass`:
+   The starter imports only `OpenAI`. The Azure client is a second class in the same `openai` package (already in the root `pyproject.toml`, nothing to install), so change the import and add `os` and `dataclass`. At the top of `main.py`, put `import os` below `import json`, put `from dataclasses import dataclass` below `import sys`, and replace `from openai import OpenAI` with the last line:
 
    ```python
    import os
@@ -124,7 +212,7 @@ print(f"phi3 {correct}/{total}")
    from openai import AzureOpenAI, OpenAI
    ```
 
-   Rename the starter's `client` to `ollama`, then build the second client from the three env vars. `AzureOpenAI` takes `azure_endpoint`, `api_key`, and `api_version` (a REST API date, not a model version); the deployment name is what you pass as `model` on each call, which is why the pair below carries it. This also covers item 3:
+   Rename the starter's `client` to `ollama`, then build the second client from the three env vars. The block below replaces the starter's `client = OpenAI(...)` line, so your step 2 call `classify(client, "phi3", review["text"])` no longer works; item 5 replaces it. `small` and `big` are each a pair (a tuple) of client and model name. `AzureOpenAI` takes `azure_endpoint`, `api_key`, and `api_version` (a REST API date, not a model version); the deployment name is what you pass as `model` on each call, which is why the pair below carries it. This also covers item 3:
 
    ```python
    ollama = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
@@ -150,7 +238,7 @@ print(f"phi3 {correct}/{total}")
 5. In the step 2 loop, classify each review with both `phi3` and the big model; store a record with the review, set name, reference label, small label, big label.
 6. Add a fourth column for the big model's label; append `  <- disagree` when the two differ.
 
-   Add a record type and grow the step 2 loop to a four-column table:
+   Add a record type below `classify` and above the loop. `@dataclass` writes the constructor for you, so `Result(review, "easy", reference, s, b)` fills the five fields in order and `r.small` reads one back:
 
    ```python
    @dataclass
@@ -160,10 +248,18 @@ print(f"phi3 {correct}/{total}")
        reference: str
        small: str
        big: str
+   ```
 
+   Then grow the step 2 loop to a four-column table. Replace the step 2 `correct = total = 0` line with these two lines:
+
+   ```python
    results: list[Result] = []
    print(f"{'id':<9} {'reference':<10} {'phi3':<10} {big_name:<10}")
-   # inside the loop, in place of the single classify call and print:
+   ```
+
+   Inside the loop, replace the four lines from `label = classify(...)` down to `correct += label == reference` with the five lines below (indented 4 spaces, like `reference = ...`). Delete the `print(f"phi3 {correct}/{total}")` line after the loop; step 4 brings scoring back:
+
+   ```python
    s = classify(*small, review["text"])
    b = classify(*big, review["text"])
    results.append(Result(review, "easy", reference, s, b))
@@ -182,16 +278,27 @@ print(f"phi3 {correct}/{total}")
 2. After both tables, loop over the two set names again; count matches for small and big labels against the reference.
 3. Print one line per set: name, `phi3 N/10`, big model's name with `N/10`.
 
-Use `name` instead of the literal `"easy"` in the `Result`:
+Use `name` instead of the literal `"easy"` in the `Result`. Replace everything from `results: list[Result] = []` to the end of the file with the block below: `results` moves above the outer loop, your step 3 loop moves inside it (one indent deeper), and `f"{name}.jsonl"` picks the file per set. The accuracy loop goes right after it. `[r for r in results if r.set == name]` keeps only that set's records, and `sum(1 for ...)` counts the ones that match:
 
 ```python
+# Hint: your step 3 loop, one indent deeper inside a loop over the set names
 sets = ["easy", "hard"]
+
+results: list[Result] = []
 
 for name in sets:
     print(f"── {name} set ──")
     print(f"{'id':<9} {'reference':<10} {'phi3':<10} {big_name:<10}")
     for line in (DATA / f"{name}.jsonl").read_text().splitlines():
-        ...
+        if not line.strip():
+            continue
+        review = json.loads(line)
+        reference = labels[review["id"]]["label"]
+        s = classify(*small, review["text"])
+        b = classify(*big, review["text"])
+        results.append(Result(review, name, reference, s, b))
+        flag = "  <- disagree" if s != b else ""
+        print(f"{review['id']:<9} {reference:<10} {s:<10} {b:<10}{flag}")
     print()
 
 print("── accuracy vs. reference labels ──")
@@ -214,6 +321,8 @@ print()
 4. Print one line per disagreement: `id`, set in brackets, `ref=`, `phi3=`, big model `=`, verdict in parens; then on its own indented line the review text in quotes, cut to 100 characters with `...` if longer.
 5. If empty, print `(none this run)`.
 
+Put these lines at the very end of the file, below the accuracy loop's final `print()`. The `verdict` line is a chained conditional expression: it reads left to right like an if / elif / else. `text[:100]` is the first 100 characters:
+
 ```python
 disagreements = [r for r in results if r.small != r.big]
 print(f"── disagreements ({len(disagreements)} of {len(results)}) ──")
@@ -233,8 +342,54 @@ if not disagreements:
 Pick any. The first two are already built in `complete/`.
 
 - **Add `--easy` and `--hard` flags.** If `--easy` is present, run only the easy set; if `--hard`, only the hard set; otherwise both. **Check:** `--hard` prints one table, one accuracy line, and a disagreement count out of 10 instead of 20.
-- **Reflow the prompt onto one line and measure the damage.** Replace the four line breaks with spaces, rerun both sets on both models, then put the line breaks back. **Check:** recorded `phi3` drops from 9/10 to 7/10 easy and 7/10 to 4/10 hard, every miss `mixed`. `llama3.2` scores the same either way. The small model is the one that cares about prompt shape.
-- **Aspect-based sentiment.** Ask for `{"overall": ..., "aspects": {"comfort": ..., "durability": ..., "price": ...}}` instead of one word; add a `format` schema for it. **Check:** parseable JSON every time, aspects left `null` when the review never mentions them. A `price` sentiment on a review that never mentions price is the failure to look for.
+
+  Replace your step 4 `sets = ["easy", "hard"]` line with the line from `complete/main.py`. `"--easy" in sys.argv` is `True` when that word was passed:
+
+  ```python
+  sets = ["easy"] if "--easy" in sys.argv else ["hard"] if "--hard" in sys.argv else ["easy", "hard"]
+  ```
+
+  ```bash
+  uv run main.py --hard
+  ```
+
+- **Reflow the prompt onto one line and measure the damage.** Replace the four line breaks with spaces, rerun both sets on both models, then put the line breaks back. **Check:** `phi3` drops from 9/10 to 7/10 easy and from 7/10 to somewhere between 4/10 and 6/10 hard (4/10 in the recorded run, 6/10 in two later runs), every miss `mixed`. `llama3.2` scores the same either way. The small model is the one that cares about prompt shape.
+
+  The change is inside `classify`. Join the four instruction lines into one (spaces where the line breaks were) and leave the blank line and the `Review:` line alone:
+
+  ```python
+  # Hint: same words, one line; fill in the middle sentences
+      prompt = f"""Classify this gear review as exactly one word: positive, negative, or mixed. Positive means ... Reply with only the label.
+
+  Review: {text}"""
+  ```
+
+- **Aspect-based sentiment.** Ask for `{"overall": ..., "aspects": {"comfort": ..., "durability": ..., "price": ...}}` instead of one word, and tell the model to reply with that JSON and nothing else. Parse the reply, and catch the parse error so one bad reply doesn't stop the run. **Check:** most replies parse, with aspects left `null` when the review never mentions them. `phi3` sometimes adds a sentence after the JSON; that is the parse error you catch, and it is why production code uses a structured-output schema like step 1 of feature 02. A `price` sentiment on a review that never mentions price is the failure to look for.
+
+  `complete/` does not build this one. Write a second function below `classify` with a prompt that asks for that JSON. `complete/main.py` makes no `format` or `response_format` call, so this hint parses the reply text with `json.loads` instead. In an f-string, `{{` and `}}` print a literal `{` and `}`, so only `{text}` is filled in. JSON `null` becomes Python `None`:
+
+  ```python
+  # Hint: a second classify that returns a dict parsed from the reply
+  def classify_aspects(client: OpenAI, model: str, text: str) -> dict:
+      prompt = f"""Classify this gear review. Reply with only JSON shaped like
+  {{"overall": "positive|negative|mixed", "aspects": {{"comfort": ..., "durability": ..., "price": ...}}}}
+  Use null for any aspect the review never mentions.
+
+  Review: {text}"""
+      response = client.chat.completions.create(model=model, messages=[{"role": "user", "content": prompt}], temperature=0)
+      return json.loads(response.choices[0].message.content or "")
+  ```
+
+  If `json.loads` raises `json.JSONDecodeError`, the reply was not pure JSON: a small model that adds a sentence or a second object after the JSON is the "parseable JSON every time" check failing. `phi3` does this on some reviews, so catch the error and print the reply instead of letting it stop the run (`e.doc` is the text `json.loads` was given, and `repr` keeps its line breaks on one line):
+
+  ```python
+  # Hint: call it inside your loop, after the two classify calls (indent to match them)
+  try:
+      parsed = classify_aspects(*small, review["text"])
+      print(review["id"], parsed["overall"], "price =", parsed["aspects"]["price"])
+  except json.JSONDecodeError as e:
+      print(review["id"], "not JSON:", repr(e.doc[:80]))
+  ```
 
 ## What Is in This Folder
 

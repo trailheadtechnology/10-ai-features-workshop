@@ -535,7 +535,7 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
           answer = answer.Replace(c, "invalid-citation-removed");
   }
   ```
-- **Point generation at the cloud.** Build the chat client from `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` when they're set, falling back to `llama3.2` when they're not. The endpoint is `https://trailhead-ai-workshop.openai.azure.com`, the deployment is the name the feature uses, and the key is handed out in the room. Retrieval stays local either way.
+- **Point generation at the cloud.** Do the keyword-score stretch goal first: the Check below assumes the blended ranking. Build the chat client from `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` when they're set, falling back to `llama3.2` when they're not. The endpoint is `https://trailhead-ai-workshop.openai.azure.com`, the deployment is the name the feature uses, and the key is handed out in the room. Retrieval stays local either way.
 
   `starter/Rag.csproj` references only `Microsoft.Extensions.AI` and `OllamaSharp`. Add the two packages `complete/Rag.csproj` carries, inside the existing `<ItemGroup>` next to the other `PackageReference` lines:
 
@@ -576,7 +576,7 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
   export AZURE_OPENAI_DEPLOYMENT=<the deployment name>
   ```
 
-  With the three variables exported, the first line printed names the deployment.
+  With the three variables exported, a `[generation: ...]` line printed before the answer names the deployment.
 
   Then ask a question whose answer is spread across three chunks from two documents:
 

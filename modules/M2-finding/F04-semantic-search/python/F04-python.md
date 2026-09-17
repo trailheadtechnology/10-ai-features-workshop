@@ -53,6 +53,12 @@ uv run main.py
 uv run main.py somewhere quiet to take my kids
 ```
 
+The starter already does the word splitting with this line in `starter/main.py`. `re.findall` pulls out runs of letters, `if len(w) >= 3` keeps words of three letters or more, and `dict.fromkeys` drops repeats while keeping their order. The `for t in trails:` loop right below it counts the hits.
+
+```python
+tokens = list(dict.fromkeys(w for w in re.findall(r"[a-z]+", query.lower()) if len(w) >= 3))
+```
+
 **Check:** the first query puts `trail-0007` Upper Yosemite Falls Trail first, a hard 7.2-mile climb that matched on `waterfall` and `too`. The second query returns exactly one trail, `trail-0004` Ocean Path, because its description happens to contain the word `kids`. Both are in [`expected-output.md`](../expected-output.md)'s keyword blocks. The rest of the lab replaces that scoring with embeddings.
 
 ### Step 1: Load the trails
@@ -61,56 +67,111 @@ uv run main.py somewhere quiet to take my kids
 1. Open `../../data/trails-slice.json` (that path is relative to your track's `starter/` folder): one JSON array of 30 objects, each with `id`, `name`, `park`, `distance_mi`, `elevation_ft`, `difficulty`, `features` (array of strings), and `description` (a three- or four-sentence blurb).
 2. Parse it into a list of trail objects (the starter already does this, so keep that code).
 
-The starter already does this: `trails = json.loads((DATA / "trails-slice.json").read_text())`, with `DATA` resolved from the script's own location to `../../data/`. Keep both lines.
+   `Path(__file__).resolve().parents[2]` is the folder two levels above the one `main.py` sits in, so `DATA` points at `../../data/` no matter which folder you run from. `json.loads` turns the file's text into a Python list of dictionaries, one per trail. The starter already does this, near the top of `main.py`. Keep both lines:
+
+   ```python
+   DATA = Path(__file__).resolve().parents[2] / "data"
+   ```
+
+   ```python
+   trails = json.loads((DATA / "trails-slice.json").read_text())
+   ```
 
 **Why:** the 30 were hand-picked from feature 10's 200-trail catalog to make keyword matching fail on purpose: four dog-friendly waterfall trails whose descriptions never say so in those words (`trail-0011`, `trail-0027`, `trail-0055`, `trail-0068`), plus three keyword traps. `trail-0074` Easy Creek Trail is a hard 2,610-foot climb named after homesteader Elias Easy, `trail-0187` Dog Lake Trail prohibits pets, and `trail-0058` Panorama Cliffs Bypass contains the word "steep" while describing how it avoids the steep sections.
 
 **Check:** the list has 30 entries. The first `id` is `trail-0003`, Trail of the Cedars.
 
-`len(trails)` is 30 and `trails[0]["id"]` is `trail-0003`.
+`len(trails)` is 30 and `trails[0]["id"]` is `trail-0003`. To see it, put a temporary line right below the `trails = ...` line:
+
+```python
+# Hint: print the count and the first id, then delete this line
+print(f"{len(trails)} trails, first is {trails[0]['id']}")
+```
 
 ### Step 2: Embed the 30 descriptions once and cache the vectors
 
 **Do:**
 1. Collect the 30 `description` strings, in list order.
+
+   First, in `starter/main.py`, comment out the keyword scoring: every line from `tokens = ...` down to the last `print(...)` at the bottom of the file. Select those lines and press Cmd+/ (Ctrl+/ on Windows) in VS Code, or put `#` in front of each. If you plan to try the keyword-blend stretch goal, comment it out rather than deleting it, because that goal reuses it. Keep the docstring, the imports (including `import re`), `DATA`, `query`, and `trails`. All the new code in this lab goes at the bottom of the file, below the commented-out lines, unless an item says otherwise.
+
+   You do not need a separate loop to collect the strings. This list comprehension, used in item 2, builds the list of descriptions in list order:
+
+   ```python
+   [t["description"] for t in trails]
+   ```
+
 2. Embed all 30 in **one call** to `nomic-embed-text` (a single batch, not a loop). The response holds one 768-float vector per input, in the order sent.
+
+   The client is the `openai` package's `OpenAI` class pointed at Ollama's OpenAI-compatible endpoint. The `openai` package is the one dependency in the repo root `pyproject.toml`, so there is nothing to install, and Ollama ignores the `api_key`, which just has to be non-empty. Add the import at the top of `main.py`, below `from pathlib import Path`:
+
+   ```python
+   from openai import OpenAI
+   ```
+
+   Create the client and name the model right below the imports, above the `DATA = ...` line:
+
+   ```python
+   client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
+   EMBED_MODEL = "nomic-embed-text"
+   ```
+
+   `client.embeddings.create` takes the whole list as `input` in one call and returns one item per input in `response.data`, in the order sent. This helper keeps just the vectors. Put it at the bottom of the file; a function has to be defined above the code that calls it:
+
+   ```python
+   def embed(texts: list[str]) -> list[list[float]]:
+       response = client.embeddings.create(model=EMBED_MODEL, input=texts)
+       return [d.embedding for d in response.data]
+   ```
+
+   Then call it once with all 30 descriptions, below the function (item 4 moves this line inside an `else:`):
+
+   ```python
+   embeddings = embed([t["description"] for t in trails])
+   ```
+
 3. Walk the list and the response together and store each vector in a dictionary keyed by that trail's `id`. Store each vector as a plain array of floats, not the client's own vector type, so it serializes and indexes without surprises.
-4. Write the dictionary to `embeddings.json` next to the built program. That is the file to delete when you want to re-embed. At program start, load it and skip the embed call if it exists. Wrap the embed call in a timer and print how many vectors were embedded and how many milliseconds it took, or how many were loaded from the cache.
 
-Replace the keyword scoring (everything from the `tokens = ...` line down) with an embedding client. If you plan to try the keyword-blend stretch goal, comment the keyword code out instead of deleting it, because that goal reuses it. The client is the `openai` package's `OpenAI` class pointed at Ollama's OpenAI-compatible endpoint; the `openai` package is the one dependency in the repo root `pyproject.toml`, so nothing else installs. `client.embeddings.create` takes the whole list as `input` in one call and returns one item per input, in the order sent. Each `d.embedding` is already a plain Python list of 768 floats, so it goes straight into `json.dumps`. The cache lives next to the script (`starter/embeddings.json`), and `time.perf_counter()` times the live call.
+   `zip(trails, embeddings)` pairs each trail with its vector: `t` is the trail, `e` is its vector. The `{key: value for ...}` form is a dictionary comprehension, which builds the dictionary in one line. Each `d.embedding` is already a plain Python list of 768 floats, so nothing needs converting. Put this directly under the `embeddings = ...` line:
 
-```python
-import math
-import time
+   ```python
+   vectors = {t["id"]: e for t, e in zip(trails, embeddings)}
+   ```
 
-from openai import OpenAI
+4. Write the dictionary to `embeddings.json` (your track's block below says which folder it lands in). That is the file to delete when you want to re-embed. At program start, load it and skip the embed call if it exists. Wrap the embed call in a timer and print how many vectors were embedded and how many milliseconds it took, or how many were loaded from the cache.
 
-client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
-EMBED_MODEL = "nomic-embed-text"
+   `Path(__file__).with_name("embeddings.json")` is a file next to `main.py`, so the cache lands at `starter/embeddings.json`. `time.perf_counter()` returns a clock reading in seconds; subtract two readings and multiply by 1000 for milliseconds. Add the import at the top of `main.py`, with the other `import` lines:
 
+   ```python
+   import time
+   ```
 
-def embed(texts: list[str]) -> list[list[float]]:
-    response = client.embeddings.create(model=EMBED_MODEL, input=texts)
-    return [d.embedding for d in response.data]
+   Replace your `embeddings = ...` and `vectors = ...` lines (keep the `def embed` function above them) with this block. The `else:` branch holds those same two lines, now indented four spaces, with the timer around them and the file write after. `json.dumps` turns the dictionary into text and `json.loads` turns it back:
 
-
-cache_path = Path(__file__).with_name("embeddings.json")
-if cache_path.exists():
-    vectors = json.loads(cache_path.read_text())
-    print(f"Loaded {len(vectors)} cached vectors from embeddings.json")
-else:
-    started = time.perf_counter()
-    embeddings = embed([t["description"] for t in trails])
-    vectors = {t["id"]: e for t, e in zip(trails, embeddings)}
-    cache_path.write_text(json.dumps(vectors))
-    print(f"Embedded {len(vectors)} trail descriptions in {(time.perf_counter() - started) * 1000:.0f} ms")
-```
+   ```python
+   cache_path = Path(__file__).with_name("embeddings.json")
+   if cache_path.exists():
+       vectors = json.loads(cache_path.read_text())
+       print(f"Loaded {len(vectors)} cached vectors from embeddings.json")
+   else:
+       started = time.perf_counter()
+       embeddings = embed([t["description"] for t in trails])
+       vectors = {t["id"]: e for t, e in zip(trails, embeddings)}
+       cache_path.write_text(json.dumps(vectors))
+       print(f"Embedded {len(vectors)} trail descriptions in {(time.perf_counter() - started) * 1000:.0f} ms")
+   ```
 
 **Why:** `embeddings.json` is a cache your program creates, not a shipped data file. It is gitignored so the first run always embeds live. It is keyed only by `id`, so delete it whenever a description or the model changes, or every later query ranks against vectors for text that no longer exists.
 
-**Check:** 30 keys, each holding 768 floats. The first run embeds in under two seconds; the second run prints that it loaded 30 cached vectors. Fewer than 30 vectors, or one not 768 long, means the batch did not go through.
+**Check:** 30 keys, each holding 768 floats. The first run takes a few seconds while the model embeds; the second run is instant and prints that it loaded 30 cached vectors. Fewer than 30 vectors, or one not 768 long, means the batch did not go through.
 
-`len(vectors)` is 30 and `len(vectors["trail-0003"])` is 768. Print one and look at it: it is just numbers. The first run prints `Embedded 30 trail descriptions in ... ms`; the second run prints `Loaded 30 cached vectors from embeddings.json`. Delete `starter/embeddings.json` if the text or the model changes.
+`len(vectors)` is 30 and `len(vectors["trail-0003"])` is 768. Print one and look at it: it is just numbers. The first run prints `Embedded 30 trail descriptions in ... ms`; the second run prints `Loaded 30 cached vectors from embeddings.json`. Delete `starter/embeddings.json` if the text or the model changes. A temporary check, placed below the `else:` block (not indented):
+
+```python
+# Hint: count, length, and the first few numbers of one vector
+print(f"{len(vectors)} vectors, {len(vectors['trail-0003'])} floats each")
+print(vectors["trail-0003"][:8])
+```
 
 ### Step 3: Embed query 1, write cosine similarity, print the top 5
 
@@ -121,29 +182,61 @@ else:
    dog-friendly waterfall hike, not too steep
    ```
 
+   The starter already does this, near the top of `main.py`. `sys.argv[1:]` holds the words typed after `uv run main.py`; when there are none, the joined string is empty and `or` falls back to the default:
+
+   ```python
+   query = " ".join(sys.argv[1:]) or "dog-friendly waterfall hike, not too steep"
+   ```
+
 2. Embed the query as a single string, through the same client and same model. Keep the one vector that comes back.
+
+   The query goes through the same `embed` function. `embed` takes a list and returns a list, so pass `[query]` (a one-item list) and take `[0]` to keep the one vector. Put this at the bottom of the file, below the cache `if`/`else:` block:
+
+   ```python
+   query_vector = embed([query])[0]
+   ```
+
 3. Write `cosine_similarity(a, b)`: loop `i` 0 to 767, accumulate `dot += a[i]*b[i]`, `magA += a[i]*a[i]`, `magB += b[i]*b[i]`, then return `dot / (sqrt(magA) * sqrt(magB))`.
+
+   The version below is the index loop above written the Python way, and the loop works too. `zip(a, b)` walks both lists side by side, `sum(x * y for ...)` adds up the products, and `math.sqrt` is the square root. Add the import at the top of `main.py`, with the other `import` lines:
+
+   ```python
+   import math
+   ```
+
+   Put the function at the bottom of the file, below the `query_vector = ...` line:
+
+   ```python
+   def cosine_similarity(a: list[float], b: list[float]) -> float:
+       dot = sum(x * y for x, y in zip(a, b))
+       return dot / (math.sqrt(sum(x * x for x in a)) * math.sqrt(sum(y * y for y in b)))
+   ```
+
 4. For every trail, compute the cosine between the query vector and that trail's stored vector.
+
+   This generator expression makes one `(score, trail)` pair per trail. It is not a statement on its own; item 5 wraps it in `sorted(...)`:
+
+   ```python
+   (cosine_similarity(query_vector, vectors[t["id"]]), t) for t in trails
+   ```
+
 5. Sort by score, highest first, and keep the top 5.
+
+   `sorted` returns a new sorted list. `key=lambda r: -r[0]` sorts each pair by its score (`r[0]`), and the minus sign puts the highest first. `[:5]` keeps the first 5. Put this below the `def cosine_similarity` function, with item 4's piece inside the double parentheses:
+
+   ```python
+   results = sorted(((cosine_similarity(query_vector, vectors[t["id"]]), t) for t in trails), key=lambda r: -r[0])[:5]
+   ```
+
 6. Print each of the 5 on one line: score to four decimals, `id`, `name`, `difficulty`, `distance_mi`, and the `features` list. The semantic blocks in [`expected-output.md`](../expected-output.md) show the layout.
 
-The query goes through the same `embed` function. `embed` returns a list, so take `[0]` to keep the one vector. The `zip` and `sum` version of cosine similarity below is the index loop above written the Python way, and the loop works too.
+   `for score, trail in results:` unpacks each pair into two variables. `{score:.4f}` formats the score to four decimals, and `', '.join(...)` turns the features list into one string. Put this at the bottom of the file, below the `results = ...` line:
 
-```python
-query_vector = embed([query])[0]
-
-
-def cosine_similarity(a: list[float], b: list[float]) -> float:
-    dot = sum(x * y for x, y in zip(a, b))
-    return dot / (math.sqrt(sum(x * x for x in a)) * math.sqrt(sum(y * y for y in b)))
-
-
-results = sorted(((cosine_similarity(query_vector, vectors[t["id"]]), t) for t in trails), key=lambda r: -r[0])[:5]
-
-print(f'\nSemantic search: "{query}"\n')
-for score, trail in results:
-    print(f"{score:.4f}  {trail['id']}  {trail['name']} ({trail['difficulty']}, {trail['distance_mi']} mi)  [{', '.join(trail['features'])}]")
-```
+   ```python
+   print(f'\nSemantic search: "{query}"\n')
+   for score, trail in results:
+       print(f"{score:.4f}  {trail['id']}  {trail['name']} ({trail['difficulty']}, {trail['distance_mi']} mi)  [{', '.join(trail['features'])}]")
+   ```
 
 Run:
 
@@ -182,9 +275,37 @@ Pick either. Each uses information you already have, trail metadata or the keywo
 
 - **Filter before you rank.** Between step 3's item 3 and item 4, drop trails whose `difficulty` is `hard`. For query 1, also drop trails whose `features` list does not contain `dog-friendly`. Then rank whatever is left. **Check:** query 1 returns only dog-friendly trails; query 3 loses Beehive Loop (`trail-0017`) and Chimney Tops (`trail-0005`) from the top 5. Either still there means the filter ran after the top 5 was taken.
 
-  Filter `trails` before the `sorted(...)` line (`t["difficulty"] != "hard"`, and for query 1 `"dog-friendly" in t["features"]`).
+  Build a filtered list with a list comprehension, then rank that list instead of `trails`, so the filter runs before `[:5]`. The query 1 text is the default string on the `query = ...` line. Put the first two lines of the hint right above the step 3 `results = ...` line, and replace that line with the third (the only change is `for t in candidates` in place of `for t in trails`):
 
-- **Blend in the keyword score.** Keep the keyword-hit count from step 0 (the keyword code you commented out in step 2) alongside the cosine score, rescale both to 0..1, and rank on a weighted sum of the two. Print both scores on each row. **Check:** every row shows a cosine score and a keyword score. A trail that appears only because of its keyword count, such as Easy Creek Trail (`trail-0074`) on query 3, means the keyword weight is too high. Feature 05 measures the same blend on a bigger corpus.
+  ```python
+  # Hint: filter first, then score and rank what is left
+  is_query1 = query == "<query 1 text>"
+  candidates = [t for t in trails if t["difficulty"] != "<difficulty to drop>" and (not is_query1 or "<required feature>" in t["features"])]
+  results = sorted(((cosine_similarity(query_vector, vectors[t["id"]]), t) for t in candidates), key=lambda r: -r[0])[:5]
+  ```
+
+- **Blend in the keyword score.** Keep the keyword-hit count from step 0 (the keyword code you commented out in step 2) alongside the cosine score. Rescale both to 0..1 with min-max: subtract the lowest score, then divide by the gap between the highest and lowest. Rank on a weighted sum whose two weights add up to 1, and print both scores on each row. Run query 3 at 0.7 cosine and 0.3 keyword first, then raise the cosine weight. **Check:** every row shows a cosine score and a keyword score. At 0.7 cosine, Easy Creek Trail (`trail-0074`) enters query 3's top 5 on its keyword count alone, which means the keyword weight is too high. Measured on this slice, it stays out once the cosine weight reaches about 0.92. On 30 trails the keywords mostly add noise; Feature 05 measures the same blend on a bigger corpus, where they help.
+
+  Uncomment the `tokens = ...` line from step 0 (it needs `import re`, which the starter already has). Leave the rest of the keyword code commented out. Then replace the step 3 `results = ...` line and the printing lines below it with the hint. It counts hits per trail with the same `re.search` test the starter used, min-max rescales both scores, sorts on the weighted sum, and prints both scores. The two weights are numbers you pick that add up to 1:
+
+  ```python
+  # Hint: two scores per trail, each min-max rescaled to 0..1, ranked on a weighted sum
+  scored = []
+  for t in trails:
+      haystack = f"{t['name']} {t['description']}".lower()
+      hits = len([w for w in tokens if re.search(rf"\b{w}\b", haystack)])
+      scored.append((cosine_similarity(query_vector, vectors[t["id"]]), hits, t))
+
+  def rescale(x, lo, hi):
+      return 0.0 if hi == lo else (x - lo) / (hi - lo)
+
+  cos_lo, cos_hi = min(r[0] for r in scored), max(r[0] for r in scored)
+  hit_lo, hit_hi = min(r[1] for r in scored), max(r[1] for r in scored)
+  results = sorted(scored, key=lambda r: -(<cosine weight> * rescale(r[0], cos_lo, cos_hi) + <keyword weight> * rescale(r[1], hit_lo, hit_hi)))[:5]
+  print(f'\nBlended search: "{query}"\n')
+  for cosine, hits, trail in results:
+      print(f"{cosine:.4f} cos  {rescale(hits, hit_lo, hit_hi):.2f} kw  {trail['id']}  {trail['name']}")
+  ```
 
 ## What Is in This Folder
 

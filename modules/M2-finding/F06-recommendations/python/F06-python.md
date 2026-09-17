@@ -50,7 +50,38 @@ uv run main.py
 **Do:**
 1. Open `../../data/trails.json`: 30 objects with `id`, `name`, `park`, `distance_mi`, `elevation_ft`, `difficulty`, `features` (array of strings), and `description`.
 2. Parse the file into a list of trail objects (the starter already does this).
+
+   The starter already does this, near the top of `starter/main.py`. `json.loads` turns the file's text into a Python list, and each trail in it is a dict, so you read a field with `t["name"]`, not `t.name`:
+
+   ```python
+   DATA = Path(__file__).resolve().parents[2] / "data"
+   trails = json.loads((DATA / "trails.json").read_text())
+   ```
+
+   For the Check, put two temporary prints right below the `trails` line and delete them once the numbers match:
+
+   ```python
+   # Hint: two throwaway prints
+   print(len(trails))       # how many trails
+   print(trails[0]["id"])   # id of the first one
+   ```
+
 3. Keep the target lookup the starter already has: take the command-line argument as the query, default to `trail-0117`, pick the first trail whose `id` equals the query or whose `name` contains it (case-insensitive).
+
+   The starter already does this, right below the `trails` line. `sys.argv[1:]` holds the words after `uv run main.py`, and `next(...)` returns the first trail that matches, or `None`:
+
+   ```python
+   query = " ".join(sys.argv[1:]) or "trail-0117"
+   target = next((t for t in trails if t["id"].lower() == query.lower() or query.lower() in t["name"].lower()), None)
+   if target is None:
+       raise SystemExit(f"No trail matches '{query}'.")
+   ```
+
+   The Check's line comes from this `print`, a few lines further down:
+
+   ```python
+   print(f"You liked: {target['name']} ({target['park']})")
+   ```
 
 The starter already does all three. `DATA` resolves to `../../data` from `starter/`, `trails` is the parsed list of 30, and `target` is the id-or-name lookup with `trail-0117` as the default. Nothing to change.
 
@@ -62,43 +93,84 @@ The starter already does all three. `DATA` resolves to `../../data` from `starte
 
 **Do:**
 1. Build a dictionary from each trail's `id` to its `description`. The description is the only text you embed.
+
+   A dict comprehension builds a dictionary in one expression: `{key: value for item in list}`. You pass it straight to the helper in item 4, so there is nothing to keep yet. To see what it makes, try it as a throwaway print right below the `trails` line:
+
+   ```python
+   # Hint: one throwaway print, delete it after
+   print({t["id"]: t["description"] for t in trails}["trail-0117"])
+   ```
+
 2. Embed all 30 descriptions in **one batch**, in id order. The embedding client and call are the same as feature 04.
+
+   Option A, embed live (option B, loading the precomputed file instead, is at the end of item 4). The client is the `openai` package pointed at Ollama. Add this import below `from pathlib import Path`, with a blank line between them:
+
+   ```python
+   from openai import OpenAI
+   ```
+
+   Then add these lines right below the `DATA = ...` line. Keep `import random` for now, because the random loop uses it until step 4:
+
+   ```python
+   client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
+   EMBED_MODEL = "nomic-embed-text"
+   HERE = Path(__file__).resolve().parent
+   ```
+
+   The call sends a list of strings in one request and gets back one result per string, in the same order. `[texts[k] for k in keys]` turns the list of ids into the list of their descriptions. This line lives inside the helper in item 4, so do not type it on its own:
+
+   ```python
+   response = client.embeddings.create(model=EMBED_MODEL, input=[texts[k] for k in keys])
+   ```
+
 3. Store each returned vector in a dictionary keyed by trail `id`.
+
+   `response.data` is a list with one entry per input, and each entry's `.embedding` is that text's list of floats. `zip` walks the ids and the results side by side, pairing the first id with the first vector. This line also lives inside the helper in item 4:
+
+   ```python
+   vectors = {k: d.embedding for k, d in zip(keys, response.data)}
+   ```
+
 4. Write the dictionary to `embeddings.json` next to your program. At startup, check for that file and skip the call if it exists and has a key for every trail id. Shape it as a plain id-to-float-array dictionary so the same load code reads either your cache or `../../data/trail-embeddings.json`.
 
-Option A, embed live. The client is the `openai` package pointed at Ollama, and the helper checks for `embeddings.json` next to `main.py` before calling the model, then writes it after. Add the imports at the top (`random` can go), the helper above the trail loading, and the last line right after `trails` is loaded:
+   Here is the whole helper. If `embeddings.json` exists and holds every id, it returns what is in the file. Otherwise it makes the call from item 2, builds the dictionary from item 3, and writes it to the file with `json.dumps`. Put it below the `HERE = ...` line and above `trails = ...`, with a blank line on each side (a function has to be defined above the line that calls it):
 
-```python
-from openai import OpenAI
+   ```python
+   def embed_with_cache(cache_name: str, texts: dict[str, str]) -> dict[str, list[float]]:
+       cache_path = HERE / cache_name
+       if cache_path.exists():
+           cached = json.loads(cache_path.read_text())
+           if all(k in cached for k in texts):
+               return cached
+       keys = list(texts)
+       response = client.embeddings.create(model=EMBED_MODEL, input=[texts[k] for k in keys])
+       vectors = {k: d.embedding for k, d in zip(keys, response.data)}
+       cache_path.write_text(json.dumps(vectors))
+       return vectors
+   ```
 
-client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
-EMBED_MODEL = "nomic-embed-text"
-HERE = Path(__file__).resolve().parent
+   Then add this line right after `trails = ...`. It builds item 1's dictionary and passes it in:
 
+   ```python
+   vectors = embed_with_cache("embeddings.json", {t["id"]: t["description"] for t in trails})
+   ```
 
-def embed_with_cache(cache_name: str, texts: dict[str, str]) -> dict[str, list[float]]:
-    cache_path = HERE / cache_name
-    if cache_path.exists():
-        cached = json.loads(cache_path.read_text())
-        if all(k in cached for k in texts):
-            return cached
-    keys = list(texts)
-    response = client.embeddings.create(model=EMBED_MODEL, input=[texts[k] for k in keys])
-    vectors = {k: d.embedding for k, d in zip(keys, response.data)}
-    cache_path.write_text(json.dumps(vectors))
-    return vectors
+   `HERE` is the folder `main.py` sits in, so `embeddings.json` lands in `starter/`. Delete it to re-embed.
 
+   Option B, precomputed. Same dictionary shape, no model call. Use this one line instead of all of option A (no import, client, or helper), right after `trails = ...`:
 
-vectors = embed_with_cache("embeddings.json", {t["id"]: t["description"] for t in trails})
-```
+   ```python
+   vectors = json.loads((DATA / "trail-embeddings.json").read_text())
+   ```
 
-Option B, precomputed. Same dictionary shape, no model call:
+   For the Check, put temporary prints right after the `vectors` line, fill in `trail-0117`, and delete them once the numbers match. Then run a second time: the helper returns from the file without calling Ollama, so the run is instant and `ls -l embeddings.json` shows the same time as after the first run:
 
-```python
-vectors = json.loads((DATA / "trail-embeddings.json").read_text())
-```
-
-With option A, `embeddings.json` now sits in `starter/`.
+   ```python
+   # Hint: three throwaway prints
+   print(len(vectors))                 # how many keys
+   print(len(vectors["trail-XXXX"]))   # numbers per vector
+   print(vectors["trail-XXXX"][:3])    # first three numbers
+   ```
 
 **Why:** shortcut if you'd rather not call the model: load `../../data/trail-embeddings.json` instead. It is the same dictionary, already computed with the same model, and the run that `expected-output.md`'s scores come from.
 
@@ -109,7 +181,13 @@ With option A, `embeddings.json` now sits in `starter/`.
 **Do:**
 1. Bring in cosine similarity from feature 04: `dot(a, b) / (length(a) * length(b))`.
 
-   Add `import math` at the top and the function above the trail loading:
+   Add this import at the top, next to `import json`:
+
+   ```python
+   import math
+   ```
+
+   Then add the function below `embed_with_cache` (or below the `DATA = ...` line if you used option B) and above `trails = ...`, with a blank line on each side. `zip(a, b)` pairs position 0 of `a` with position 0 of `b`, and so on, and `sum(...)` adds up the products:
 
    ```python
    def cosine(a: list[float], b: list[float]) -> float:
@@ -118,6 +196,8 @@ With option A, `embeddings.json` now sits in `starter/`.
    ```
 
 2. Compute the cosine between the vectors for `trail-0117` and `trail-0086`, then between `trail-0117` and `trail-0041`. Print both.
+
+   Put the two prints right after the `vectors = ...` line. `:.4f` prints four decimals:
 
    ```python
    print(f"{cosine(vectors['trail-0117'], vectors['trail-0086']):.4f}")
@@ -132,17 +212,50 @@ With option A, `embeddings.json` now sits in `starter/`.
 
 **Do:**
 1. Take the target trail's vector.
-2. Loop over every trail except the target, computing the cosine between the target's vector and each.
-3. Sort by score, highest first. Keep the top 5.
-4. Replace the random loop's output with one line per hit: score to four decimals, then `name (park, difficulty; features joined with commas)`. `expected-output.md` shows the id instead of the features; the scores and order are what to match, not the exact line shape.
 
-   Replace the `random.sample` loop with this, and drop "(picked at random, which is the current feature)" from the line above it:
+   `target` is a dict, so its id is `target["id"]` and its vector is `vectors[target["id"]]`. That expression goes straight into item 2's code, so there is no line to add yet.
+
+2. Loop over every trail except the target, computing the cosine between the target's vector and each.
+
+   Python can build a list in one line: `[value for t in trails if condition]`. Here each value is a `(score, trail)` pair, and the `if` skips the target. Try it as a throwaway print right below the `raise SystemExit(...)` line (after `target` is found, since the print uses it), then delete it:
+
+   ```python
+   # Hint: 30 trails minus the target
+   print(len([(cosine(vectors[target["id"]], vectors[t["id"]]), t) for t in trails if t["id"] != target["id"]]))  # should print 29
+   ```
+
+3. Sort by score, highest first. Keep the top 5.
+
+   `sorted(...)` takes those same pairs (written with round brackets instead of square ones, which works the same inside a call). `key=lambda h: -h[0]` tells it to sort each pair `h` by its score `h[0]`, and the minus sign puts the highest score first. `[:5]` keeps the first five. Delete these lines from the starter:
+
+   ```python
+   others = [t for t in trails if t["id"] != target["id"]]
+   for t in random.sample(others, 5):
+       print(f"  {t['name']} ({t['park']}, {t['difficulty']})")
+   ```
+
+   and put this line in their place, at the bottom of the file:
 
    ```python
    hits = sorted(((cosine(vectors[target["id"]], vectors[t["id"]]), t) for t in trails if t["id"] != target["id"]), key=lambda h: -h[0])[:5]
+   ```
+
+4. Replace the random loop's output with one line per hit: score to four decimals, then `name (park, difficulty; features joined with commas)`. `expected-output.md` shows the id instead of the features; the scores and order are what to match, not the exact line shape.
+
+   Add the loop below the `hits` line. Each item in `hits` is a `(score, trail)` pair, so `for score, trail in hits` unpacks both. `', '.join(...)` glues the features list into one string:
+
+   ```python
    for score, trail in hits:
        print(f"  {score:.4f}  {trail['name']} ({trail['park']}, {trail['difficulty']}; {', '.join(trail['features'])})")
    ```
+
+   Then change the heading line above it to drop "(picked at random, which is the current feature)", so it reads:
+
+   ```python
+   print("You might also like:\n")
+   ```
+
+   Nothing uses `random` any more, so delete `import random` from the top. Then run:
 
    ```bash
    uv run main.py
@@ -181,8 +294,75 @@ Pick any of these. The gear one is already built in `complete/`. The other two a
   uv run main.py --gear Cascade 65
   ```
 
+  To build it yourself (with option A from step 2, since the helper does the embedding), add this import at the top, below `import sys`:
+
+  ```python
+  from collections import defaultdict
+  ```
+
+  `defaultdict(list)` is a dictionary that starts every new key with an empty list, so you can `.append` to a product without checking whether it is there yet. Start a function below `cosine` and above `trails = ...`. JSON Lines means one JSON object per line, so split the file into lines and `json.loads` each one (the `if` skips blank lines). The last line joins each product's reviews with newlines into one string, the same product-to-text dictionary shape `embed_with_cache` takes:
+
+  ```python
+  def recommend_gear(query: str) -> None:
+      review_text: dict[str, list[str]] = defaultdict(list)
+      for line in (DATA / "gear-reviews.jsonl").read_text().splitlines():
+          if line.strip():
+              r = json.loads(line)
+              review_text[r["product"]].append(r["text"])
+      texts = {product: "\n".join(reviews) for product, reviews in review_text.items()}
+
+      vectors = embed_with_cache("gear-embeddings.json", texts)
+  ```
+
+  Still inside the function, find the product whose name contains the query, the same `next(...)` lookup the starter uses for trails:
+
+  ```python
+      target = next((p for p in texts if query.lower() in p.lower()), None)
+      if target is None:
+          raise SystemExit(f"No product matches '{query}'.")
+  ```
+
+  Finish the function with the ranking. `vectors.items()` gives `(product, vector)` pairs. The pairs start with the score, so `reverse=True` sorts highest first without a `key`:
+
+  ```python
+      print(f"You bought: {target}")
+      print("Goes well with:\n")
+      hits = sorted(((cosine(vectors[target], v), p) for p, v in vectors.items() if p != target), reverse=True)[:5]
+      for score, product in hits:
+          print(f"  {score:.4f}  {product}")
+  ```
+
+  Finally, check for the flag right above `trails = ...` (below the functions), so a gear run stops before the trail code. `raise SystemExit` ends the program:
+
+  ```python
+  args = sys.argv[1:]
+  if args and args[0] == "--gear":
+      recommend_gear(" ".join(args[1:]))
+      raise SystemExit
+  ```
+
 - **Average two trails.** Add the vectors for `trail-0117` and `trail-0003` position by position, divide each position by 2, rank every other trail against that average, and leave both source trails out. **Check:** Carlon Falls (`trail-0068`) is #1 at `0.7947` and every score is higher than before. That rise is a property of averaging vectors, not a better result.
+
+  Replace step 4's `hits` line with this. There is no averaging function to call; the list comprehension builds a new list one position at a time, and `zip` pairs position 0 of `a` with position 0 of `b`:
+
+  ```python
+  # Hint: average two vectors, then rank against the average
+  a = vectors["trail-AAAA"]
+  b = vectors["trail-BBBB"]
+  average = [(x + y) / 2 for x, y in zip(a, b)]
+  hits = sorted(((cosine(average, vectors[t["id"]]), t) for t in trails if t["id"] not in ("trail-AAAA", "trail-BBBB")), key=lambda h: -h[0])[:5]
+  ```
+
+  Put step 4's line back when you are done.
+
 - **Filter by difficulty.** Run `trail-0117` again, this time dropping every trail whose `difficulty` is not `easy` or `moderate` before you sort. **Check:** Alum Cave (`trail-0010`) is #1 at `0.7642` and Fern Lake (`trail-0196`) is #2 at `0.7508`. The filter removes what a family cannot do; it cannot invent good results, because this slice has almost no easy lake hikes.
+
+  Add a second condition to the `if` inside step 4's `hits` line, joined with `and`. `difficulty` holds lowercase strings (`easy`, `moderate`, `hard`), and `in (...)` checks for either value:
+
+  ```python
+  # Hint: step 4's hits line with one extra condition
+  hits = sorted(((cosine(vectors[target["id"]], vectors[t["id"]]), t) for t in trails if t["id"] != target["id"] and t["difficulty"] in ("VALUE1", "VALUE2")), key=lambda h: -h[0])[:5]
+  ```
 
 ## What Is in This Folder
 

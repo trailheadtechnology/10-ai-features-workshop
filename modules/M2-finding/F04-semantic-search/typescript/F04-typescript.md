@@ -76,7 +76,7 @@ The starter already does this: `const trails: Trail[] = JSON.parse(readFileSync(
 1. Collect the 30 `description` strings, in list order.
 2. Embed all 30 in **one call** to `nomic-embed-text` (a single batch, not a loop). The response holds one 768-float vector per input, in the order sent.
 3. Walk the list and the response together and store each vector in a dictionary keyed by that trail's `id`. Store each vector as a plain array of floats, not the client's own vector type, so it serializes and indexes without surprises.
-4. Write the dictionary to `embeddings.json` next to the built program. That is the file to delete when you want to re-embed. At program start, load it and skip the embed call if it exists. Wrap the embed call in a timer and print how many vectors were embedded and how many milliseconds it took, or how many were loaded from the cache.
+4. Write the dictionary to `embeddings.json` (your track's block below says which folder it lands in). That is the file to delete when you want to re-embed. At program start, load it and skip the embed call if it exists. Wrap the embed call in a timer and print how many vectors were embedded and how many milliseconds it took, or how many were loaded from the cache.
 
 Replace the keyword scoring (everything from the `const tokens = ...` line down) with an embedding client. If you plan to try the keyword-blend stretch goal, comment the keyword code out instead of deleting it, because that goal reuses it. The client is the `openai` package's default export pointed at Ollama's OpenAI-compatible endpoint; `openai` is already in this folder's `package.json`. `client.embeddings.create` takes the whole array as `input` in one call and returns one item per input, in the order sent. Each `d.embedding` is already a plain `number[]` of 768 floats, so it goes straight into `JSON.stringify`. Top-level `await` works because `package.json` sets `"type": "module"` and `tsx` runs the file directly. The cache lives next to the script (`starter/embeddings.json`), and `performance.now()` times the live call.
 
@@ -108,7 +108,7 @@ if (existsSync(cachePath)) {
 
 **Why:** `embeddings.json` is a cache your program creates, not a shipped data file. It is gitignored so the first run always embeds live. It is keyed only by `id`, so delete it whenever a description or the model changes, or every later query ranks against vectors for text that no longer exists.
 
-**Check:** 30 keys, each holding 768 floats. The first run embeds in under two seconds; the second run prints that it loaded 30 cached vectors. Fewer than 30 vectors, or one not 768 long, means the batch did not go through.
+**Check:** 30 keys, each holding 768 floats. The first run takes a few seconds while the model embeds; the second run is instant and prints that it loaded 30 cached vectors. Fewer than 30 vectors, or one not 768 long, means the batch did not go through.
 
 `Object.keys(vectors).length` is 30 and `vectors["trail-0003"].length` is 768. Print one and look at it: it is just numbers. The first run prints `Embedded 30 trail descriptions in ... ms`; the second run prints `Loaded 30 cached vectors from embeddings.json`. Delete `starter/embeddings.json` if the text or the model changes.
 
@@ -192,7 +192,7 @@ Pick either. Each uses information you already have, trail metadata or the keywo
 
   Add a `.filter(...)` on `trails` before the `.map(...)` that scores them (`t.difficulty !== "hard"`, and for query 1 `t.features.includes("dog-friendly")`).
 
-- **Blend in the keyword score.** Keep the keyword-hit count from step 0 (the keyword code you commented out in step 2) alongside the cosine score, rescale both to 0..1, and rank on a weighted sum of the two. Print both scores on each row. **Check:** every row shows a cosine score and a keyword score. A trail that appears only because of its keyword count, such as Easy Creek Trail (`trail-0074`) on query 3, means the keyword weight is too high. Feature 05 measures the same blend on a bigger corpus.
+- **Blend in the keyword score.** Keep the keyword-hit count from step 0 (the keyword code you commented out in step 2) alongside the cosine score. Rescale both to 0..1 with min-max: subtract the lowest score, then divide by the gap between the highest and lowest. Rank on a weighted sum whose two weights add up to 1, and print both scores on each row. Run query 3 at 0.7 cosine and 0.3 keyword first, then raise the cosine weight. **Check:** every row shows a cosine score and a keyword score. At 0.7 cosine, Easy Creek Trail (`trail-0074`) enters query 3's top 5 on its keyword count alone, which means the keyword weight is too high. Measured on this slice, it stays out once the cosine weight reaches about 0.92. On 30 trails the keywords mostly add noise; Feature 05 measures the same blend on a bigger corpus, where they help.
 
 ## What Is in This Folder
 

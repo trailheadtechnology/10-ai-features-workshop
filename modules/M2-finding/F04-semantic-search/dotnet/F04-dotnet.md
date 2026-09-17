@@ -142,7 +142,7 @@ Console.WriteLine($"{trails.Count} trails, first is {trails[0].Id}");
        .ToDictionary(p => p.First.Id, p => p.Second.Vector.ToArray());
    ```
 
-4. Write the dictionary to `embeddings.json` next to the built program. That is the file to delete when you want to re-embed. At program start, load it and skip the embed call if it exists. Wrap the embed call in a timer and print how many vectors were embedded and how many milliseconds it took, or how many were loaded from the cache.
+4. Write the dictionary to `embeddings.json` (your track's block below says which folder it lands in). That is the file to delete when you want to re-embed. At program start, load it and skip the embed call if it exists. Wrap the embed call in a timer and print how many vectors were embedded and how many milliseconds it took, or how many were loaded from the cache.
 
    `AppContext.BaseDirectory` is the build output folder, so the cache lands at `bin/Debug/net10.0/embeddings.json`. Put the path and an empty `vectors` variable below the `var trails = ...` line, then load the file when it is there:
 
@@ -173,7 +173,7 @@ Console.WriteLine($"{trails.Count} trails, first is {trails[0].Id}");
 
 **Why:** `embeddings.json` is a cache your program creates, not a shipped data file. It is gitignored so the first run always embeds live. It is keyed only by `id`, so delete it whenever a description or the model changes, or every later query ranks against vectors for text that no longer exists.
 
-**Check:** 30 keys, each holding 768 floats. The first run embeds in under two seconds; the second run prints that it loaded 30 cached vectors. Fewer than 30 vectors, or one not 768 long, means the batch did not go through.
+**Check:** 30 keys, each holding 768 floats. The first run takes a few seconds while the model embeds; the second run is instant and prints that it loaded 30 cached vectors. Fewer than 30 vectors, or one not 768 long, means the batch did not go through.
 
 `vectors.Count` is 30 and `vectors["trail-0003"].Length` is 768. Print one vector and look at it: it is just numbers. The cache lands next to the binary (`bin/Debug/net10.0/embeddings.json`), not in the project folder; delete it there if the text or the model changes. A temporary check, placed after the `else { ... }` block:
 
@@ -305,20 +305,21 @@ Pick either. Each uses information you already have, trail metadata or the keywo
       .Select(t => (Trail: t, Score: CosineSimilarity(queryVector, vectors[t.Id])))
   ```
 
-- **Blend in the keyword score.** Keep the keyword-hit count from step 0 (the keyword code you commented out in step 2) alongside the cosine score, rescale both to 0..1, and rank on a weighted sum of the two. Print both scores on each row. **Check:** every row shows a cosine score and a keyword score. A trail that appears only because of its keyword count, such as Easy Creek Trail (`trail-0074`) on query 3, means the keyword weight is too high. Feature 05 measures the same blend on a bigger corpus.
+- **Blend in the keyword score.** Keep the keyword-hit count from step 0 (the keyword code you commented out in step 2) alongside the cosine score. Rescale both to 0..1 with min-max: subtract the lowest score, then divide by the gap between the highest and lowest. Rank on a weighted sum whose two weights add up to 1, and print both scores on each row. Run query 3 at 0.7 cosine and 0.3 keyword first, then raise the cosine weight. **Check:** every row shows a cosine score and a keyword score. At 0.7 cosine, Easy Creek Trail (`trail-0074`) enters query 3's top 5 on its keyword count alone, which means the keyword weight is too high. Measured on this slice, it stays out once the cosine weight reaches about 0.92. On 30 trails the keywords mostly add noise; Feature 05 measures the same blend on a bigger corpus, where they help.
 
-  Uncomment the `var tokens = ...` lines from step 0 (they need `using System.Text.RegularExpressions;`, which the starter already has), then cut them and paste them right below the `var queryVector = ...` line, because a variable must be declared above the code that uses it. Then, in place of the step 3 `results` statement, count hits per trail with the same `Regex.IsMatch` test the starter used, divide each score by its largest value so both land in 0..1, and sort on the weighted sum:
+  Uncomment the `var tokens = ...` lines from step 0 (they need `using System.Text.RegularExpressions;`, which the starter already has), then cut them and paste them right below the `var queryVector = ...` line, because a variable must be declared above the code that uses it. Then, in place of the step 3 `results` statement, count hits per trail with the same `Regex.IsMatch` test the starter used, min-max rescale both scores, and sort on the weighted sum. `Rescale` is a local function, so it can sit right above the line that uses it:
 
   ```csharp
-  // Hint: two scores per trail, each rescaled by its max, ranked on a weighted sum
+  // Hint: two scores per trail, each min-max rescaled to 0..1, ranked on a weighted sum
   var scored = trails.Select(t => (Trail: t,
       Cosine: CosineSimilarity(queryVector, vectors[t.Id]),
       Hits: tokens.Count(w => Regex.IsMatch($"{t.Name} {t.Description}".ToLowerInvariant(), $@"\b{w}\b")))).ToList();
-  var maxCosine = scored.Max(r => r.Cosine);
-  var maxHits = Math.Max(1, scored.Max(r => r.Hits));
+  double minCos = scored.Min(r => r.Cosine), maxCos = scored.Max(r => r.Cosine);
+  double minHits = scored.Min(r => r.Hits), maxHits = scored.Max(r => r.Hits);
+  double Rescale(double x, double lo, double hi) => hi == lo ? 0 : (x - lo) / (hi - lo);
   var results = scored
-      .Select(r => (r.Trail, r.Cosine, Keyword: (double)r.Hits / maxHits,
-          Blend: <cosine weight> * r.Cosine / maxCosine + <keyword weight> * r.Hits / maxHits))
+      .Select(r => (r.Trail, r.Cosine, Keyword: Rescale(r.Hits, minHits, maxHits),
+          Blend: <cosine weight> * Rescale(r.Cosine, minCos, maxCos) + <keyword weight> * Rescale(r.Hits, minHits, maxHits)))
       .OrderByDescending(r => r.Blend).Take(5);
   ```
 

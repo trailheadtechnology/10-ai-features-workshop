@@ -37,10 +37,29 @@ uv run main.py inq-0013    # (starter) one inquiry
 
 **Do:** run `starter/` as it is. It reads `inq-0005` from the slice, builds the taxonomy prompt, puts the message after `Message:`, and sends it to `llama3.2` as one user message. Then run it again with `inq-0035` as the argument, and again with `inq-0013`.
 
+From `starter/`:
+
 ```bash
 uv run main.py
 uv run main.py inq-0035
 uv run main.py inq-0013
+```
+
+The starter already does this. It picks the id from the command line (`sys.argv[1]`, or `inq-0005` when you give none), reads the slice, and keeps the line whose `id` matches:
+
+```python
+wanted = sys.argv[1] if len(sys.argv) > 1 else "inq-0005"
+inquiry = next(json.loads(l) for l in (DATA / "inquiries-slice.jsonl").read_text().splitlines() if l.strip() and json.loads(l)["id"] == wanted)
+```
+
+The starter already does this too. The prompt is one big `f"""` string that ends with the message text, and the call sends it as one user message and prints whatever text comes back:
+
+```python
+Message:
+{inquiry['text']}"""
+
+response = client.chat.completions.create(model="llama3.2", messages=[{"role": "user", "content": prompt}])
+print(f"{inquiry['id']}: {response.choices[0].message.content}")
 ```
 
 **Check:** one label per run, printed after the id. `inq-0013` says `emergency`. `inq-0035` usually says `conditions`, and some runs say `unsure`, `emergency`, or `complaint`: measured over 30 runs across the three tracks, 24 `conditions`, 4 `unsure`, 1 `emergency`, 1 `complaint`. That spread on one message is the problem. Nothing in the starter stops a run from printing a label that is not one of the seven names, such as `Emergency.` or a sentence, either. The rest of the lab closes both gaps.
@@ -49,14 +68,26 @@ uv run main.py inq-0013
 
 **Do:**
 1. Open `../../data/inquiries-slice.jsonl`. Every line is one JSON object with `id`, `channel`, `received`, `text`. Read it line by line, skip blanks, parse each line, keep the results in a list. The starter already resolves that `data/` folder into a constant; reuse it for both files.
+
+   The starter resolves the data folder as `DATA` (a `Path`), and `DATA / "inquiries-slice.jsonl"` is the file inside it. This one line reads the file, splits it into lines, skips blank ones (`if l.strip()`), and parses each with `json.loads`, giving a list of dictionaries. Put it right below the `DATA = ...` line. Leave the starter's `wanted`/`inquiry` lines in place for now; step 3 removes them.
+
+   ```python
+   inquiries = [json.loads(l) for l in (DATA / "inquiries-slice.jsonl").read_text().splitlines() if l.strip()]
+   ```
 2. Open `../../data/reference-labels.json` and parse it: an object with `routing` (category to queue name), `labels` (id to correct category), and `notes` (why `inq-0013`/`inq-0041` are emergencies and why `inq-0035` is `unsure`). Keep the `routing` and `labels` dictionaries.
 
-The starter resolves the data folder as `DATA`. Load the slice and the reference file through it; `reference["routing"]` and `reference["labels"]` are the two dictionaries.
+   Put this directly below the `inquiries` line. `reference["routing"]` and `reference["labels"]` are the two dictionaries; there is nothing else to unpack.
 
-```python
-inquiries = [json.loads(l) for l in (DATA / "inquiries-slice.jsonl").read_text().splitlines() if l.strip()]
-reference = json.loads((DATA / "reference-labels.json").read_text())
-```
+   ```python
+   reference = json.loads((DATA / "reference-labels.json").read_text())
+   ```
+
+   To see the Check numbers, print them once below the two load lines (delete the line afterward):
+
+   ```python
+   # Hint: a throwaway print for the Check
+   print(len(inquiries), inquiries[0]["id"], len(reference["routing"]), len(reference["labels"]))
+   ```
 
 **Why:** these 20 are drawn from the fictional Trailhead Guides 100-message inbox, chosen to mirror the inbox's mix, including both emergencies and the one ambiguous message. `unsure` was added to the taxonomy, labels, and routing table together once the ambiguous message needed a queue.
 
@@ -66,9 +97,27 @@ reference = json.loads((DATA / "reference-labels.json").read_text())
 
 **Do:**
 1. Delete the line `Answer with the category name only.` from the starter's prompt. The schema below does that job now.
+
+   In `main.py` it is this line near the end of the `prompt = f"""` string, just above `Message:`. Delete it and the blank line under it:
+
+   ```python
+   Answer with the category name only.
+   ```
 2. Define the category as an enum type with exactly seven allowed values, wrapped in a result type with one field, `category`. If your language cannot spell `lost-and-found` as an identifier, map that member to the exact JSON name. The generated schema must list `lost-and-found`, or three of the 20 messages can never match their reference label.
 
    A Python identifier cannot contain a hyphen, so `lost-and-found` is the member's value on a `str` Enum, and the schema pydantic generates lists the values, not the member names. Two imports the starter does not have: `from enum import Enum` and `from pydantic import BaseModel` (pydantic ships with the `openai` package).
+
+   Add the two imports at the top of `main.py`. `from enum import Enum` goes below `import json`, and `from pydantic import BaseModel` goes below `from openai import OpenAI`:
+
+   ```python
+   from enum import Enum
+   ```
+
+   ```python
+   from pydantic import BaseModel
+   ```
+
+   Then paste the two classes below the `DATA = ...` line, above the step 1 load lines. Python runs the file top to bottom, so a class has to be defined above any line that uses it. In `class Category(str, Enum)`, each line is `member_name = "value"`: the name on the left is what your code writes (`Category.lost_and_found`), and the string on the right is what the model sends back and what the schema lists. `class TriageResult(BaseModel)` with the one line `category: Category` declares an object with one field that must be one of those seven values:
 
    ```python
    class Category(str, Enum):
@@ -88,6 +137,8 @@ reference = json.loads((DATA / "reference-labels.json").read_text())
 3. Send the message through your chat client with that result type as the structured-output schema, temperature 0.
 
    The typed call is `client.chat.completions.parse` with `response_format=TriageResult`, `temperature=0` is a keyword argument on that same call, and the parsed model is `response.choices[0].message.parsed`. Keep the starter's single-id lookup and swap the call. `model_dump_json()` prints the wire form the step 2 Check describes (pydantic writes it without the space, `{"category":"conditions"}`).
+
+   Replace the starter's last two lines (`response = client.chat.completions.create(...)` and the `print` under it) with this. `result.category` is a `Category` member, and `.value` is its string, such as `lost-and-found`:
 
    ```python
    response = client.chat.completions.parse(
@@ -119,6 +170,13 @@ Decide in this order. First, if anyone might be hurt, missing, or in danger, ans
 Message:
 ```
 
+The starter already does this: its `prompt = f"""` string holds that exact text, and it ends by putting the message after `Message:`. After item 1 the only change is the deleted line, so the end of the string still reads:
+
+```python
+Message:
+{inquiry['text']}"""
+```
+
 This is the schema your client generates from that type:
 
 ```json
@@ -146,6 +204,14 @@ And for `inq-0035`:
 Hi, I have a backcountry permit that includes a night at the Avalanche Lake area on June 24 (conf #GL-2026-07733). With the bridge out, is my itinerary even doable, and if not, will you let me swap that night for a different site without penalty, or refund it? I need to know before we leave Thursday. Thanks, Priya
 ```
 
+From `starter/`:
+
+```bash
+uv run main.py inq-0005
+uv run main.py inq-0041
+uv run main.py inq-0035
+```
+
 **Why:** `inq-0035` now lands in `unsure`, while step 0's free-text version called it `conditions`. The enum made `unsure` a real choice for the model.
 
 **Check:** the parsed result's `category` is `conditions` for `inq-0005`, `emergency` for `inq-0041`, and `unsure` for `inq-0035`. Serialize the result back to JSON to see the wire form, `{"category": "conditions"}`. The value is always one of the seven strings.
@@ -154,25 +220,82 @@ Hi, I have a backcountry permit that includes a night at the Avalanche Lake area
 
 **Do:**
 1. Replace the starter's single-id lookup with a loop over the step 1 list.
+
+   Delete the starter's single-id lookup. These are the two lines to remove (the `inquiries` list from step 1 replaces them, so the program no longer takes an id argument). Also delete the `import sys` line at the top, which only they used:
+
+   ```python
+   wanted = sys.argv[1] if len(sys.argv) > 1 else "inq-0005"
+   inquiry = next(json.loads(l) for l in (DATA / "inquiries-slice.jsonl").read_text().splitlines() if l.strip() and json.loads(l)["id"] == wanted)
+   ```
+
+   Also delete step 2's single `parse` call and its `result = ...` line and two prints; the loop in item 3 replaces them.
 2. For each inquiry, build the step 2 prompt with that inquiry's `text` after `Message:`, send it with the same schema and temperature 0.
+
+   Turn the starter's `prompt = f"""...` string into a function `prompt(text)` that puts `text` after `Message:` (as `complete/` does). Delete the whole `prompt = f"""` block and paste this in its place (a function only has to be defined above the loop that calls it). Only the `def` and `return` lines are indented; the prompt text itself stays at the left edge, because every space inside the `"""` string would be sent to the model. The message is now `{text}` instead of `{inquiry['text']}`, because inside the function there is no `inquiry` variable:
+
+   ```python
+   def prompt(text: str) -> str:
+       return f"""You are the triage system for the Trailhead Guides shared inbox.
+   Classify the visitor message into exactly one category.
+
+   - permit: reserving, changing, canceling, or paying for a permit, pass,
+     or reservation, including billing problems and missing confirmations
+     for a permit application.
+   - conditions: asking whether a trail, road, or area is open, safe, or
+     passable right now: snow, water levels, washouts, wildlife activity,
+     closures.
+   - complaint: unhappy about a park facility, service, or staff member
+     and wants it acknowledged or fixed.
+   - lost-and-found: reporting a lost or found physical item.
+   - emergency: a person may be hurt, missing, or in danger right now and
+     needs immediate human attention.
+   - general: anything else: park rules, fees, trip planning, questions
+     that fit none of the above.
+   - unsure: two different queues both have to act before this message can
+     be resolved, so no single queue owns it. The case that qualifies: the
+     sender asks about trail conditions AND asks someone to change, refund,
+     or cancel a booking. Trail info cannot issue a refund, and the permits
+     office does not decide whether a trail is passable, so a human reads
+     this queue and splits the work. Also use unsure when the message fits
+     none of the categories above.
+
+   Decide in this order. First, if anyone might be hurt, missing, or in
+   danger, answer emergency and stop; never answer unsure for those, even
+   when the message also mentions permits, conditions, or a lost item.
+   Second, if one queue can resolve the whole message on its own, answer
+   that queue; a booking or reservation problem with nothing else attached
+   is permit, not unsure. Third, only if two queues must both act, answer
+   unsure. Unsure is not a catch-all for anything hard.
+
+   Message:
+   {text}"""
+   ```
+
+   The loop in item 3 uses `MODEL`. Put this constant right below the `client = OpenAI(...)` line:
+
+   ```python
+   MODEL = "llama3.2"
+   ```
 3. Read `category` from the response, store the (inquiry, category) pair in a results list.
+
+   Put the loop at the end of the file, below the step 1 load lines. `results: list[tuple[dict, Category]] = []` makes an empty list; the part after the colon is only a type label saying each entry is a pair of (inquiry dictionary, `Category`). `results.append((inquiry, ...))` adds one pair; note the double parentheses, since the pair itself is the one argument:
+
+   ```python
+   results: list[tuple[dict, Category]] = []
+   for inquiry in inquiries:
+       response = client.chat.completions.parse(
+           model=MODEL,
+           messages=[{"role": "user", "content": prompt(inquiry["text"])}],
+           response_format=TriageResult,
+           temperature=0,
+       )
+       results.append((inquiry, response.choices[0].message.parsed.category))
+       print(".", end="", flush=True)
+   print("\n")
+   ```
 4. Print a `.` after each call to show progress, then a blank line after the loop.
 
-Turn the starter's `prompt` string into a function `prompt(text)` that puts `text` after `Message:` (as `complete/` does), then loop the slice. The loop uses `MODEL`, which `complete/` defines as `"llama3.2"` next to the client; add that constant or keep the literal.
-
-```python
-results: list[tuple[dict, Category]] = []
-for inquiry in inquiries:
-    response = client.chat.completions.parse(
-        model=MODEL,
-        messages=[{"role": "user", "content": prompt(inquiry["text"])}],
-        response_format=TriageResult,
-        temperature=0,
-    )
-    results.append((inquiry, response.choices[0].message.parsed.category))
-    print(".", end="", flush=True)
-print("\n")
-```
+   The item 3 loop already does this. `print(".", end="", flush=True)` prints a dot with no line break (`end=""`) and shows it right away (`flush=True`) instead of waiting for the line to finish. `print("\n")` after the loop, not indented, prints a newline plus its own line end, which gives the blank line.
 
 **Check:** 20 dots, then 20 stored pairs, every category one of the seven strings. The run takes under a minute.
 
@@ -180,27 +303,48 @@ print("\n")
 
 **Do:**
 1. Filter results to `category == "emergency"`.
+
+   Put this below the loop's `print("\n")`. It is a list comprehension: it walks `results`, splits each pair into `i` (the inquiry) and `c` (the category), and keeps the pair only when `c == Category.emergency`. Comparing against the Enum member directly is fine:
+
+   ```python
+   emergencies = [(i, c) for i, c in results if c == Category.emergency]
+   ```
 2. If any, print `!!! EMERGENCY: route to dispatch, page the duty ranger now !!!`, then one line per emergency with `!!! `, the id, and the first 70 characters of the text. Blank line after.
+
+   `if emergencies:` is true when the list is not empty. In `for inquiry, _ in emergencies`, the `_` is a name for the category you do not use. Put this directly below the `emergencies` line:
+
+   ```python
+   if emergencies:
+       print("!!! EMERGENCY: route to dispatch, page the duty ranger now !!!")
+       for inquiry, _ in emergencies:
+           print(f"!!! {inquiry['id']}  {clip(inquiry['text'], 70)}")
+       print()
+   ```
+
+   `clip(text, n)` is a two-line helper in `complete/` that cuts the text at `n` characters and appends `...`. Paste it below the `prompt` function, above the load lines:
+
+   ```python
+   def clip(text: str, n: int) -> str:
+       return text if len(text) <= n else text[:n] + "..."
+   ```
 3. Print a header line (`id`, `category`, `routed to`) and a rule of 62 dashes.
+
+   Directly below the emergency block. Inside an f-string, `{'id':<10}` prints the text `id` padded with spaces to 10 characters, left-aligned (`<`). `"-" * 62` repeats the dash 62 times:
+
+   ```python
+   print(f"{'id':<10} {'category':<15} routed to")
+   print("-" * 62)
+   ```
 4. Sort so emergencies come first. For each pair, print the id padded to 10 characters, category padded to 15, and the queue from `routing` for that category. If your category is an enum, convert it back to its JSON name (`lost-and-found`, not `LostAndFound`) before the `routing` lookup, and reuse that helper in step 5.
 
-`reference["routing"]` and `reference["labels"]` are keyed by the JSON names, so every lookup and comparison uses `category.value` (the string), not the Enum member. Comparing against `Category.emergency` directly is fine.
+   `reference["routing"]` and `reference["labels"]` are keyed by the JSON names, so every lookup and comparison uses `category.value` (the string), not the Enum member. A `str` Enum member already has that string as `.value`, so no helper is needed.
 
-```python
-emergencies = [(i, c) for i, c in results if c == Category.emergency]
-if emergencies:
-    print("!!! EMERGENCY: route to dispatch, page the duty ranger now !!!")
-    for inquiry, _ in emergencies:
-        print(f"!!! {inquiry['id']}  {clip(inquiry['text'], 70)}")
-    print()
+   `sorted(results, key=...)` returns a sorted copy, ordered by whatever the `key` function returns for each pair. `lambda r: r[1] != Category.emergency` takes a pair `r` and returns `False` for an emergency and `True` for everything else; `False` sorts before `True`, so emergencies come first. Put this directly below the header lines:
 
-print(f"{'id':<10} {'category':<15} routed to")
-print("-" * 62)
-for inquiry, category in sorted(results, key=lambda r: r[1] != Category.emergency):
-    print(f"{inquiry['id']:<10} {category.value:<15} {reference['routing'][category.value]}")
-```
-
-`clip(text, n)` is a two-line helper in `complete/` that cuts the text at `n` characters and appends `...`.
+   ```python
+   for inquiry, category in sorted(results, key=lambda r: r[1] != Category.emergency):
+       print(f"{inquiry['id']:<10} {category.value:<15} {reference['routing'][category.value]}")
+   ```
 
 **Check:** two lines in the emergency block, `inq-0013` and `inq-0041`, both before the table. The table has 20 rows. `inq-0035` reads `unsure` and routes to `human-review-queue (a ranger reads it and picks the queue)`.
 
@@ -208,23 +352,40 @@ for inquiry, category in sorted(results, key=lambda r: r[1] != Category.emergenc
 
 **Do:**
 1. Count results where `category == labels[id]`. That count is the accuracy numerator.
+
+   This goes below the routing table, at the end of the file. `sum(1 for ... if ...)` adds 1 for every pair where the test is true, so it counts them. `labels[i["id"]]` is the reference category for that inquiry:
+
+   ```python
+   labels = reference["labels"]
+   correct = sum(1 for i, c in results if c.value == labels[i["id"]])
+   ```
 2. Collect ids in `labels` valued `emergency`; count how many appear in the step 4 emergency list. That count is emergency recall.
+
+   `labels.items()` gives (id, category) pairs, so the first line keeps the ids whose category is `emergency`. The second counts the step 4 emergencies whose id is in that list. Put both below the `correct` line:
+
+   ```python
+   emergency_ids = [k for k, v in labels.items() if v == "emergency"]
+   caught = sum(1 for i, _ in emergencies if i["id"] in emergency_ids)
+   ```
 3. Print `Accuracy vs reference labels: N/20` and `Emergency recall: N/2`.
+
+   Directly below. `complete/` adds a verdict after the recall numbers; the `+` joins two strings, and `A if test else B` picks one of two texts:
+
+   ```python
+   print()
+   print(f"Accuracy vs reference labels: {correct}/{len(results)}")
+   print(f"Emergency recall: {caught}/{len(emergency_ids)} "
+         + ("(all caught; the metric that matters)" if caught == len(emergency_ids) else "(MISSED ONE; this fails, whatever the accuracy says)"))
+   ```
 4. For each mismatch, print `miss: ` plus the id, the model's category, and the reference category.
 
-```python
-labels = reference["labels"]
-correct = sum(1 for i, c in results if c.value == labels[i["id"]])
-emergency_ids = [k for k, v in labels.items() if v == "emergency"]
-caught = sum(1 for i, _ in emergencies if i["id"] in emergency_ids)
+   At the very end of the file:
 
-print()
-print(f"Accuracy vs reference labels: {correct}/{len(results)}")
-print(f"Emergency recall: {caught}/{len(emergency_ids)}")
-for inquiry, category in results:
-    if category.value != labels[inquiry["id"]]:
-        print(f"  miss: {inquiry['id']} got {category.value}, reference says {labels[inquiry['id']]}")
-```
+   ```python
+   for inquiry, category in results:
+       if category.value != labels[inquiry["id"]]:
+           print(f"  miss: {inquiry['id']} got {category.value}, reference says {labels[inquiry['id']]}")
+   ```
 
 Run from `starter/`:
 
@@ -252,9 +413,30 @@ uv run main.py
 4. Leave `Decide in this order` and the `unsure` description alone.
 5. Run all 20 again and read the scoreboard.
 
+All four edits happen inside the `prompt(text)` function's `f"""` string in `main.py`. Each description is plain text; a description may wrap onto more lines, and the wrapped lines keep their two leading spaces like the ones around them. For item 1, replace the three `- permit:` lines with the new wording. Paste only the three text lines, not the `# Hint:` line, since anything inside the `"""` string is sent to the model:
+
+```python
+# Hint: the permit lines inside prompt(), rewritten (wrap where you like)
+- permit: reserving, changing, canceling, or paying for a permit, pass,
+  or reservation, and questions about whether an activity requires a
+  permit at all, including billing problems and missing confirmations.
+```
+
+Items 2 and 3 are the same kind of edit on the `- conditions:` and `- general:` lines. The wording is yours:
+
+```python
+# Hint: same shape, your words
+- conditions: <only whether a trail, road, or area is physically passable>
+- general: <park rules and regulations, plus what general already covers>
+```
+
+Then from `starter/`:
+
 ```bash
 uv run main.py
 ```
+
+This program prints the routing table, not JSON. Where the Check below says `{"category": "emergency"}` or `{"category": "unsure"}`, read the `category` column of the table for that id.
 
 **Why:** the category descriptions in the prompt are what decide accuracy. When the model files something wrong, fix the description before touching the code.
 
@@ -264,8 +446,64 @@ uv run main.py
 
 Pick either. Neither is built in `complete/`. The reasoning is in [`expected-output.md`](../expected-output.md) under "Stretch Goal".
 
-- **Add a priority field.** Add `priority` to the result type next to `category`, with its own small set of allowed values. Print it in the routing table. Priority is a second axis. It says how fast, and category says where. Mixing the two is how a lost inhaler ends up in line behind a lost wedding ring. **Check:** `inq-0006` (lost daypack with a child's inhaler) stays `lost-and-found` with a high priority.
+- **Add a priority field.** Add `priority` to the result type next to `category`, with its own small set of allowed values. Add a line to the prompt that says what each priority value means (for example, high when someone's safety or health is at risk), or the model rates almost everything high. Print it in the routing table. Priority is a second axis. It says how fast, and category says where. Mixing the two is how a lost inhaler ends up in line behind a lost wedding ring. **Check:** `inq-0006` (lost daypack with a child's inhaler) stays `lost-and-found` with a high priority.
+
+  Give priority its own `str` Enum, built like `Category`, and add a second field to `TriageResult`. Both go where the step 2 classes are, and `Priority` must sit above `TriageResult`, which uses it:
+
+  ```python
+  # Hint: a second small str Enum, and a second field on the result model
+  class Priority(str, Enum):
+      high = "<value>"
+      normal = "<value>"
+
+
+  class TriageResult(BaseModel):
+      category: Category
+      priority: Priority
+  ```
+
+  Then carry it through the loop and the table. Each pair becomes a triple, and every line that builds or splits a pair changes to match:
+
+  ```python
+  # Hint: three parts instead of two
+  results: list[tuple[dict, Category, Priority]] = []
+  parsed = response.choices[0].message.parsed
+  results.append((inquiry, parsed.category, parsed.priority))
+  for inquiry, category, priority in sorted(results, key=lambda r: r[1] != Category.emergency):
+      print(f"{inquiry['id']:<10} {category.value:<15} {priority.value:<8} {reference['routing'][category.value]}")
+  ```
+
+  The other lines that split a pair need a third name too: `[(i, c) for i, c in results ...]` becomes `[(i, c, p) for i, c, p in results ...]` in `emergencies`, `for inquiry, _ in emergencies:` becomes `for inquiry, _, _ in emergencies:`, `for i, c in results` becomes `for i, c, _ in results` in `correct`, `for i, _ in emergencies` becomes `for i, _, _ in emergencies` in `caught`, and the step 5 miss loop becomes `for inquiry, category, _ in results:`.
+
 - **Add a confidence threshold.** Add a numeric `confidence` field to the result type and schema. After the loop, change the category to `unsure` on any result whose confidence is under a threshold you pick. Run the scoreboard again. **Check:** both emergencies stay `emergency` with high confidence, `inq-0035` stays `unsure`, and the `unsure` queue does not fill up with ordinary permit questions. If a third of the slice lands in `unsure`, the threshold is too high and you have rebuilt the unsorted inbox.
+
+  A `float` field on the model becomes a number in the generated schema:
+
+  ```python
+  # Hint: a number field next to category
+  class TriageResult(BaseModel):
+      category: Category
+      confidence: float
+  ```
+
+  Store the confidence in the tuple the way the priority stretch stores priority. Each pair becomes a triple, and every line that builds or splits a pair changes to match (the priority stretch lists them). Printing the confidence in the routing table lets you check it; `:<5.2f` pads to 5 characters with 2 decimals:
+
+  ```python
+  # Hint: three parts instead of two
+  results: list[tuple[dict, Category, float]] = []
+  parsed = response.choices[0].message.parsed
+  results.append((inquiry, parsed.category, parsed.confidence))
+  for inquiry, category, confidence in sorted(results, key=lambda r: r[1] != Category.emergency):
+      print(f"{inquiry['id']:<10} {category.value:<15} {confidence:<5.2f} {reference['routing'][category.value]}")
+  ```
+
+  Then rebuild `results` after the loop's `print("\n")` and before the `emergencies` line. The comprehension keeps each triple but swaps in `Category.unsure` when the confidence is under your threshold:
+
+  ```python
+  # Hint: after the loop, pick your own threshold
+  THRESHOLD = <your number>
+  results = [(i, Category.unsure if conf < THRESHOLD else c, conf) for i, c, conf in results]
+  ```
 
 ## What Is in This Folder
 

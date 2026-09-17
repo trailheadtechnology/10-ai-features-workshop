@@ -396,7 +396,7 @@ Pick any. The first two are already built in `complete/`.
   dotnet run -- --hard
   ```
 
-- **Reflow the prompt onto one line and measure the damage.** Replace the four line breaks with spaces, rerun both sets on both models, then put the line breaks back. **Check:** recorded `phi3` drops from 9/10 to 7/10 easy and 7/10 to 4/10 hard, every miss `mixed`. `llama3.2` scores the same either way. The small model is the one that cares about prompt shape.
+- **Reflow the prompt onto one line and measure the damage.** Replace the four line breaks with spaces, rerun both sets on both models, then put the line breaks back. **Check:** `phi3` drops from 9/10 to 7/10 easy and from 7/10 to somewhere between 4/10 and 6/10 hard (4/10 in the recorded run, 6/10 in two later runs), every miss `mixed`. `llama3.2` scores the same either way. The small model is the one that cares about prompt shape.
 
   The change is inside `Classify`. Join the four instruction lines into one and leave the blank line and the `Review:` line alone:
 
@@ -409,7 +409,7 @@ Pick any. The first two are already built in `complete/`.
       """;
   ```
 
-- **Aspect-based sentiment.** Ask for `{"overall": ..., "aspects": {"comfort": ..., "durability": ..., "price": ...}}` instead of one word; add a `format` schema for it. **Check:** parseable JSON every time, aspects left `null` when the review never mentions them. A `price` sentiment on a review that never mentions price is the failure to look for.
+- **Aspect-based sentiment.** Ask for `{"overall": ..., "aspects": {"comfort": ..., "durability": ..., "price": ...}}` instead of one word, and tell the model to reply with that JSON and nothing else. Parse the reply, and catch the parse error so one bad reply doesn't stop the run. **Check:** most replies parse, with aspects left `null` when the review never mentions them. `phi3` sometimes adds a sentence after the JSON; that is the parse error you catch, and it is why production code uses a structured-output schema like step 1 of feature 02. A `price` sentiment on a review that never mentions price is the failure to look for.
 
   `complete/` does not build this one. Write a second classify method with a prompt that asks for that JSON, and records at the bottom of `Program.cs` whose property names match the JSON keys. `string?` lets an aspect come back `null`. `complete/Program.cs` has no MEAI call for a `format` schema, so this hint parses the reply text with `JsonSerializer` instead.
 
