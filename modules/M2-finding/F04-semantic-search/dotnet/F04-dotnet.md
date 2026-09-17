@@ -53,6 +53,16 @@ dotnet run
 dotnet run -- somewhere quiet to take my kids
 ```
 
+The starter already does the word splitting with these lines in `starter/Program.cs`. `Regex.Matches` pulls out runs of letters, `.Where` keeps words of three letters or more, and `.Distinct()` drops repeats. The `results = trails.Select(...)` statement right below them counts the hits.
+
+```csharp
+var tokens = Regex.Matches(query.ToLowerInvariant(), "[a-z]+")
+    .Select(m => m.Value)
+    .Where(w => w.Length >= 3)
+    .Distinct()
+    .ToList();
+```
+
 **Check:** the first query puts `trail-0007` Upper Yosemite Falls Trail first, a hard 7.2-mile climb that matched on `waterfall` and `too`. The second query returns exactly one trail, `trail-0004` Ocean Path, because its description happens to contain the word `kids`. Both are in [`expected-output.md`](../expected-output.md)'s keyword blocks. The rest of the lab replaces that scoring with embeddings.
 
 ### Step 1: Load the trails
@@ -61,52 +71,117 @@ dotnet run -- somewhere quiet to take my kids
 1. Open `../../data/trails-slice.json` (that path is relative to your track's `starter/` folder): one JSON array of 30 objects, each with `id`, `name`, `park`, `distance_mi`, `elevation_ft`, `difficulty`, `features` (array of strings), and `description` (a three- or four-sentence blurb).
 2. Parse it into a list of trail objects (the starter already does this, so keep that code).
 
-The starter reads `"../../data/trails-slice.json"` relative to the working directory, which is why you run from `starter/`, and deserializes it into the `Trail` record with a snake_case naming policy. Keep those lines and the record.
+   The starter reads `"../../data/trails-slice.json"` relative to the working directory, which is why you run from `starter/`, and deserializes it into the `Trail` record with a snake_case naming policy (so JSON `distance_mi` fills the C# property `DistanceMi`). The starter already does this, near the top of `Program.cs`:
+
+   ```csharp
+   var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+   var json = await File.ReadAllTextAsync("../../data/trails-slice.json");
+   var trails = JsonSerializer.Deserialize<List<Trail>>(json, jsonOptions)!;
+   ```
+
+   And the `Trail` record it fills sits at the very bottom of the file, after all the top-level statements. Keep those lines and the record.
+
+   ```csharp
+   record Trail(string Id, string Name, string Park, double DistanceMi,
+       int ElevationFt, string Difficulty, List<string> Features, string Description);
+   ```
 
 **Why:** the 30 were hand-picked from feature 10's 200-trail catalog to make keyword matching fail on purpose: four dog-friendly waterfall trails whose descriptions never say so in those words (`trail-0011`, `trail-0027`, `trail-0055`, `trail-0068`), plus three keyword traps. `trail-0074` Easy Creek Trail is a hard 2,610-foot climb named after homesteader Elias Easy, `trail-0187` Dog Lake Trail prohibits pets, and `trail-0058` Panorama Cliffs Bypass contains the word "steep" while describing how it avoids the steep sections.
 
 **Check:** the list has 30 entries. The first `id` is `trail-0003`, Trail of the Cedars.
 
+`trails.Count` is 30 and `trails[0].Id` is `trail-0003`. To see it, put a temporary line right below the `var trails = ...` line:
+
+```csharp
+// Hint: print the count and the first id, then delete this line
+Console.WriteLine($"{trails.Count} trails, first is {trails[0].Id}");
+```
+
 ### Step 2: Embed the 30 descriptions once and cache the vectors
 
 **Do:**
 1. Collect the 30 `description` strings, in list order.
+
+   First, in `starter/Program.cs`, comment out the keyword scoring: every line from `var tokens = Regex.Matches(...)` down to the closing `}` of the last `foreach`. Select those lines and press Ctrl+K, Ctrl+C in Visual Studio (Cmd+/ in VS Code), or put `//` in front of each. If you plan to try the keyword-blend stretch goal, comment it out rather than deleting it, because that goal reuses it. Keep the query lines, the three JSON lines, and the `Trail` record at the bottom.
+
+   You do not need a separate list of strings. This expression, used in item 2, hands the descriptions to the embed call one per trail in list order:
+
+   ```csharp
+   trails.Select(t => t.Description)
+   ```
+
 2. Embed all 30 in **one call** to `nomic-embed-text` (a single batch, not a loop). The response holds one 768-float vector per input, in the order sent.
+
+   OllamaSharp's `OllamaApiClient` implements Microsoft.Extensions.AI's `IEmbeddingGenerator`, so one constructor call gives you the client; both packages are already in the starter's `.csproj`, so there is nothing to install. Add these `using` lines at the very top of `Program.cs`, next to the two already there:
+
+   ```csharp
+   using System.Diagnostics;
+   using Microsoft.Extensions.AI;
+   using OllamaSharp;
+   ```
+
+   Create the client right below the `var query = ...` statement:
+
+   ```csharp
+   IEmbeddingGenerator<string, Embedding<float>> generator =
+       new OllamaApiClient(new Uri("http://localhost:11434"), "nomic-embed-text");
+   ```
+
+   `GenerateAsync` takes the whole batch in one call and returns one `Embedding<float>` per input, in order. This line goes below the `var trails = ...` line (item 4 moves it inside an `else`):
+
+   ```csharp
+   var embeddings = await generator.GenerateAsync(trails.Select(t => t.Description));
+   ```
+
 3. Walk the list and the response together and store each vector in a dictionary keyed by that trail's `id`. Store each vector as a plain array of floats, not the client's own vector type, so it serializes and indexes without surprises.
+
+   `Zip` pairs each trail with its embedding: `p.First` is the trail, `p.Second` is the embedding. Each `.Vector` is a `ReadOnlyMemory<float>`, so `.ToArray()` turns it into the `float[]` the cosine loop indexes and the JSON serializer writes. Put this directly under the `GenerateAsync` line (the `vectors` variable it fills is declared in item 4):
+
+   ```csharp
+   vectors = trails.Zip(embeddings)
+       .ToDictionary(p => p.First.Id, p => p.Second.Vector.ToArray());
+   ```
+
 4. Write the dictionary to `embeddings.json` next to the built program. That is the file to delete when you want to re-embed. At program start, load it and skip the embed call if it exists. Wrap the embed call in a timer and print how many vectors were embedded and how many milliseconds it took, or how many were loaded from the cache.
 
-Replace the keyword scoring with an embedding client. If you plan to try the keyword-blend stretch goal, comment the keyword code out instead of deleting it, because that goal reuses it. OllamaSharp's `OllamaApiClient` implements Microsoft.Extensions.AI's `IEmbeddingGenerator`, so one constructor call gives you the client; both packages are already in the starter's `.csproj`. `GenerateAsync` takes the whole batch in one call and returns one `Embedding<float>` per input, in order. Each `.Vector` is a `ReadOnlyMemory<float>`, so call `.ToArray()` to get the `float[]` the cosine loop indexes and the JSON serializer writes. `AppContext.BaseDirectory` is the build output folder, and a `Stopwatch` times the live call.
+   `AppContext.BaseDirectory` is the build output folder, so the cache lands at `bin/Debug/net10.0/embeddings.json`. Put the path and an empty `vectors` variable below the `var trails = ...` line, then load the file when it is there:
 
-```csharp
-using System.Diagnostics;
-using Microsoft.Extensions.AI;
-using OllamaSharp;
+   ```csharp
+   var cachePath = Path.Combine(AppContext.BaseDirectory, "embeddings.json");
+   Dictionary<string, float[]> vectors;
+   if (File.Exists(cachePath))
+   {
+       vectors = JsonSerializer.Deserialize<Dictionary<string, float[]>>(
+           await File.ReadAllTextAsync(cachePath))!;
+       Console.WriteLine($"Loaded {vectors.Count} cached vectors from embeddings.json");
+   }
+   ```
 
-IEmbeddingGenerator<string, Embedding<float>> generator =
-    new OllamaApiClient(new Uri("http://localhost:11434"), "nomic-embed-text");
+   Right after that closing `}`, add the `else`. Move your `GenerateAsync` line and the `Zip` lines inside it, start a `Stopwatch` before the call, and write the file after:
 
-var cachePath = Path.Combine(AppContext.BaseDirectory, "embeddings.json");
-Dictionary<string, float[]> vectors;
-if (File.Exists(cachePath))
-{
-    vectors = JsonSerializer.Deserialize<Dictionary<string, float[]>>(await File.ReadAllTextAsync(cachePath))!;
-    Console.WriteLine($"Loaded {vectors.Count} cached vectors from embeddings.json");
-}
-else
-{
-    var sw = Stopwatch.StartNew();
-    var embeddings = await generator.GenerateAsync(trails.Select(t => t.Description));
-    vectors = trails.Zip(embeddings).ToDictionary(p => p.First.Id, p => p.Second.Vector.ToArray());
-    await File.WriteAllTextAsync(cachePath, JsonSerializer.Serialize(vectors));
-    Console.WriteLine($"Embedded {vectors.Count} trail descriptions in {sw.ElapsedMilliseconds} ms");
-}
-```
+   ```csharp
+   else
+   {
+       var sw = Stopwatch.StartNew();
+       var embeddings = await generator.GenerateAsync(trails.Select(t => t.Description));
+       vectors = trails.Zip(embeddings)
+           .ToDictionary(p => p.First.Id, p => p.Second.Vector.ToArray());
+       await File.WriteAllTextAsync(cachePath, JsonSerializer.Serialize(vectors));
+       Console.WriteLine($"Embedded {vectors.Count} trail descriptions in {sw.ElapsedMilliseconds} ms");
+   }
+   ```
 
 **Why:** `embeddings.json` is a cache your program creates, not a shipped data file. It is gitignored so the first run always embeds live. It is keyed only by `id`, so delete it whenever a description or the model changes, or every later query ranks against vectors for text that no longer exists.
 
 **Check:** 30 keys, each holding 768 floats. The first run embeds in under two seconds; the second run prints that it loaded 30 cached vectors. Fewer than 30 vectors, or one not 768 long, means the batch did not go through.
 
-Print one vector and look at it: it is just numbers. The cache lands next to the binary (`bin/Debug/net10.0/embeddings.json`), not in the project folder; delete it there if the text or the model changes.
+`vectors.Count` is 30 and `vectors["trail-0003"].Length` is 768. Print one vector and look at it: it is just numbers. The cache lands next to the binary (`bin/Debug/net10.0/embeddings.json`), not in the project folder; delete it there if the text or the model changes. A temporary check, placed after the `else { ... }` block:
+
+```csharp
+// Hint: count, length, and the first few numbers of one vector
+Console.WriteLine($"{vectors.Count} vectors, {vectors["trail-0003"].Length} floats each");
+Console.WriteLine(string.Join(", ", vectors["trail-0003"].Take(8)));
+```
 
 ### Step 3: Embed query 1, write cosine similarity, print the top 5
 
@@ -117,30 +192,70 @@ Print one vector and look at it: it is just numbers. The cache lands next to the
    dog-friendly waterfall hike, not too steep
    ```
 
+   The starter already does this, at the top of `Program.cs`. `args` holds the words typed after `dotnet run --`:
+
+   ```csharp
+   var query = args.Length > 0
+       ? string.Join(' ', args)
+       : "dog-friendly waterfall hike, not too steep";
+   ```
+
 2. Embed the query as a single string, through the same client and same model. Keep the one vector that comes back.
+
+   `GenerateAsync` takes a collection, so pass `[query]` (a one-item collection) and take `[0]` from the result. Put this below the cache `if`/`else`:
+
+   ```csharp
+   var queryVector = (await generator.GenerateAsync([query]))[0].Vector.ToArray();
+   ```
+
 3. Write `cosine_similarity(a, b)`: loop `i` 0 to 767, accumulate `dot += a[i]*b[i]`, `magA += a[i]*a[i]`, `magB += b[i]*b[i]`, then return `dot / (sqrt(magA) * sqrt(magB))`.
+
+   In C# the method is `CosineSimilarity`. Put it near the bottom of `Program.cs`: after all the top-level statements (the last `foreach`) and above the `record Trail` line, because a method in a top-level program must come after the statements and before any type declarations. `MathF.Sqrt` is the `float` square root.
+
+   ```csharp
+   static float CosineSimilarity(float[] a, float[] b)
+   {
+       float dot = 0, magA = 0, magB = 0;
+       for (var i = 0; i < a.Length; i++)
+       {
+           dot += a[i] * b[i];
+           magA += a[i] * a[i];
+           magB += b[i] * b[i];
+       }
+       return dot / (MathF.Sqrt(magA) * MathF.Sqrt(magB));
+   }
+   ```
+
 4. For every trail, compute the cosine between the query vector and that trail's stored vector.
+
+   `Select` turns each trail into a pair (a tuple) of the trail and its score. Put this below the `queryVector` line; item 5 finishes the statement:
+
+   ```csharp
+   var results = trails
+       .Select(t => (Trail: t, Score: CosineSimilarity(queryVector, vectors[t.Id])))
+   ```
+
 5. Sort by score, highest first, and keep the top 5.
+
+   Add these two lines directly under the `.Select(...)` line. The `;` ends the statement:
+
+   ```csharp
+       .OrderByDescending(r => r.Score)
+       .Take(5);
+   ```
+
 6. Print each of the 5 on one line: score to four decimals, `id`, `name`, `difficulty`, `distance_mi`, and the `features` list. The semantic blocks in [`expected-output.md`](../expected-output.md) show the layout.
 
-`GenerateAsync` takes a collection, so pass `[query]` and take `[0]`. Cosine similarity fits in one visible method:
+   `foreach (var (trail, score) in results)` unpacks each pair into two variables. `{score:F4}` formats the score to four decimals. Put this below the `results` statement:
 
-```csharp
-var queryVector = (await generator.GenerateAsync([query]))[0].Vector.ToArray();
-
-static float CosineSimilarity(float[] a, float[] b)
-{
-    float dot = 0, magA = 0, magB = 0;
-    for (var i = 0; i < a.Length; i++) { dot += a[i] * b[i]; magA += a[i] * a[i]; magB += b[i] * b[i]; }
-    return dot / (MathF.Sqrt(magA) * MathF.Sqrt(magB));
-}
-
-var results = trails
-    .Select(t => (Trail: t, Score: CosineSimilarity(queryVector, vectors[t.Id])))
-    .OrderByDescending(r => r.Score).Take(5);
-foreach (var (trail, score) in results)
-    Console.WriteLine($"{score:F4}  {trail.Id}  {trail.Name} ({trail.Difficulty}, {trail.DistanceMi} mi)  [{string.Join(", ", trail.Features)}]");
-```
+   ```csharp
+   Console.WriteLine($"\nSemantic search: \"{query}\"\n");
+   foreach (var (trail, score) in results)
+   {
+       Console.WriteLine($"{score:F4}  {trail.Id}  {trail.Name} " +
+           $"({trail.Difficulty}, {trail.DistanceMi} mi)  [{string.Join(", ", trail.Features)}]");
+   }
+   ```
 
 Run:
 
@@ -171,7 +286,7 @@ dotnet run -- an easy hike to a great view
 
 **Why:** these come from `data/queries.json`, which holds all three test queries with `id`, `query`, `why` (what that query proves), and `success_check`. Look at the scores themselves, not just the order. When the whole top 5 is low and close together, nothing in the catalog is a strong match, and the order is mostly noise.
 
-**Check:** query 2 puts Taft Point (`trail-0020`) first at `0.4876` (correct, and still a cliff edge), with short family-friendly trails filling the rest of the top 5, all between 0.44 and 0.49; query 3 puts `trail-0058` Panorama Cliffs Bypass at or near the top (`0.6481`), top score `0.77` on query 1. `trail-0074` Easy Creek Trail in query 3's top 5 means you are matching words, not meaning.
+**Check:** query 2 puts Taft Point (`trail-0020`) first at `0.4876` (correct, and still a cliff edge), with short family-friendly trails filling the rest of the top 5, all between 0.43 and 0.49; query 3 puts `trail-0058` Panorama Cliffs Bypass at or near the top (`0.6481`), top score `0.77` on query 1. `trail-0074` Easy Creek Trail in query 3's top 5 means you are matching words, not meaning.
 
 ### Stretch goals
 
@@ -179,9 +294,35 @@ Pick either. Each uses information you already have, trail metadata or the keywo
 
 - **Filter before you rank.** Between step 3's item 3 and item 4, drop trails whose `difficulty` is `hard`. For query 1, also drop trails whose `features` list does not contain `dog-friendly`. Then rank whatever is left. **Check:** query 1 returns only dog-friendly trails; query 3 loses Beehive Loop (`trail-0017`) and Chimney Tops (`trail-0005`) from the top 5. Either still there means the filter ran after the top 5 was taken.
 
-  Add a `.Where(...)` on `trails` before the `.Select(...)` that scores them.
+  Add a `.Where(...)` on `trails` before the `.Select(...)` that scores them, so the filter runs before `.Take(5)`. The query 1 text is the default string from the `var query = ...` lines. The hint replaces the first two lines of the step 3 `results` statement (`var results = trails` and its `.Select(...)` line); keep the `.OrderByDescending` and `.Take(5);` lines under it.
+
+  ```csharp
+  // Hint: filter first, then score and rank what is left
+  var isQuery1 = query == "<query 1 text>";
+  var results = trails
+      .Where(t => t.Difficulty != "<difficulty to drop>")
+      .Where(t => !isQuery1 || t.Features.Contains("<required feature>"))
+      .Select(t => (Trail: t, Score: CosineSimilarity(queryVector, vectors[t.Id])))
+  ```
 
 - **Blend in the keyword score.** Keep the keyword-hit count from step 0 (the keyword code you commented out in step 2) alongside the cosine score, rescale both to 0..1, and rank on a weighted sum of the two. Print both scores on each row. **Check:** every row shows a cosine score and a keyword score. A trail that appears only because of its keyword count, such as Easy Creek Trail (`trail-0074`) on query 3, means the keyword weight is too high. Feature 05 measures the same blend on a bigger corpus.
+
+  Uncomment the `var tokens = ...` lines from step 0 (they need `using System.Text.RegularExpressions;`, which the starter already has), then cut them and paste them right below the `var queryVector = ...` line, because a variable must be declared above the code that uses it. Then, in place of the step 3 `results` statement, count hits per trail with the same `Regex.IsMatch` test the starter used, divide each score by its largest value so both land in 0..1, and sort on the weighted sum:
+
+  ```csharp
+  // Hint: two scores per trail, each rescaled by its max, ranked on a weighted sum
+  var scored = trails.Select(t => (Trail: t,
+      Cosine: CosineSimilarity(queryVector, vectors[t.Id]),
+      Hits: tokens.Count(w => Regex.IsMatch($"{t.Name} {t.Description}".ToLowerInvariant(), $@"\b{w}\b")))).ToList();
+  var maxCosine = scored.Max(r => r.Cosine);
+  var maxHits = Math.Max(1, scored.Max(r => r.Hits));
+  var results = scored
+      .Select(r => (r.Trail, r.Cosine, Keyword: (double)r.Hits / maxHits,
+          Blend: <cosine weight> * r.Cosine / maxCosine + <keyword weight> * r.Hits / maxHits))
+      .OrderByDescending(r => r.Blend).Take(5);
+  ```
+
+  Print both on each row, for example `$"{r.Cosine:F4} cos  {r.Keyword:F2} kw  {r.Trail.Id}  {r.Trail.Name}"` inside `foreach (var r in results)`.
 
 ## What Is in This Folder
 

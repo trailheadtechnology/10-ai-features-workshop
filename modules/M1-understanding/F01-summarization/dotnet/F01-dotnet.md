@@ -41,15 +41,53 @@ dotnet run -- --briefing --audience ranger  # same report, different reader
 
 **Do:**
 1. Open `data/tr-0001.md` and read the whole file into one string. The starter already defaults to this file.
+
+   The starter already does this. `args` holds the words typed after `dotnet run --`; with none, the path defaults to `tr-0001.md`. `File.ReadAllTextAsync` returns the whole file as one string, which goes straight into `StripFrontMatter` (item 2):
+
+   ```csharp
+   var reportPath = args.Length > 0 ? args[0] : "../../data/tr-0001.md";
+   var report = StripFrontMatter(await File.ReadAllTextAsync(reportPath));
+   ```
+
 2. Strip the front matter: split on the `---` lines, keep the third part, trim it. What is left starts at the report's title.
+
+   The starter already does this with a `static` helper method at the very bottom of `Program.cs`, below the top-level statements. `Split("---", 3, ...)` cuts the text into at most three parts (before the first `---`, the front matter, everything after), and `parts[2]` is the third part:
+
+   ```csharp
+   static string StripFrontMatter(string markdown)
+   {
+       var parts = markdown.Split("---", 3, StringSplitOptions.None);
+       return parts.Length == 3 ? parts[2].Trim() : markdown.Trim();
+   }
+   ```
+
 3. Build the prompt: the one line below, a blank line, then the report text.
 
    ```text
    Summarize this trip report.
    ```
 
+   The starter already does this inside the call on line 12. The `$"..."` string is the prompt: `\n\n` is a line break plus a blank line, and `{report}` drops the report text in:
+
+   ```csharp
+   var response = await client.GetResponseAsync($"Summarize this trip report.\n\n{report}");
+   ```
+
 4. Send the prompt as a single user message to `llama3.2`: the model name, plus one message with role `user` and that content. No system message, no temperature, no streaming.
+
+   The starter already does this. The model name goes in once, when the client is created near the top of `Program.cs`. Passing a plain string to `GetResponseAsync` (the line shown in item 3) sends it as one user message:
+
+   ```csharp
+   IChatClient client = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
+   ```
+
 5. Print the reply text.
+
+   The starter already does this, on the line right after the call:
+
+   ```csharp
+   Console.WriteLine(response.Text);
+   ```
 
 The starter already does all five. Run it twice:
 
@@ -78,6 +116,8 @@ Step 2 only changes the instruction string. Reading the file, stripping the fron
    If the report does state a closure or hazard, it must appear in the first bullet.
    ```
 
+   This replaces the starter's `var response = await client.GetResponseAsync($"Summarize this trip report.\n\n{report}");` line with the two statements below. Paste the prompt lines exactly; the raw string drops the indentation to the left of the closing `"""`, so indent every line to match it.
+
    Use an interpolated raw string (`$"""` ... `"""`) so the embedded quotes and line breaks survive. A verbatim `@"..."` string would need the quotes around "no closures or hazards reported" doubled. The report goes in after a blank line, and the call does not change:
 
    ```csharp
@@ -97,9 +137,15 @@ Step 2 only changes the instruction string. Reading the file, stripping the fron
 
 2. Run it on `data/tr-0001.md` four or five times, not once. The check below has to hold on every run.
 
+   From `starter/`, with no path so the default `tr-0001.md` is used:
+
+   ```bash
+   dotnet run
+   ```
+
 **Why:** the reflowed prompt behaves differently, so keep the line breaks. The last two lines exist because a prompt that demands a hazards bullet will invent one (a bear sighting, the word "avalanche" in the trail name) when the report has no real hazard; they give the model a legal way to report nothing. Measured rate with and without those lines is in [`expected-output.md`](../expected-output.md).
 
-**Check:** three bullets and nothing else. The gear debrief is gone. Mud patches and the 10am crowds are in. The hazards bullet says "no closures or hazards reported". The only bear in `tr-0001.md` is a ranger's remark about a road near Lake McDonald; keeping it as a plain sighting is fine, closing the trail over it is the failure the grounding lines exist to stop.
+**Check:** three bullets. A one-line lead-in such as "Here are three bullets" is normal for `llama3.2`; anything more than that is not. The gear debrief is gone. Mud patches and the 10am crowds are in. The hazards bullet says "no closures or hazards reported". The only bear in `tr-0001.md` is a ranger's remark about a road near Lake McDonald; keeping it as a plain sighting is fine, closing the trail over it is the failure the grounding lines exist to stop.
 
 ### Step 3: Run the same prompt on the buried-hazard report
 
@@ -112,6 +158,10 @@ Step 2 only changes the instruction string. Reading the file, stripping the fron
 
 2. Leave the step 2 prompt exactly as it is.
 3. Run `tr-0001.md` once more with the same prompt, to confirm the clean report still passes.
+
+   ```bash
+   dotnet run
+   ```
 
 **Why:** `tr-0004.md` has the same front matter and rambling shape as `tr-0001.md`; the difference is a washed-out footbridge and a closed trail buried in its fourth paragraph. That placement is deliberate, because a summarizer that misses it fails the feature.
 
@@ -127,13 +177,22 @@ Pick any. `complete/` already has each one built in, behind the flag named below
   You are helping a park ranger who cares about maintenance issues, closures, safety incidents, and visitor impacts, not scenery.
   ```
 
-  The starter has no argument parsing, so hard-code `var audience = "ranger";` and rerun, or copy the argument loop from `complete/Program.cs`:
+  The starter has no argument parsing, so hard-code the audience. Put these lines below `var report = ...` and above `var prompt = ...`. This is the exact code from `complete/Program.cs`, where `--audience` sets the variable instead; change `"hiker"` to `"ranger"` to switch readers. The `switch` picks the text after `=>` whose left side matches `audience`, and `_` means anything else:
 
   ```csharp
-  var audienceFocus = audience == "ranger"
-      ? "a park ranger who cares about maintenance issues, closures, safety incidents, and visitor impacts, not scenery"
-      : "a hiker planning to hike this trail within the next week";
-  // then the prompt's first line becomes: You are helping {audienceFocus}.
+  var audience = "hiker";
+
+  var audienceFocus = audience switch
+  {
+      "ranger" => "a park ranger who cares about maintenance issues, closures, safety incidents, and visitor impacts, not scenery",
+      _ => "a hiker planning to hike this trail within the next week",
+  };
+  ```
+
+  Then replace the first line inside your step 2 prompt string with this one, so `{audienceFocus}` is filled in when the string is built:
+
+  ```csharp
+  You are helping {audienceFocus}.
   ```
 
   **Check:** the ranger version leads with where the bridge went out and the barricade; the hiker version keeps the crowding. Identical output means the audience line is not reaching the prompt.
@@ -145,6 +204,8 @@ Pick any. `complete/` already has each one built in, behind the flag named below
   suitable for a status badge on a trail card in an app.
   Lead with the most important condition or closure. No preamble.
   ```
+
+  This replaces your whole step 2 `var prompt = $"""` ... `""";` statement. The `var response = ...` and `Console.WriteLine` lines below it stay as they are:
 
   ```csharp
   var prompt = $"""
@@ -158,7 +219,14 @@ Pick any. `complete/` already has each one built in, behind the flag named below
 
   **Check:** one line, at most 12 words, that leads with the closure. No bullets, no preamble. Only the instruction changed. A new spot in the UI costs a new prompt rather than new infrastructure.
 
-- **See the hallucination the grounding lines prevent.** Delete the two lines of the step 2 prompt that begin "Report only what the trip report states" and end "when it says none." Run `data/tr-0001.md` (the starter's default) ten or more times. Put the lines back when done.
+- **See the hallucination the grounding lines prevent.** If you did the headline stretch goal, put the step 2 prompt back first. Then delete the two lines of the step 2 prompt that begin "Report only what the trip report states" and end "when it says none." Run `data/tr-0001.md` (the starter's default) ten or more times. Put the lines back when done.
+
+  These are the two lines to delete from inside your `var prompt = $"""` string:
+
+  ```csharp
+  Report only what the trip report states. Do not turn a wildlife sighting into a
+  hazard or a closure, and write "no closures or hazards reported" when it says none.
+  ```
 
   **Check:** some runs now invent a closure from the bear, the creek, or the word "avalanche" in the trail's name. Measured over 24 runs on `tr-0001.md`: 11 of 24 (46%) without the lines, 1 of 24 (4%) with them. `tr-0004.md` led with the bridge in 12 of 12 runs either way. Full numbers in [`expected-output.md`](../expected-output.md).
 

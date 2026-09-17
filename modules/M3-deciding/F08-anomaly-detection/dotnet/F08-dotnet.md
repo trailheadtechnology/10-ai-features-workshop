@@ -63,6 +63,22 @@ dotnet run
 1. Open `../../data/reports-0117.jsonl`: `id`, `trail_id`, `date`, `text` per line.
 2. Read line by line, parse each line, keep the results in a list in file order.
 
+   The starter already does this: it reads the file one line at a time, turns each line into a `Report` with `JsonSerializer`, and collects them with `ToList()`:
+
+   ```csharp
+   var data = "../../data";
+   var json = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+   var reports = File.ReadLines($"{data}/reports-0117.jsonl")
+       .Select(line => JsonSerializer.Deserialize<Report>(line, json)!)
+       .ToList();
+   ```
+
+   The shape of one line is a `record` declared at the very bottom of `Program.cs`, after all the top-level statements. `PropertyNameCaseInsensitive` lets `id` fill `Id` and `trail_id` fill `Trail_Id`:
+
+   ```csharp
+   record Report(string Id, string Trail_Id, string Date, string Text);
+   ```
+
 **Why:** the file is the 40 reports for trail-0117, dated 2025-05-04 to 2026-07-22, copied out of the workshop's 500-report stream in feature 10's data. Eight of the 40 are the planted washout: five from 2026-06-18 to 2026-06-24 (`cr-0429`, `cr-0431`, `cr-0436`, `cr-0438`, `cr-0443`) and three July follow-ups (`cr-0464`, `cr-0480`, `cr-0496`). The other 32 are mud, ice, bugs, wildflowers, parking, and blowdown.
 
 **Check:** the list has 40 entries. The first `id` is `cr-0009`, dated 2025-05-04.
@@ -71,8 +87,34 @@ dotnet run
 
 **Do:**
 1. Open `../../data/embeddings-0117.json`. Its `embeddings` field maps report `id` to an array of 768 numbers.
+
+   The starter already does this (`using System.Text.Json;` is its first line):
+
+   ```csharp
+   using var doc = JsonDocument.Parse(File.ReadAllText($"{data}/embeddings-0117.json"));
+   ```
+
 2. Write `normalize(vector)`: find its length (square every component, sum, square root), then divide every component by that length.
+
+   The starter already does this, as a `static` helper below the top-level statements:
+
+   ```csharp
+   static float[] Normalize(float[] vector)
+   {
+       var length = MathF.Sqrt(vector.Sum(v => v * v));
+       return vector.Select(v => v / length).ToArray();
+   }
+   ```
+
 3. Normalize every vector as you load it, storing results in a dictionary keyed by `id`.
+
+   The starter already does this: each JSON property becomes one dictionary entry, its name is the key, and its array of numbers is read as `float`s and passed through `Normalize`:
+
+   ```csharp
+   var vectors = doc.RootElement.GetProperty("embeddings")
+       .EnumerateObject()
+       .ToDictionary(p => p.Name, p => Normalize(p.Value.EnumerateArray().Select(v => v.GetSingle()).ToArray()));
+   ```
 
 **Why:** the vectors were captured once from local Ollama with `nomic-embed-text`, from `"classification: " + text`, stored raw and unnormalized.
 
@@ -82,8 +124,31 @@ dotnet run
 
 **Do:**
 1. Make an array of 768 zeros. This is the centroid.
+
+   The starter already does this. `new float[n]` starts out all zeros:
+
+   ```csharp
+   var dimensions = vectors.Values.First().Length;
+   var centroid = new float[dimensions];
+   ```
+
 2. Loop over the 40 normalized vectors; for each vector and position `i`, add `vector[i] / 40` to `centroid[i]`.
+
+   The starter already does this (`vectors.Count` is 40):
+
+   ```csharp
+   foreach (var vector in vectors.Values)
+       for (var i = 0; i < dimensions; i++)
+           centroid[i] += vector[i] / vectors.Count;
+   ```
+
 3. Normalize the centroid with the same function from step 2.
+
+   The starter already does this:
+
+   ```csharp
+   centroid = Normalize(centroid);
+   ```
 
 **Check:** one 768-dimension unit vector for trail-0117. If your step 4 distances are off in the third decimal from `expected-output.md`, you skipped one of the two normalizations.
 
@@ -91,9 +156,46 @@ dotnet run
 
 **Do:**
 1. Write `cosine_distance(a, b)`: 1 minus the dot product (this only works because both vectors are unit length).
+
+   The starter already does this, as a `static` helper at the bottom of `Program.cs`:
+
+   ```csharp
+   static float CosineDistance(float[] a, float[] b)
+   {
+       var dot = 0f;
+       for (var i = 0; i < a.Length; i++) dot += a[i] * b[i];
+       return 1f - dot;
+   }
+   ```
+
 2. For each report, look up its vector by `id` and compute its distance from the centroid.
 3. Sort by distance, largest first.
+
+   The starter already does items 2 and 3 in one statement: `Select` pairs each report with its distance (looking up `vectors[r.Id]`), and `OrderByDescending` sorts largest first:
+
+   ```csharp
+   var scored = reports
+       .Select(r => (Report: r, Distance: CosineDistance(vectors[r.Id], centroid)))
+       .OrderByDescending(x => x.Distance)
+       .ToList();
+   ```
+
 4. Print one line per report: distance to four decimals, `id`, `date`, and `text` cut to 62 characters.
+
+   The starter already does this. `{distance:F4}` is four decimals:
+
+   ```csharp
+   Console.WriteLine("  dist    id       date        report");
+   foreach (var (report, distance) in scored)
+       Console.WriteLine($"  {distance:F4}  {report.Id}  {report.Date}  {Truncate(report.Text, 62)}");
+   ```
+
+   The cut is another `static` helper at the bottom:
+
+   ```csharp
+   static string Truncate(string text, int max) =>
+       text.Length <= max ? text : text[..(max - 1)] + "…";
+   ```
 
 **Check:** `cr-0496` is rank 1 at `0.2561` and `cr-0429` is rank 2 at `0.2399`. Routine reports are mixed in with the washout reports and there is no gap anywhere in the distances. Washout reports ranked in the 30s mean the prefix is missing.
 
@@ -140,7 +242,7 @@ dotnet run
    record Scored(Report Report, float Distance);
    ```
 
-   Then the centroid and scoring lines:
+   Then replace the starter's centroid and `var scored` lines with these. The starter's table loop `foreach (var (report, distance) in scored)` keeps working, because a positional `record` can be taken apart the same way a tuple can:
 
    ```csharp
    var dimensions = vectors[0].Length;
@@ -172,11 +274,13 @@ dotnet run
 3. Set `threshold = mean + sigma * sd`, `sigma` defaulting to 1.0 (`--sigma` in `complete/`).
 4. Print `mean distance <mean> · sd <sd> · threshold mean+1sd = <threshold>`, all to four decimals.
 
-   After `scored`, declare `sigma`, compute the mean and population standard deviation, and print them:
+   Put `sigma` near the top of `Program.cs`, below `var data = "../../data";`:
 
    ```csharp
    var sigma = 1.0;
    ```
+
+   Directly after the `var scored = ...ToList();` statement, compute the mean and the population standard deviation (`Average` of the squared gaps, then `Math.Sqrt`):
 
    ```csharp
    var mean = scored.Average(s => s.Distance);
@@ -184,13 +288,15 @@ dotnet run
    var threshold = mean + sigma * deviation;
    ```
 
+   Print it between the starter's `Console.WriteLine($"trail-0117 · ...")` header line and its `Console.WriteLine("  dist    id       date        report");` line, so it lands above the table:
+
    ```csharp
    Console.WriteLine($"mean distance {mean:F4} · sd {deviation:F4} · threshold mean+{sigma:0.#}sd = {threshold:F4}\n");
    ```
 
 5. In the table, put a `!` in place of the first leading space of every row above the threshold, so columns stay aligned.
 
-   Change the table loop:
+   Replace the starter's two-line `foreach (var (report, distance) in scored)` loop with:
 
    ```csharp
    foreach (var s in scored)
@@ -216,7 +322,7 @@ dotnet run
 static DateTime Date(Report r) => DateTime.Parse(r.Date);
 ```
 
-Then, after the table, the alert rule. `complete/` declares `trail` and `window` at the top because it takes `--trail` and `--window`; declare them the same way:
+Then, after the table, the alert rule. `complete/` declares `trail` and `window` at the top because it takes `--trail` and `--window`; declare them the same way, below `var data = "../../data";`:
 
 ```csharp
 var trail = "0117";
@@ -252,6 +358,8 @@ for (var i = 0; i < flagged.Count;)
 Console.WriteLine($"\n{alerts} alert(s). Model calls: {reports.Count} embeddings, 0 chat completions.");
 ```
 
+That whole block goes after the table loop and above the `static` helpers. `flagged[i..j]` copies positions `i` up to but not including `j` into a new list, and `group[^1]` is the last item.
+
 Run:
 
 ```bash
@@ -275,9 +383,49 @@ Pick any. Each one is already built in `complete/`, and [`expected-output.md`](.
   ```
 
   **Check:** bare, `cr-0429` drops to rank 11, the threshold moves to `0.2789`, and two alerts fire, one on October 2025 mud and one on May 2026 glacier lilies. Not one washout report is flagged. Nothing throws and the table still looks reasonable. Put the prefix back and `cr-0429` returns to rank 2 with three washout reports in the top 5.
+
+  Change the one `prefix` line you added in step 5. Nothing else changes, because every input is built as `prefix + r.Text`:
+
+  ```csharp
+  // Hint: the step 5 line, with an empty string instead of "classification: "
+  var prefix = "";
+  ```
+
 - **Tune the threshold.** Run with `sigma` at 1.5 (`--sigma 1.5`). **Check:** 4 reports are flagged instead of 7. Neither setting is correct. The value is a business choice about how much review you can afford.
+
+  Change the `sigma` line you added in step 6:
+
+  ```csharp
+  // Hint: the step 6 line, with a new value
+  var sigma = <new sigma>;
+  ```
+
 - **Build the baseline before the anomalies arrived.** Build the centroid in step 3 from only the 32 reports dated before 2026-06-18, then score all 40 against it. **Why:** eight of the 40 reports are about the bridge; in the main path they pull the centroid toward themselves and partly hide. **Check:** all eight washout reports (`cr-0429`, `cr-0431`, `cr-0436`, `cr-0438`, `cr-0443`, `cr-0464`, `cr-0480`, `cr-0496`) land in the top 10.
+
+  Only the centroid loop changes. First pick out the vectors whose report is older than the cutoff (`vectors[index]` belongs to `reports[index]`), then average only those. Put it in place of the `foreach (var vector in vectors)` loop from step 5, keep `centroid = Normalize(centroid);` after it, and leave the `var scored` statement alone so all 40 are still scored:
+
+  ```csharp
+  // Hint: filter by position, then divide by the smaller count
+  var baseline = vectors.Where((v, index) => DateTime.Parse(reports[index].Date) < DateTime.Parse("<cutoff date>")).ToList();
+  foreach (var vector in baseline)
+      for (var i = 0; i < dimensions; i++)
+          centroid[i] += vector[i] / baseline.Count;
+  ```
+
 - **Run the other trail.** Point step 1 at `../../data/reports-0042.jsonl` (`--trail 0042` in `complete/`): the 25 `trail-0042` lines from feature 10's stream, dated 2025-05-04 to 2026-07-07. The planted event is bear activity, four reports from 2026-06-25 to 2026-07-02 (`cr-0446`, `cr-0449`, `cr-0453`, `cr-0455`). There are no precomputed vectors for this trail, so this goal needs Ollama. **Check:** `cr-0446` is rank 1 at `0.3067` with a visible gap to second place, the threshold is `0.2292`, and one alert fires on `cr-0446` and `cr-0449`, 2026-06-25 to 2026-06-27.
+
+  Set `var trail = "0042";` (the line you added in step 7), move that line above `var reports`, and build the file name from it. This replaces the first line of the starter's `var reports` statement:
+
+  ```csharp
+  var reports = File.ReadLines($"../../data/reports-{trail}.jsonl")
+  ```
+
+  The starter's header line still says `trail-0117`. Put `trail` into it too:
+
+  ```csharp
+  // Hint: same idea as the ALERT line in step 7
+  Console.WriteLine($"trail-{trail} · {reports.Count} reports · <rest of the header>");
+  ```
 
 ## What Is in This Folder
 

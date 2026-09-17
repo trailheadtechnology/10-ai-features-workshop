@@ -64,16 +64,32 @@ Plan me a 3-day trip in Glacier National Park for September 14-16.
 dotnet run
 ```
 
+The starter already does this. It picks the request (your command-line words, or the default sentence) and sends it in one call with no tools:
+
+```csharp
+var request = args.Length > 0
+    ? string.Join(" ", args)
+    : "Plan me a 3-day trip in Glacier National Park for September 14-16.";
+```
+
+```csharp
+var response = await client.GetResponseAsync(
+    $"""
+    You are the trip planner for Trailhead Guides, a hiking app.
+
+    {request}
+    """);
+
+Console.WriteLine(response.Text);
+```
+
 **Check:** a fluent three-day plan with zero tool calls. It names trails and campgrounds the model half-remembers. It checks no weather, reads no conditions, and books nothing. The rest of the lab closes that gap.
 
 ### Step 1: Write the first two tools as ordinary functions
 
 **Do:** each tool is a plain function that reads a file under `data/` and returns a JSON string. Make them static methods on a `Trailhead` class with `const string DataDir = "../../data";` at the top. That path is relative to the project folder, which is the working directory under `dotnet run`, so run from `starter/` rather than launching the built binary. At the top of each, print `[tool] ` plus the tool name and its arguments. That line is how you watch the loop run. The model will see each tool under its C# method name (`SearchTrails`, not `search_trails`), so print the snake_case name by hand; the `Narrate` helper below does it.
 
-1. Write `search_trails(park, features, max_difficulty)`. Open `data/trails.json` (200 trails across six parks, 45 in Glacier). Keep trails whose `park` contains the `park` argument (case-insensitive). If `max_difficulty` was given, drop trails harder than it (`easy` < `moderate` < `hard`). If `features` was given, keep a trail only when at least one keyword appears in its `name` **or** its `features` tags. Do not skip the name match. Stop after 8 matches. Return them as a JSON array without the `description` field.
-2. Write `check_campsites(park)`. Open `data/mock-apis/campsites.json` (an object keyed by park name, skip the `_comment` key). Find the key that matches the park: the key contains the argument, the argument contains the key, or the key contains the argument's first word, ignoring case. Return that entry as a JSON string, or `{"error": "No campsite data for '<park>'."}` if nothing matches.
-
-Add these to the `using` lines at the top of `Program.cs`:
+Add these to the `using` lines at the top of `Program.cs`. `[Description]` comes from the first, `JsonSerializer` from the second, `JsonNode` from the third:
 
 ```csharp
 using System.ComponentModel;
@@ -81,7 +97,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 ```
 
-The class goes at the bottom of the file, after `CreateChatClient`. Every tool prints its `[tool]` line and its result preview through two small helpers. `AutoApprovePermits`, `Called`, and `LastResultIds` are used by the stretch goals; declaring them now costs nothing.
+The class goes at the very bottom of `Program.cs`, below the closing `}` of `CreateChatClient`. C# requires the top-level statements (the code that runs) to come first and any types to come after them. `static` means you call its members through the class name, as `Trailhead.SearchTrails`, without creating an object. `AutoApprovePermits`, `Called`, and `LastResultIds` are used by the stretch goals; declaring them now costs nothing.
 
 ```csharp
 static class Trailhead
@@ -94,60 +110,12 @@ static class Trailhead
     public static readonly List<string> LastResultIds = [];
 
     static readonly JsonSerializerOptions Pretty = new() { WriteIndented = false };
+}
+```
 
-    [Description("Search the trail catalog. Returns matching trails with id, name, park, distance, elevation, difficulty, and features.")]
-    public static string SearchTrails(
-        [Description("Park name, e.g. 'Glacier National Park'. Partial names like 'Glacier' work.")] string park = "Glacier National Park",
-        [Description("Optional keywords matched against each trail's features and its name, e.g. ['lake', 'waterfall'] or ['Avalanche Lake'].")] string[]? features = null,
-        [Description("Optional maximum difficulty: 'easy', 'moderate', or 'hard'.")] string? maxDifficulty = null)
-    {
-        Narrate("search_trails", new { park, features, max_difficulty = maxDifficulty });
+Every tool prints its `[tool]` line and its result preview through two small helpers. Put them inside the class, just above its closing `}`. `JsonSerializer.Serialize(args)` turns an anonymous object such as `new { park }` into `{"park":"..."}`, which is how the arguments get printed with their snake_case names:
 
-        var trails = JsonNode.Parse(File.ReadAllText($"{DataDir}/trails.json"))!.AsArray();
-        var rank = (string d) => d switch { "easy" => 0, "moderate" => 1, _ => 2 };
-        var maxRank = maxDifficulty is null ? 2 : rank(maxDifficulty.ToLowerInvariant());
-
-        var matches = trails
-            .Where(t => ((string)t!["park"]!).Contains(park, StringComparison.OrdinalIgnoreCase))
-            .Where(t => rank((string)t!["difficulty"]!) <= maxRank)
-            .Where(t => features is null || features.Length == 0 || features.Any(f =>
-                ((string)t!["name"]!).Contains(f, StringComparison.OrdinalIgnoreCase) ||
-                t!["features"]!.AsArray().Any(x => ((string)x!).Contains(f, StringComparison.OrdinalIgnoreCase))))
-            .Take(8)
-            .Select(t => new
-            {
-                id = (string)t!["id"]!,
-                name = (string)t["name"]!,
-                park = (string)t["park"]!,
-                distance_mi = (double)t["distance_mi"]!,
-                elevation_ft = (int)t["elevation_ft"]!,
-                difficulty = (string)t["difficulty"]!,
-                features = t["features"]!.AsArray().Select(x => (string)x!).ToArray(),
-            });
-
-        var found = matches.ToArray();
-        LastResultIds.Clear();
-        LastResultIds.AddRange(found.Select(t => t.id));
-        return Result(JsonSerializer.Serialize(found, Pretty));
-    }
-
-    [Description("Check campground availability in a park. Returns campgrounds with open sites per date, type (frontcountry or backcountry), and notes.")]
-    public static string CheckCampsites(
-        [Description("Park name, e.g. 'Glacier National Park'.")] string park = "Glacier National Park")
-    {
-        Narrate("check_campsites", new { park });
-
-        var all = JsonNode.Parse(File.ReadAllText($"{DataDir}/mock-apis/campsites.json"))!.AsObject();
-        var entry = all.FirstOrDefault(kv =>
-            kv.Key.Contains(park, StringComparison.OrdinalIgnoreCase) ||
-            park.Contains(kv.Key, StringComparison.OrdinalIgnoreCase) ||
-            kv.Key.Contains(park.Split(' ')[0], StringComparison.OrdinalIgnoreCase));
-
-        return Result(entry.Value is null
-            ? $"{{\"error\": \"No campsite data for '{park}'.\"}}"
-            : entry.Value.ToJsonString(Pretty));
-    }
-
+```csharp
     static void Narrate(string tool, object args)
     {
         Called.Add(tool);
@@ -160,8 +128,74 @@ static class Trailhead
         Console.WriteLine($"  [result] {preview}");
         return json;
     }
-}
 ```
+
+Each tool method in items 1 and 2 also goes inside the class, above `Narrate`.
+
+1. Write `search_trails(park, features, max_difficulty)`. Open `data/trails.json` (200 trails across six parks, 45 in Glacier). Keep trails whose `park` contains the `park` argument (case-insensitive). If `max_difficulty` was given, drop trails harder than it (`easy` < `moderate` < `hard`). If `features` was given, keep a trail only when at least one keyword appears in its `name` **or** its `features` tags. Do not skip the name match. Stop after 8 matches. Return them as a JSON array without the `description` field.
+
+   In C# the parameters become `string park`, `string[]? features`, and `string? maxDifficulty`, each with a default so a call with a missing argument still runs. The `[Description]` text in front of the method and each parameter is what the model reads (step 2 explains). The body parses the file with `JsonNode`, filters with LINQ `Where`, stops with `Take(8)`, and uses `Select(t => new { ... })` to copy every field except `description` into a new anonymous object. The `rank` lambda turns `easy`/`moderate`/`hard` into 0/1/2 so difficulties can be compared:
+
+   ```csharp
+       [Description("Search the trail catalog. Returns matching trails with id, name, park, distance, elevation, difficulty, and features.")]
+       public static string SearchTrails(
+           [Description("Park name, e.g. 'Glacier National Park'. Partial names like 'Glacier' work.")] string park = "Glacier National Park",
+           [Description("Optional keywords matched against each trail's features and its name, e.g. ['lake', 'waterfall'] or ['Avalanche Lake'].")] string[]? features = null,
+           [Description("Optional maximum difficulty: 'easy', 'moderate', or 'hard'.")] string? maxDifficulty = null)
+       {
+           Narrate("search_trails", new { park, features, max_difficulty = maxDifficulty });
+
+           var trails = JsonNode.Parse(File.ReadAllText($"{DataDir}/trails.json"))!.AsArray();
+           var rank = (string d) => d switch { "easy" => 0, "moderate" => 1, _ => 2 };
+           var maxRank = maxDifficulty is null ? 2 : rank(maxDifficulty.ToLowerInvariant());
+
+           var matches = trails
+               .Where(t => ((string)t!["park"]!).Contains(park, StringComparison.OrdinalIgnoreCase))
+               .Where(t => rank((string)t!["difficulty"]!) <= maxRank)
+               .Where(t => features is null || features.Length == 0 || features.Any(f =>
+                   ((string)t!["name"]!).Contains(f, StringComparison.OrdinalIgnoreCase) ||
+                   t!["features"]!.AsArray().Any(x => ((string)x!).Contains(f, StringComparison.OrdinalIgnoreCase))))
+               .Take(8)
+               .Select(t => new
+               {
+                   id = (string)t!["id"]!,
+                   name = (string)t["name"]!,
+                   park = (string)t["park"]!,
+                   distance_mi = (double)t["distance_mi"]!,
+                   elevation_ft = (int)t["elevation_ft"]!,
+                   difficulty = (string)t["difficulty"]!,
+                   features = t["features"]!.AsArray().Select(x => (string)x!).ToArray(),
+               });
+
+           var found = matches.ToArray();
+           LastResultIds.Clear();
+           LastResultIds.AddRange(found.Select(t => t.id));
+           return Result(JsonSerializer.Serialize(found, Pretty));
+       }
+   ```
+
+2. Write `check_campsites(park)`. Open `data/mock-apis/campsites.json` (an object keyed by park name, skip the `_comment` key). Find the key that matches the park: the key contains the argument, the argument contains the key, or the key contains the argument's first word, ignoring case. Return that entry as a JSON string, or `{"error": "No campsite data for '<park>'."}` if nothing matches.
+
+   `all` is the whole file as a JSON object; `FirstOrDefault` walks its key/value pairs and stops at the first key that matches one of the three rules. The `_comment` key never contains a park name, so it is never picked. If nothing matches, `entry.Value` is `null` and the error string goes back instead:
+
+   ```csharp
+       [Description("Check campground availability in a park. Returns campgrounds with open sites per date, type (frontcountry or backcountry), and notes.")]
+       public static string CheckCampsites(
+           [Description("Park name, e.g. 'Glacier National Park'.")] string park = "Glacier National Park")
+       {
+           Narrate("check_campsites", new { park });
+
+           var all = JsonNode.Parse(File.ReadAllText($"{DataDir}/mock-apis/campsites.json"))!.AsObject();
+           var entry = all.FirstOrDefault(kv =>
+               kv.Key.Contains(park, StringComparison.OrdinalIgnoreCase) ||
+               park.Contains(kv.Key, StringComparison.OrdinalIgnoreCase) ||
+               kv.Key.Contains(park.Split(' ')[0], StringComparison.OrdinalIgnoreCase));
+
+           return Result(entry.Value is null
+               ? $"{{\"error\": \"No campsite data for '{park}'.\"}}"
+               : entry.Value.ToJsonString(Pretty));
+       }
+   ```
 
 **Why:** the planted record is `trail-0117`, Avalanche Lake Trail, whose catalog description mentions the footbridge crossing at the gorge's mouth and says nothing about it being gone. Only the condition reports (step 4) do. Avalanche Lake Trail is the 27th Glacier trail in the catalog and none of its feature tags contain "Avalanche", so without the name match in `search_trails`, a search for it can never reach it. Similarly, `check_campsites`'s planted fact (named in the fixture's own `_comment`) is that Sperry Chalet Area Sites shows 0 open sites on the 13th, 14th, and 15th, so a plan that sleeps there those nights ignored the tool.
 
@@ -203,7 +237,20 @@ static class Trailhead
 }
 ```
 
-2. Register each method with `AIFunctionFactory.Create` and hand the list to `ChatOptions.Tools`; the snippet under item 4 shows both.
+   No new code for item 1: the `[Description]` attributes you wrote in step 1 are the declaration. The one above `public static string SearchTrails(` is the tool's `description`; the one in front of each parameter is that parameter's `description`.
+
+2. Register each method with `AIFunctionFactory.Create` and hand the list to `ChatOptions.Tools`. `AIFunctionFactory.Create` reads the method's name, parameters, and `[Description]` text and builds the tool definition the model sees. Paste this below the starter's `var request = ...` statement (the three lines ending in `September 14-16.";`):
+
+   ```csharp
+   var options = new ChatOptions
+   {
+       Tools =
+       [
+           AIFunctionFactory.Create(Trailhead.SearchTrails),
+           AIFunctionFactory.Create(Trailhead.CheckCampsites),
+       ],
+   };
+   ```
 3. Start `messages` with a system message and a user message:
 
 ```text
@@ -214,46 +261,45 @@ You are the trip-planning agent for Trailhead Guides, a hiking app. Today's date
 Plan me a 3-day trip in Glacier National Park for September 14-16.
 ```
 
-4. Let `UseFunctionInvocation` run the loop and cap it at 12 iterations. That cap is the step budget. Nothing else stops a model that keeps asking for one more tool. Microsoft.Extensions.AI sends the tools, runs each call, appends the results, and repeats until the reply is prose, so this is the whole loop. The first line replaces the starter's `IChatClient client = CreateChatClient();`, and the starter's single-string `GetResponseAsync` call gives way to a `messages` list; paste the system message from item 3 between its triple quotes:
+   The user message is the starter's `request` variable. Put this below the `options` block from item 2, and paste the system message above between the two `"""` lines (C# raw string quotes, so the text needs no escaping). Indent every pasted line at least as far as the closing `"""`, or it will not compile:
 
-```csharp
-IChatClient inner = CreateChatClient();
-IChatClient client = new ChatClientBuilder(inner)
-    // Step budget. This cap is the only bound on the tool-calling loop; a model
-    // that keeps deciding to call one more tool has no other stopping condition.
-    .UseFunctionInvocation(configure: c => c.MaximumIterationsPerRequest = 12)
-    .Build();
+   ```csharp
+   List<ChatMessage> messages =
+   [
+       new(ChatRole.System, """
+           """),
+       new(ChatRole.User, request),
+   ];
+   ```
 
-var options = new ChatOptions
-{
-    Tools =
-    [
-        AIFunctionFactory.Create(Trailhead.SearchTrails),
-        AIFunctionFactory.Create(Trailhead.CheckCampsites),
-    ],
-};
+4. Let `UseFunctionInvocation` run the loop and cap it at 12 iterations. That cap is the step budget. Nothing else stops a model that keeps asking for one more tool. Microsoft.Extensions.AI sends the tools, runs each call, appends the results, and repeats until the reply is prose, so this is the whole loop. `ChatClientBuilder` wraps the plain client from `CreateChatClient()` in one that does the loop. These lines replace the starter's `IChatClient client = CreateChatClient();`:
 
-List<ChatMessage> messages =
-[
-    new(ChatRole.System, """
-        """),
-    new(ChatRole.User, request),
-];
+   ```csharp
+   IChatClient inner = CreateChatClient();
+   IChatClient client = new ChatClientBuilder(inner)
+       // Step budget. This cap is the only bound on the tool-calling loop; a model
+       // that keeps deciding to call one more tool has no other stopping condition.
+       .UseFunctionInvocation(configure: c => c.MaximumIterationsPerRequest = 12)
+       .Build();
+   ```
 
-var response = await client.GetResponseAsync(messages, options);
-```
+   Then send the list and the tools. This one line replaces the starter's whole `var response = await client.GetResponseAsync(` call, from that line down to its closing `""");`:
 
-5. Print `response.Text`. That text is the itinerary.
+   ```csharp
+   var response = await client.GetResponseAsync(messages, options);
+   ```
 
-```csharp
-Console.WriteLine(response.Text);
-```
+5. Print `response.Text`. That text is the itinerary. The starter already does this, on the line below the call:
 
-   Run it:
+   ```csharp
+   Console.WriteLine(response.Text);
+   ```
 
-```bash
-dotnet run
-```
+   The starter's two `Console.WriteLine("Note: zero tool calls ...` lines at the end are no longer true; delete them. Run it:
+
+   ```bash
+   dotnet run
+   ```
 
 **Check:** one `[tool]` line prints for each of the two tools, then the itinerary. An itinerary with no tool lines means the model never saw your tools; a mismatched name means a tool result did not reach it.
 
@@ -262,24 +308,26 @@ dotnet run
 **Do:**
 1. Write `get_weather(park)` the same way as `check_campsites`, reading `data/mock-apis/weather.json`; return `{"error": "No forecast available for '<park>'."}` if nothing matches.
 
-```csharp
-    [Description("Get the multi-day weather forecast and advisories for a park.")]
-    public static string GetWeather(
-        [Description("Park name, e.g. 'Glacier National Park'.")] string park = "Glacier National Park")
-    {
-        Narrate("get_weather", new { park });
+   Put it inside `Trailhead`, next to `CheckCampsites`. Only the file name and the error text differ from that method:
 
-        var all = JsonNode.Parse(File.ReadAllText($"{DataDir}/mock-apis/weather.json"))!.AsObject();
-        var entry = all.FirstOrDefault(kv =>
-            kv.Key.Contains(park, StringComparison.OrdinalIgnoreCase) ||
-            park.Contains(kv.Key, StringComparison.OrdinalIgnoreCase) ||
-            kv.Key.Contains(park.Split(' ')[0], StringComparison.OrdinalIgnoreCase));
+   ```csharp
+       [Description("Get the multi-day weather forecast and advisories for a park.")]
+       public static string GetWeather(
+           [Description("Park name, e.g. 'Glacier National Park'.")] string park = "Glacier National Park")
+       {
+           Narrate("get_weather", new { park });
 
-        return Result(entry.Value is null
-            ? $"{{\"error\": \"No forecast available for '{park}'.\"}}"
-            : entry.Value.ToJsonString(Pretty));
-    }
-```
+           var all = JsonNode.Parse(File.ReadAllText($"{DataDir}/mock-apis/weather.json"))!.AsObject();
+           var entry = all.FirstOrDefault(kv =>
+               kv.Key.Contains(park, StringComparison.OrdinalIgnoreCase) ||
+               park.Contains(kv.Key, StringComparison.OrdinalIgnoreCase) ||
+               kv.Key.Contains(park.Split(' ')[0], StringComparison.OrdinalIgnoreCase));
+
+           return Result(entry.Value is null
+               ? $"{{\"error\": \"No forecast available for '{park}'.\"}}"
+               : entry.Value.ToJsonString(Pretty));
+       }
+   ```
 
 2. Write the `get_weather` description yourself, as the `[Description]` text on the method and its `park` parameter. Only then check the reference in `data/tool-definitions.json`:
 
@@ -298,12 +346,18 @@ dotnet run
 }
 ```
 
-3. Add `AIFunctionFactory.Create(Trailhead.GetWeather)` to `ChatOptions.Tools` alongside the first two tools.
+3. Add `AIFunctionFactory.Create(Trailhead.GetWeather)` to `ChatOptions.Tools` alongside the first two tools. It is one more line inside the `Tools = [ ... ]` list from step 2, below the `SearchTrails` line; keep the trailing comma:
+
+   ```csharp
+           AIFunctionFactory.Create(Trailhead.GetWeather),
+   ```
 4. Replace the system prompt:
 
 ```text
 You are the trip-planning agent for Trailhead Guides, a hiking app. Today's date is September 11, 2026. Plan trips using your tools; never invent trails, weather, availability, or conditions. Every trail name, forecast, and campground in your answer must have come back from a tool call in this conversation. Call the tools one at a time, in this order, and do not write any part of the itinerary until all of them have been called: 1. get_weather for the park. 2. search_trails for candidate trails. 3. check_campsites for where to stay each night. Then write the itinerary: one section per day with trail, campsite, and how the forecast shaped the choice (put harder or more exposed hiking on the drier days).
 ```
+
+   In `Program.cs` the system prompt is the text between the two `"""` lines of `new(ChatRole.System, """` in the `messages` list from step 2. Delete the old text there and paste this in its place.
 
 5. Send this user message and run the loop again:
 
@@ -323,54 +377,68 @@ dotnet run -- "Plan me a 3-day trip in Glacier National Park for September 14-16
 
 **Do:**
 1. Write `get_trail_conditions(trail_id)`. If `trail_id` is missing/blank, return `{"error": "trailId is required. Call search_trails first and use one of its ids."}` instead of throwing.
+
+   This version already has the forgiving stretch goal in place: a blank or `"null"` id gets an error listing the ids `SearchTrails` last returned, and a trail name resolves to its id. That is why its error text says `Call this tool again with one of these ids: ...` instead of the sentence above; return the code's version, which gives the model the ids to retry with. The method goes inside `Trailhead`. It opens with the attributes, the `[tool]` line, and the missing-id check, which returns early instead of throwing:
+
+   ```csharp
+       [Description("Get the most recent hiker-submitted condition reports for a trail. Always check this before recommending a trail; reports surface closures and hazards such as washouts.")]
+       public static string GetTrailConditions(
+           [Description("The trail id from search_trails, e.g. 'trail-0117'. A trail name also works.")] string? trailId = null)
+       {
+           Narrate("get_trail_conditions", new { trail_id = trailId });
+
+           if (string.IsNullOrWhiteSpace(trailId) || trailId is "null" or "string")
+           {
+               var candidates = LastResultIds.Count > 0 ? string.Join(", ", LastResultIds) : "call search_trails first";
+               return Result($"{{\"error\": \"trailId is required. Call this tool again with one of these ids: {candidates}.\"}}");
+           }
+   ```
+
+   Directly below it, still in the method, the name lookup: anything that does not start with `trail-` is looked up by name in `trails.json` and swapped for that trail's id:
+
+   ```csharp
+           if (!trailId.StartsWith("trail-", StringComparison.OrdinalIgnoreCase))
+           {
+               var trails = JsonNode.Parse(File.ReadAllText($"{DataDir}/trails.json"))!.AsArray();
+               var byName = trails.FirstOrDefault(t =>
+                   ((string)t!["name"]!).Contains(trailId, StringComparison.OrdinalIgnoreCase));
+               if (byName is not null) trailId = (string)byName["id"]!;
+           }
+   ```
+
 2. Open `data/condition-reports.jsonl` line by line, parsing each non-empty line as JSON (`id`, `trail_id`, `date`, `text`). Keep reports whose `trail_id` matches (case-insensitive). Sort by `date`, newest first. Keep the first 4.
+
+   Next in the same method. `File.ReadLines` yields one line at a time, each is parsed as its own JSON object, and the LINQ chain filters, sorts newest first, keeps 4, and projects each report into an anonymous `{ date, report }` object:
+
+   ```csharp
+           var id = trailId;
+           var reports = File.ReadLines($"{DataDir}/condition-reports.jsonl")
+               .Select(l => JsonNode.Parse(l)!)
+               .Where(r => string.Equals((string)r["trail_id"]!, id, StringComparison.OrdinalIgnoreCase))
+               .OrderByDescending(r => (string)r["date"]!)
+               .Take(4)
+               .Select(r => new { date = (string)r["date"]!, report = (string)r["text"]! })
+               .ToArray();
+   ```
+
 3. If none matched, return `{"error": "No condition reports found for '<trail_id>'."}`. Otherwise return a JSON array of `{date, report}` objects (`report` = the line's `text`).
 
-   This version already has the forgiving stretch goal in place: a blank or `"null"` id gets an error listing the ids `SearchTrails` last returned, and a trail name resolves to its id.
+   The method ends by returning one or the other, then closes:
 
-```csharp
-    [Description("Get the most recent hiker-submitted condition reports for a trail. Always check this before recommending a trail; reports surface closures and hazards such as washouts.")]
-    public static string GetTrailConditions(
-        [Description("The trail id from search_trails, e.g. 'trail-0117'. A trail name also works.")] string? trailId = null)
-    {
-        Narrate("get_trail_conditions", new { trail_id = trailId });
+   ```csharp
+           return Result(reports.Length == 0
+               ? $"{{\"error\": \"No condition reports found for '{trailId}'.\"}}"
+               : JsonSerializer.Serialize(reports, Pretty));
+       }
+   ```
 
-        // Every tool parameter here has a default and every failure returns an
-        // error string instead of throwing. A model that supplies a missing or
-        // malformed argument gets a correctable message back naming the valid
-        // ids, rather than crashing the process mid-loop.
-        if (string.IsNullOrWhiteSpace(trailId) || trailId is "null" or "string")
-        {
-            var candidates = LastResultIds.Count > 0 ? string.Join(", ", LastResultIds) : "call search_trails first";
-            return Result($"{{\"error\": \"trailId is required. Call this tool again with one of these ids: {candidates}.\"}}");
-        }
+4. Declare `get_trail_conditions` by adding `AIFunctionFactory.Create(Trailhead.GetTrailConditions)` to `Tools`, one more line in the same list as step 3:
 
-        // A model may pass the trail name where an id is expected, so resolve
-        // names too instead of returning nothing found.
-        if (!trailId.StartsWith("trail-", StringComparison.OrdinalIgnoreCase))
-        {
-            var trails = JsonNode.Parse(File.ReadAllText($"{DataDir}/trails.json"))!.AsArray();
-            var byName = trails.FirstOrDefault(t =>
-                ((string)t!["name"]!).Contains(trailId, StringComparison.OrdinalIgnoreCase));
-            if (byName is not null) trailId = (string)byName["id"]!;
-        }
+   ```csharp
+           AIFunctionFactory.Create(Trailhead.GetTrailConditions),
+   ```
 
-        var id = trailId;
-        var reports = File.ReadLines($"{DataDir}/condition-reports.jsonl")
-            .Select(l => JsonNode.Parse(l)!)
-            .Where(r => string.Equals((string)r["trail_id"]!, id, StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(r => (string)r["date"]!)
-            .Take(4)
-            .Select(r => new { date = (string)r["date"]!, report = (string)r["text"]! })
-            .ToArray();
-
-        return Result(reports.Length == 0
-            ? $"{{\"error\": \"No condition reports found for '{trailId}'.\"}}"
-            : JsonSerializer.Serialize(reports, Pretty));
-    }
-```
-
-4. Declare `get_trail_conditions` by adding `AIFunctionFactory.Create(Trailhead.GetTrailConditions)` to `Tools`. The reference definition, whose wording belongs in the `[Description]` text:
+   The reference definition, whose wording belongs in the `[Description]` text:
 
 ```json
 {
@@ -392,6 +460,8 @@ dotnet run -- "Plan me a 3-day trip in Glacier National Park for September 14-16
 ```text
 You are the trip-planning agent for Trailhead Guides, a hiking app. Today's date is September 11, 2026. Plan trips using your tools; never invent trails, weather, availability, or conditions. Every trail name, forecast, campground, and condition in your answer must have come back from a tool call in this conversation. Call the tools one at a time, in this order, and do not write any part of the itinerary until all of them have been called: 1. get_weather for the park. 2. search_trails for candidate trails that fit the request. 3. get_trail_conditions for EVERY trail you intend to recommend, one call per trail, using the trail id returned by search_trails. If the newest reports for a trail mention a closure, a washout, a bridge that is out, or any other reason hikers are turning around, that trail is CLOSED. Do not schedule a day on a closed trail. Replace it with another trail from search_trails and state plainly, in the itinerary, that the original trail is closed and why. 4. check_campsites for where to stay each night. 5. request_permit once, only if a backcountry site or permit zone is involved. If you have not yet called search_trails and get_trail_conditions, your next move is a tool call, not prose. Then write the final itinerary: one section per day with trail, campsite, and how the forecast shaped the choice. End with the permit status.
 ```
+
+   As in step 3, paste it between the two `"""` lines of `new(ChatRole.System, """`, replacing the step 3 prompt.
 
 6. Send this user message and run the loop again:
 
@@ -441,7 +511,7 @@ Pick any. Each one is already built in `complete/`.
 
   Add a `--yes` flag that skips the question for demo runs.
 
-  Add the method to `Trailhead` and register it with `AIFunctionFactory.Create(Trailhead.RequestPermit)`. The static `AutoApprovePermits` from step 1 holds the flag.
+  Add the method inside `Trailhead`, next to the other tools. The static `AutoApprovePermits` from step 1 holds the flag. `Console.ReadLine()` pauses the loop until someone types an answer, and `?.` handles the case where there is no input at all:
 
   ```csharp
       [Description("Submit a backcountry permit request. This files a real request, so use it once, at the end, after the plan is settled.")]
@@ -477,7 +547,13 @@ Pick any. Each one is already built in `complete/`.
       }
   ```
 
-  These lines replace the starter's request parsing at the top of the file so `--yes` is not sent as part of the request:
+  Register it with one more line in the `Tools = [ ... ]` list:
+
+  ```csharp
+          AIFunctionFactory.Create(Trailhead.RequestPermit),
+  ```
+
+  These lines replace the starter's `var request = args.Length > 0 ...` statement (three lines) near the top of the file, so `--yes` is not sent as part of the request. `args.Where(a => a != "--yes")` keeps every word except the flag:
 
   ```csharp
   var autoApprove = args.Contains("--yes");
@@ -493,11 +569,15 @@ Pick any. Each one is already built in `complete/`.
 
 - **Nudge a model that stops early.** A small model often quits after one or two tools, then writes the plan from trails it never looked up. After `GetResponseAsync` returns, compare the set of tools called against `get_weather`, `search_trails`, `get_trail_conditions`, and `check_campsites`. Track called tool names in a static set that each tool adds itself to; `Narrate` from step 1 already does `Called.Add(tool)`. If any are missing, first append `response.Messages`, the whole previous response, so the tool calls and results stay in the history, then append a user message naming them and asking for the next call; call `GetResponseAsync` again, up to 3 times. If every tool was called but the answer has no "day" in it, append the response and one user message asking for the itinerary and run once more. Print `[nudge]` whenever this fires.
 
-  The first line goes just before step 2's `GetResponseAsync` call; the rest goes between that call and `Console.WriteLine(response.Text);`.
+  This line goes just above step 2's `var response = await client.GetResponseAsync(messages, options);`:
 
   ```csharp
   string[] required = ["get_weather", "search_trails", "get_trail_conditions", "check_campsites"];
+  ```
 
+  The retry loop goes below that call and above `Console.WriteLine(response.Text);`. Each pass works out which required names are not in `Trailhead.Called`, stops if none are missing, otherwise appends the previous response and a user message and calls again. The `hint` adds the trail ids from the last search when `get_trail_conditions` is the one missing:
+
+  ```csharp
   for (var nudge = 0; nudge < 3; nudge++)
   {
       var missing = required.Where(t => !Trailhead.Called.Contains(t)).ToArray();
@@ -513,9 +593,11 @@ Pick any. Each one is already built in `complete/`.
           $"Call the next one now with real arguments.{hint} Do not write the itinerary yet."));
       response = await client.GetResponseAsync(messages, options);
   }
+  ```
 
-  // The mirror failure: the model announces it has finished calling tools and then
-  // stops without ever writing the plan. One turn asking for it directly.
+  Directly below the loop, still above `Console.WriteLine(response.Text);`, the one extra turn for a reply with no "day" in it:
+
+  ```csharp
   if (!response.Text.Contains("Day", StringComparison.OrdinalIgnoreCase))
   {
       Console.WriteLine("[nudge] tools are done but no itinerary was written; asking for it.");

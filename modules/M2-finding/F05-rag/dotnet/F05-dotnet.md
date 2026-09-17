@@ -58,6 +58,24 @@ dotnet run -- --model qwen3:32b   # about 20
 
 The first run of `complete/` embeds all 250 chunks (roughly 40 seconds) and caches the vectors to `complete/embeddings.json`. Delete that file if you change `chunks.jsonl`. The flags shown for later steps are the ones `complete/` supports; in the starter, add the same argument parsing or hard-code the value.
 
+To accept a flag in the starter, replace its three `var question = ...` lines with this loop from `complete/Program.cs`. Anything that is not a flag becomes part of the question. Add one `case` line per flag you need:
+
+```csharp
+var topK = 3;
+var questionParts = new List<string>();
+for (var i = 0; i < args.Length; i++)
+{
+    switch (args[i])
+    {
+        case "--top-k": topK = int.Parse(args[++i]); break;
+        default: questionParts.Add(args[i]); break;
+    }
+}
+var question = questionParts.Count > 0
+    ? string.Join(" ", questionParts)
+    : "Can I have a campfire at Sperry Chalet in September?";
+```
+
 ### Step 0: Run the starter and read the wrong answer
 
 **Do:** run `starter/` as it is. It sends this question to `llama3.2` with no documents attached:
@@ -68,6 +86,14 @@ Can I have a campfire at Sperry Chalet in September?
 
 ```bash
 dotnet run
+```
+
+The starter already does this. It builds a chat client, sends the bare question, and prints the reply:
+
+```csharp
+IChatClient client = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
+var response = await client.GetResponseAsync(question);
+Console.WriteLine(response.Text);
 ```
 
 Then open `data/park-docs/glacier-backcountry-camping-guide.md`, Section 4.2, and read the real rule.
@@ -82,11 +108,26 @@ Then open `data/park-docs/glacier-backcountry-camping-guide.md`, Section 4.2, an
 1. Open `../../data/chunks.jsonl`. Every line is one JSON object with `chunk_id`, `source`, `text`. That path is relative to your `starter/` folder.
 2. Read it line by line, parse each line, and keep the results in a list. Name your parsed fields exactly `chunk_id`, `source`, and `text` so the JSON keys map without extra configuration.
 
-`dotnet run` runs from `starter/`, so the path relative to the working directory is the right one, and `complete/Program.cs` uses it the same way. Add `using System.Text.Json;` at the top. The `Chunk` record goes at the bottom of `Program.cs`, after the top-level statements:
+`dotnet run` runs from `starter/`, so the path relative to the working directory is the right one, and `complete/Program.cs` uses it the same way. Add `using System.Text.Json;` at the top. Put these lines below the starter's `Console.WriteLine($"Q: {question}\n");` line. `File.ReadLines` hands you one line at a time, and `JsonSerializer.Deserialize<Chunk>` turns each line into a `Chunk`:
 
 ```csharp
-var chunks = File.ReadLines("../../data/chunks.jsonl").Select(l => JsonSerializer.Deserialize<Chunk>(l)!).ToList();
-// record Chunk(string chunk_id, string source, string text);
+var chunksPath = "../../data/chunks.jsonl";
+var chunks = File.ReadLines(chunksPath)
+    .Select(line => JsonSerializer.Deserialize<Chunk>(line)!)
+    .ToList();
+```
+
+`Chunk` is a `record`, a one-line class with those three properties. C# requires type declarations to come after the top-level statements, so this line goes at the very bottom of `Program.cs`, below everything else:
+
+```csharp
+record Chunk(string chunk_id, string source, string text);
+```
+
+To see the Check numbers, print them once and delete the line afterward:
+
+```csharp
+// Hint:
+Console.WriteLine($"{chunks.Count} chunks, first is {chunks[0].chunk_id}");
 ```
 
 **Why:** the chunks are the 25 park docs cut up by `data/build-chunks.py`: one chunk per numbered section, except a section over 200 words is split at its own subsection numbers, and consecutive subsections are packed together until a chunk clears a 50-word floor (five sections were long enough to split, turning 241 sections into 250 chunks). Every chunk opens with the document's title in square brackets and ends with a pointer to the next unit, marked `(continues in ...)`, so a rule is never retrieved without the exception that follows it. `chunk_id` is the file name, a colon, and the section number (`:00` is the header block, `:04.2` is Section 4.2, `:04.3-5` is subsections 4.3-4.5 packed together).
@@ -101,7 +142,7 @@ var chunks = File.ReadLines("../../data/chunks.jsonl").Select(l => JsonSerialize
 3. Store each returned vector in a dictionary keyed by that chunk's `chunk_id`.
 4. When the loop finishes, write the dictionary to `embeddings.json` next to your program; check for that file at startup and skip the loop if it exists.
 
-The embedder is an `IEmbeddingGenerator` from OllamaSharp, and each returned `Embedding<float>` carries its numbers in `.Vector`, in the same order as the batch:
+The embedder is an `IEmbeddingGenerator` from OllamaSharp, and each returned `Embedding<float>` carries its numbers in `.Vector`, in the same order as the batch. `chunks.Chunk(32)` is the LINQ method that cuts the list into arrays of 32 (it has nothing to do with the `Chunk` record), and `batch.Zip(embeddings)` pairs each chunk with its vector. Put all of this directly below the step 1 lines:
 
 ```csharp
 var cachePath = "embeddings.json";
@@ -127,6 +168,20 @@ else
 }
 ```
 
+For the Check, print the size once:
+
+```csharp
+// Hint:
+Console.WriteLine($"{index.Count} keys, {index[chunks[0].chunk_id].Length} numbers each");
+```
+
+For the shortcut in the Why below, change only the path; the `if (File.Exists(cachePath))` branch then loads the shipped file and the loop never runs:
+
+```csharp
+// Hint:
+var cachePath = "../../data/chunk-embeddings.json";
+```
+
 **Why:** re-embedding 250 chunks every run wastes ~40 seconds. `embeddings.json` is your program's own cache. Shortcut if you want to reach the RAG part faster: load `../../data/chunk-embeddings.json` instead. It is the same dictionary, already computed and shipped with the workshop.
 
 **Check:** 250 keys, each holding 768 numbers. The first run takes about 40 seconds; the second run is instant.
@@ -140,7 +195,7 @@ else
 4. Sort by score, highest first, keep the top 3.
 5. Print each of the 3 as score and `chunk_id`.
 
-`TensorPrimitives.CosineSimilarity` does the math; add `using System.Numerics.Tensors;` at the top:
+`TensorPrimitives.CosineSimilarity` does feature 04's dot-over-lengths math for you; add `using System.Numerics.Tensors;` at the top. `question` is the variable the starter already builds from `args` (shown at step 6). Put these lines below the step 2 block. Each chunk becomes a pair named `Chunk` and `Score`, the list is sorted by `Score`, and `Take(3)` keeps the first three:
 
 ```csharp
 var questionVector = (await embedder.GenerateAsync(question)).Vector.ToArray();
@@ -180,7 +235,7 @@ Answer:
 3. Send the whole prompt as a single user message to `llama3.2`, the same call the starter already makes.
 4. Print the answer.
 
-An interpolated raw string keeps the quotes and line breaks. `today` is a constant; production would pass `DateTime.Today`, and the lab pins a value so the recorded outputs stay reproducible. `chatClient` is the starter's `client`, renamed because the cloud stretch goal builds it two ways. The first three lines replace the starter's `client` line:
+An interpolated raw string keeps the quotes and line breaks. `today` is a constant; production would pass `DateTime.Today`, and the lab pins a value so the recorded outputs stay reproducible. `chatClient` is the starter's `client`, renamed because the cloud stretch goal builds it two ways. The first three lines replace the starter's `IChatClient client = ...` line. The rest goes below the step 3 lines, and its last line replaces the starter's `var response = await client.GetResponseAsync(question);` line (shown at step 0): same call, but it sends `prompt` instead of the bare `question`. In `$"""..."""`, each `{name}` is filled in with that variable's value:
 
 ```csharp
 var localModel = "llama3.2";       // the default, because it runs on any laptop in the room
@@ -211,6 +266,12 @@ var prompt = $"""
 var answer = (await chatClient.GetResponseAsync(prompt)).Text;
 ```
 
+Then replace the starter's `Console.WriteLine(response.Text);` line with this. Step 5 moves it below the citation check:
+
+```csharp
+Console.WriteLine(answer);
+```
+
 **Why:** two details of that prompt are deliberate and both are measured in `expected-output.md` under "Telling the Model What Day It Is": the date sits inside the refusal rule rather than as its own rule, and the refusal is one exact sentence rather than a general instruction.
 
 **Check:** the answer says no, wood fires are banned year-round at Sperry Chalet, and cites `[glacier-backcountry-camping-guide:04.2]`. An answer that opens "Yes" and then says fires are prohibited still passes. The failure is `You can have a campfire at Sperry Chalet in September, but only pressurized-gas stoves are permitted...` with no citation.
@@ -223,7 +284,7 @@ var answer = (await chatClient.GetResponseAsync(prompt)).Text;
 3. Compare each against your set. For any not in the set, print `!! CITATION CHECK FAILED: [the id] not in the retrieved set`.
 4. After the answer, print `[citations: N valid (the ids), M invalid]`, counting each distinct id once, so a repeated citation does not inflate N.
 
-Add `using System.Text.RegularExpressions;` at the top. `Citations` is a static local function:
+Add `using System.Text.RegularExpressions;` at the top. `Citations` is a static local function: put its four lines at the bottom of `Program.cs`, just above `record Chunk`, where `complete/` keeps its helpers. The regex captures whatever sits between `[` and `]` when it contains a colon. The remaining lines go below `var answer = ...` and replace step 4's `Console.WriteLine(answer);`:
 
 ```csharp
 static List<string> Citations(string text) =>
@@ -274,6 +335,14 @@ Pass each question as the argument, for example:
 dotnet run -- "Is the Avalanche Lake Trail open right now?"
 ```
 
+The starter already does this. `args` holds whatever follows `--`, and with no argument the question falls back to question 1:
+
+```csharp
+var question = args.Length > 0
+    ? string.Join(" ", args)
+    : "Can I have a campfire at Sperry Chalet in September?";
+```
+
 **Why:** these come from `data/questions.json`, four objects each with `id`, `question`, an `answerable` flag, and `answer_lives_in` (the document/section the answer sits in, or `nowhere` for question 4).
 
 **Check:** question 2 says eight and cites `[glacier-backcountry-permit-regulations:04]`. Question 3 says closed effective June 20, 2026, citing `glacier-seasonal-closures-2026:04.1` or `glacier-visitor-faq:02`. Question 4 replies `The provided documents don't say.` and claims no charger. If question 3 refuses, the date line from step 4 is missing or moved. `No, fuel is not available anywhere within the Park` on question 4 is a miss. The model answered the question next door.
@@ -298,14 +367,140 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
 
 - **Add a keyword score.** Cosine alone treats "campfire regulations" from five parks as nearly the same thing and barely notices the word "Sperry". Fix that with a second score: count the question's words in each chunk, weight each word by how few chunks contain it (a rare word like "Sperry" counts for more than a common one like "campfire"), rescale both scores to 0..1, and blend `0.6 * cosine + 0.4 * keyword`. Print the top 8 both ways. The full tokenizer, stop-word list, and BM25 formula are in `complete/`; the shape is below.
 
+  First, a tokenizer: lowercase, split into words, drop short and filler words, and trim a plural `s`. Copy it and its stop-word list from `complete/Program.cs` exactly; a shorter tokenizer changes which chunks win, and the Check below will not match. Both go at the bottom of `Program.cs`, below `Citations` and above `record Chunk`. `static class StopWords` is a type declaration, so like `record Chunk` it must stay below every statement and every `static` function:
+
   ```csharp
-  var idf = queryTerms.ToDictionary(t => t,
-      t => Math.Log(1 + (n - docFreq.GetValueOrDefault(t) + 0.5) / (docFreq.GetValueOrDefault(t) + 0.5)));
-  // lexical[c] = sum over query terms of idf[t] * tf*(K1+1) / (tf + K1*(1 - B + B*len/avgLen))
-  var combined = alpha * semanticNorm[id] + (1 - alpha) * lexicalNorm[id];
+  static List<string> Tokenize(string text) =>
+      Regex.Matches(text.ToLowerInvariant(), @"[a-z0-9]+")
+          .Select(m => m.Value)
+          .Where(t => t.Length > 2 && !StopWords.Contains(t))
+          .Select(t => t.Length > 3 && t.EndsWith('s') && !t.EndsWith("ss") ? t[..^1] : t)
+          .ToList();
+
+  static class StopWords
+  {
+      static readonly HashSet<string> Words =
+      [
+          "the", "and", "for", "are", "but", "not", "you", "your", "with", "that", "this", "these",
+          "those", "from", "have", "has", "had", "was", "were", "been", "being", "can", "could",
+          "will", "would", "shall", "should", "may", "might", "must", "does", "did", "doing",
+          "what", "when", "where", "which", "who", "whom", "why", "how", "any", "all", "some",
+          "there", "here", "then", "than", "them", "they", "their", "its", "his", "her", "our",
+          "get", "got", "still", "now", "right", "just", "about", "into", "onto", "over", "under",
+          "out", "off", "per", "via", "one", "two", "also", "more", "most", "much", "many", "each",
+          "other", "such", "only", "own", "same", "too", "very", "let", "need", "want",
+      ];
+
+      public static bool Contains(string term) => Words.Contains(term);
+  }
   ```
 
-  In `complete/`, compare the two with:
+  Next, turn step 3's ranking into a dictionary of cosine scores, so there is something to blend with. Keep `var questionVector = ...`, and replace step 3's `var top = ...` statement and its `foreach` line with:
+
+  ```csharp
+  var cosine = chunks.ToDictionary(
+      c => c.chunk_id,
+      c => (double)TensorPrimitives.CosineSimilarity(questionVector, index[c.chunk_id]));
+  ```
+
+  Then count how many chunks contain each word. These lines go directly below:
+
+  ```csharp
+  var tokenized = chunks.ToDictionary(c => c.chunk_id, c => Tokenize(c.text));
+  var avgLength = tokenized.Values.Average(t => (double)t.Count);
+  var docFreq = new Dictionary<string, int>();
+  foreach (var terms in tokenized.Values)
+      foreach (var term in terms.Distinct())
+          docFreq[term] = docFreq.GetValueOrDefault(term) + 1;
+  ```
+
+  Then the rare-word weight (`idf`) and the keyword score for every chunk (`lexical`). `K1` and `B` are the two BM25 tuning constants. For each chunk, `tf` is how many times a query word appears in that chunk's token list; `GroupBy` counts them all at once. These go below the `docFreq` lines:
+
+  ```csharp
+  const double K1 = 1.2, B = 0.3;
+  var n = chunks.Count;
+  var queryTerms = Tokenize(question).Distinct().ToList();
+  var idf = queryTerms.ToDictionary(
+      t => t,
+      t => Math.Log(1 + (n - docFreq.GetValueOrDefault(t) + 0.5) / (docFreq.GetValueOrDefault(t) + 0.5)));
+
+  var lexical = new Dictionary<string, double>();
+  foreach (var c in chunks)
+  {
+      var terms = tokenized[c.chunk_id];
+      var counts = terms.GroupBy(t => t).ToDictionary(g => g.Key, g => (double)g.Count());
+      var score = 0.0;
+      foreach (var t in queryTerms)
+      {
+          if (!counts.TryGetValue(t, out var tf)) continue;
+          score += idf[t] * (tf * (K1 + 1)) / (tf + K1 * (1 - B + B * terms.Count / avgLength));
+      }
+      lexical[c.chunk_id] = score;
+  }
+  ```
+
+  `semanticNorm` and `lexicalNorm` are the cosine and keyword dictionaries rescaled to 0..1. The rescaling helper goes directly below `Tokenize` and above `static class StopWords`; below the class it will not build:
+
+  ```csharp
+  static Dictionary<string, double> MinMax(Dictionary<string, double> raw)
+  {
+      var min = raw.Values.Min();
+      var max = raw.Values.Max();
+      var range = max - min;
+      return raw.ToDictionary(kv => kv.Key, kv => range > 1e-9 ? (kv.Value - min) / range : 0.0);
+  }
+  ```
+
+  Now the blend. Each chunk becomes a `Hit` carrying both raw scores, both rescaled scores, and the blend. Add this line at the very bottom of `Program.cs`, below `record Chunk`:
+
+  ```csharp
+  record Hit(Chunk Chunk, double Cosine, double SemanticNorm, double Lexical, double LexicalNorm, double Combined);
+  ```
+
+  These lines go below the `lexical` loop. They rebuild `top` from the blend, and a `Hit` has a `Chunk` property just like step 3's pairs did, so steps 4 and 5 keep working unchanged:
+
+  ```csharp
+  var semanticNorm = MinMax(cosine);
+  var lexicalNorm = MinMax(lexical);
+
+  var scored = chunks
+      .Select(c => new Hit(
+          c,
+          cosine[c.chunk_id],
+          semanticNorm[c.chunk_id],
+          lexical[c.chunk_id],
+          lexicalNorm[c.chunk_id],
+          alpha * semanticNorm[c.chunk_id] + (1 - alpha) * lexicalNorm[c.chunk_id]))
+      .OrderByDescending(h => h.Combined)
+      .ToList();
+  var top = scored.Take(topK).ToList();
+  ```
+
+  `alpha` and `topK` come from the flag loop in Running. If you have not added it yet, add it now, and put these two lines in it: the first next to `var topK = 3;`, the second next to the `--top-k` case:
+
+  ```csharp
+  var alpha = 0.6;          // weight on the semantic signal; 1.0 = cosine only
+          case "--alpha": alpha = double.Parse(args[++i]); break;
+  ```
+
+  Print the table and the rank-1 margin where step 3's `foreach` used to be, below `var top = ...`:
+
+  ```csharp
+  // Hint:
+  for (var r = 0; r < top.Count; r++)
+      Console.WriteLine($"{r + 1}  {top[r].Combined:F4}  ({top[r].Cosine:F4})  {top[r].Chunk.chunk_id}");
+  var margin = scored.Count > 1 ? scored[0].Combined - scored[1].Combined : 0;
+  Console.WriteLine($"  margin over rank 2: {margin:F4}\n");
+  ```
+
+  Compare the two in your program (the answer still prints after the table; the table is what to read):
+
+  ```bash
+  dotnet run -- --top-k 8 --alpha 1.0
+  dotnet run -- --top-k 8
+  ```
+
+  In `complete/`, the same comparison is:
 
   ```bash
   dotnet run -- --top-k 8 --alpha 1.0 --retrieval-only
@@ -314,16 +509,42 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
 
   **Check:** the top 3 do not change, the rank-1 margin grows from 0.1630 to 0.2321, Acadia disappears from ranks 4 through 8, and ranks 4-6 become Glacier documents that name Sperry Chalet. Then try the rephrasings listed in `expected-output.md`.
 - **Repair a bad citation.** When step 5 finds an invalid id, send the prompt again with an extra line that lists the 3 legal ids and asks for a rewrite. If the second answer is still wrong, replace the bad id with `invalid-citation-removed`. One exception: when the answer is the refusal sentence with a citation attached, just delete the citation and skip the retry. **Check:** no invalid id ever reaches the printed answer, and the refusal string comes back word for word.
+
+  These lines go below step 5's `if (bad.Count > 0) Console.WriteLine(...)` and above `Console.WriteLine(answer);`. `complete/` keeps the check itself in a helper at the bottom of `Program.cs` so it can run twice. Put it directly below `Citations`, above any `static class` or `record` line:
+
+  ```csharp
+  static List<string> InvalidCitations(string text, HashSet<string> valid) =>
+      Citations(text).Where(c => !valid.Contains(c)).Distinct().ToList();
+  ```
+
+  The shape of the repair. Write the retry wording yourself; `complete/` shows one version:
+
+  ```csharp
+  // Hint:
+  if (bad.Count > 0 && answer.Contains(refusal))
+  {
+      answer = refusal;   // the refusal needs no retry, just drop the citation
+      bad = [];
+  }
+  else if (bad.Count > 0)
+  {
+      var retryPrompt = prompt + "\n\n" + "<your instruction>" + string.Join("\n", retrievedIds);
+      answer = (await chatClient.GetResponseAsync(retryPrompt)).Text;
+      bad = InvalidCitations(answer, retrievedIds);
+      foreach (var c in bad)
+          answer = answer.Replace(c, "invalid-citation-removed");
+  }
+  ```
 - **Point generation at the cloud.** Build the chat client from `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` when they're set, falling back to `llama3.2` when they're not. The endpoint is `https://trailhead-ai-workshop.openai.azure.com`, the deployment is the name the feature uses, and the key is handed out in the room. Retrieval stays local either way.
 
-  `starter/Rag.csproj` references only `Microsoft.Extensions.AI` and `OllamaSharp`. Add the two packages `complete/Rag.csproj` carries:
+  `starter/Rag.csproj` references only `Microsoft.Extensions.AI` and `OllamaSharp`. Add the two packages `complete/Rag.csproj` carries, inside the existing `<ItemGroup>` next to the other `PackageReference` lines:
 
   ```xml
   <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
   <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.8.1" />
   ```
 
-  Then build the chat client from the three environment variables, falling back to Ollama. `AsIChatClient()` is the adapter that makes the vendor client satisfy the same `IChatClient` the starter already calls, so nothing downstream changes. This replaces the `IChatClient chatClient;` and `chatClient = ...` lines from step 4; `localModel` stays:
+  Then build the chat client from the three environment variables, falling back to Ollama. `AsIChatClient()` is the adapter that makes the vendor client satisfy the same `IChatClient` the starter already calls, so nothing downstream changes. This replaces the `IChatClient chatClient;` and `chatClient = ...` lines from step 4; `localModel` stays. The two `using` lines go at the top of `Program.cs` with the others:
 
   ```csharp
   using System.ClientModel;
@@ -347,16 +568,48 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
   }
   ```
 
-  With the three variables exported, the first line printed names the deployment.
+  Set the three variables in the same terminal before `dotnet run` (fill in the key from the room and the deployment name):
 
-  Then ask a question that needs three documents at once:
-
-  ```text
-  I want to bring nine friends to camp at Sperry Chalet in September and cook over a fire. What do I need to know?
+  ```bash
+  export AZURE_OPENAI_ENDPOINT=https://trailhead-ai-workshop.openai.azure.com
+  export AZURE_OPENAI_KEY=<the key>
+  export AZURE_OPENAI_DEPLOYMENT=<the deployment name>
   ```
 
-  **Check:** `gpt-4.1` says the group is over the limit of eight, says no wood fires at Sperry, and cites all three chunks without mixing them up.
+  With the three variables exported, the first line printed names the deployment.
+
+  Then ask a question whose answer is spread across three chunks from two documents:
+
+  ```text
+  Our party of nine wants to camp at Sperry. Do we need a backcountry permit, can we all go on one permit, and can we have a wood fire there?
+  ```
+
+  ```bash
+  dotnet run -- "Our party of nine wants to camp at Sperry. Do we need a backcountry permit, can we all go on one permit, and can we have a wood fire there?"
+  ```
+
+  **Check:** retrieval returns `glacier-backcountry-camping-guide:04.2`, `glacier-backcountry-permit-regulations:04`, and `glacier-backcountry-camping-guide:03`. `gpt-4.1` says a permit is required, says nine is over the limit of eight so the group must split into separate permits, and says wood fires are banned at Sperry year-round with stoves only. It cites `glacier-backcountry-permit-regulations:04` and `glacier-backcountry-camping-guide:04.2`, with 0 invalid citations; some runs also cite `glacier-backcountry-camping-guide:03`. Measured over 5 runs: all 5 matched, and 2 of 5 cited all three chunks.
 - **Build an evaluation loop.** Write ten more questions, each with the chunk_id that should win, then sweep the blend weight from 0 to 1 and record recall@3 at each setting (the share of questions whose correct chunk landed in the top 3). **Check:** a table, and an answer to whether the weight that wins on question 1 wins on the other ten. The rephrasings table in `expected-output.md` seeds the first four rows.
+
+  Move your ranking into a function that takes the question and the blend weight, then loop. A local function that uses `chunks` and `index` cannot be `static`, and it goes above the loop that calls it:
+
+  ```csharp
+  // Hint:
+  async Task<List<string>> Top3Ids(string q, double a) { /* step 3 plus the keyword blend, return 3 chunk_ids */ }
+
+  var evalSet = new List<(string Question, string ExpectedId)>
+  {
+      ("Can I have a campfire at Sperry Chalet in September?", "glacier-backcountry-camping-guide:04.2"),
+      // ten more rows
+  };
+  for (var a = 0.0; a <= 1.0001; a += 0.1)
+  {
+      var hits = 0;
+      foreach (var (q, expectedId) in evalSet)
+          if ((await Top3Ids(q, a)).Contains(expectedId)) hits++;
+      Console.WriteLine($"alpha {a:F1}  recall@3 {(double)hits / evalSet.Count:F2}");
+  }
+  ```
 
 ## What Is in This Folder
 

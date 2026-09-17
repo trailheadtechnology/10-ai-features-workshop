@@ -100,7 +100,7 @@ Step 2 only changes the instruction string. Reading the file, stripping the fron
 
 **Why:** the reflowed prompt behaves differently, so keep the line breaks. The last two lines exist because a prompt that demands a hazards bullet will invent one (a bear sighting, the word "avalanche" in the trail name) when the report has no real hazard; they give the model a legal way to report nothing. Measured rate with and without those lines is in [`expected-output.md`](../expected-output.md).
 
-**Check:** three bullets and nothing else. The gear debrief is gone. Mud patches and the 10am crowds are in. The hazards bullet says "no closures or hazards reported". The only bear in `tr-0001.md` is a ranger's remark about a road near Lake McDonald; keeping it as a plain sighting is fine, closing the trail over it is the failure the grounding lines exist to stop.
+**Check:** three bullets. A one-line lead-in such as "Here are three bullets" is normal for `llama3.2`; anything more than that is not. The gear debrief is gone. Mud patches and the 10am crowds are in. The hazards bullet says "no closures or hazards reported". The only bear in `tr-0001.md` is a ranger's remark about a road near Lake McDonald; keeping it as a plain sighting is fine, closing the trail over it is the failure the grounding lines exist to stop.
 
 ### Step 3: Run the same prompt on the buried-hazard report
 
@@ -157,7 +157,7 @@ Pick any. `complete/` already has each one built in, behind the flag named below
 
   **Check:** one line, at most 12 words, that leads with the closure. No bullets, no preamble. Only the instruction changed. A new spot in the UI costs a new prompt rather than new infrastructure.
 
-- **See the hallucination the grounding lines prevent.** Delete the two lines of the step 2 prompt that begin "Report only what the trip report states" and end "when it says none." Run `data/tr-0001.md` (the starter's default) ten or more times. Put the lines back when done.
+- **See the hallucination the grounding lines prevent.** If you did the headline stretch goal, put the step 2 prompt back first. Then delete the two lines of the step 2 prompt that begin "Report only what the trip report states" and end "when it says none." Run `data/tr-0001.md` (the starter's default) ten or more times. Put the lines back when done.
 
   **Check:** some runs now invent a closure from the bear, the creek, or the word "avalanche" in the trail's name. Measured over 24 runs on `tr-0001.md`: 11 of 24 (46%) without the lines, 1 of 24 (4%) with them. `tr-0004.md` led with the bridge in 12 of 12 runs either way. Full numbers in [`expected-output.md`](../expected-output.md).
 

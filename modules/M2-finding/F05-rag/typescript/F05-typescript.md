@@ -340,13 +340,13 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
 
   With the three variables exported, the first line printed names the deployment.
 
-  Then ask a question that needs three documents at once:
+  Then ask a question whose answer is spread across three chunks from two documents:
 
   ```text
-  I want to bring nine friends to camp at Sperry Chalet in September and cook over a fire. What do I need to know?
+  Our party of nine wants to camp at Sperry. Do we need a backcountry permit, can we all go on one permit, and can we have a wood fire there?
   ```
 
-  **Check:** `gpt-4.1` says the group is over the limit of eight, says no wood fires at Sperry, and cites all three chunks without mixing them up.
+  **Check:** retrieval returns `glacier-backcountry-camping-guide:04.2`, `glacier-backcountry-permit-regulations:04`, and `glacier-backcountry-camping-guide:03`. `gpt-4.1` says a permit is required, says nine is over the limit of eight so the group must split into separate permits, and says wood fires are banned at Sperry year-round with stoves only. It cites `glacier-backcountry-permit-regulations:04` and `glacier-backcountry-camping-guide:04.2`, with 0 invalid citations; some runs also cite `glacier-backcountry-camping-guide:03`. Measured over 5 runs: all 5 matched, and 2 of 5 cited all three chunks.
 - **Build an evaluation loop.** Write ten more questions, each with the chunk_id that should win, then sweep the blend weight from 0 to 1 and record recall@3 at each setting (the share of questions whose correct chunk landed in the top 3). **Check:** a table, and an answer to whether the weight that wins on question 1 wins on the other ten. The rephrasings table in `expected-output.md` seeds the first four rows.
 
 ## What Is in This Folder

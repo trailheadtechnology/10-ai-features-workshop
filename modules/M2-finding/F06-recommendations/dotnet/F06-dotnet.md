@@ -54,7 +54,35 @@ dotnet run
 **Do:**
 1. Open `../../data/trails.json`: 30 objects with `id`, `name`, `park`, `distance_mi`, `elevation_ft`, `difficulty`, `features` (array of strings), and `description`.
 2. Parse the file into a list of trail objects (the starter already does this).
+
+   The starter already does this, near the top of `starter/Program.cs`. `SnakeCaseLower` is what maps the JSON name `distance_mi` onto the C# property `DistanceMi`:
+
+   ```csharp
+   var trails = JsonSerializer.Deserialize<List<Trail>>(
+       await File.ReadAllTextAsync("../../data/trails.json"),
+       new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower })!;
+   ```
+
+   Each JSON object becomes one `Trail`. The `record` that declares it is the last line of the file, below all the top-level code (C# requires type declarations to come after top-level statements):
+
+   ```csharp
+   record Trail(string Id, string Name, string Park, double DistanceMi, int ElevationFt,
+       string Difficulty, string[] Features, string Description);
+   ```
+
 3. Keep the target lookup the starter already has: take the command-line argument as the query, default to `trail-0117`, pick the first trail whose `id` equals the query or whose `name` contains it (case-insensitive).
+
+   The starter already does this, right below the `trails` line. `args` holds the words after `dotnet run --`:
+
+   ```csharp
+   var query = args.Length > 0 ? string.Join(' ', args) : "trail-0117";
+   var target = trails.FirstOrDefault(t =>
+           t.Id.Equals(query, StringComparison.OrdinalIgnoreCase) ||
+           t.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
+       ?? throw new ArgumentException($"No trail matches '{query}'.");
+   ```
+
+   Nothing to change in step 1.
 
 **Why:** these 30 are lifted from the workshop's full 200-trail catalog (feature 10's `data/trails.json`), chosen to hold the three target trails plus enough real neighbors and enough noise to make ranking interesting. It's a different 30 from feature 04's slice (7 trails overlap), so feature 04's cached vectors won't cover it.
 
@@ -68,7 +96,15 @@ dotnet run
 3. Store each returned vector in a dictionary keyed by trail `id`.
 4. Write the dictionary to `embeddings.json` next to your program. At startup, check for that file and skip the call if it exists and has a key for every trail id. Shape it as a plain id-to-float-array dictionary so the same load code reads either your cache or `../../data/trail-embeddings.json`.
 
-Option A, embed live. The client is the same `IEmbeddingGenerator` as feature 04, and the helper checks for `embeddings.json` before calling the model, then writes it after. `Program.cs` needs `using Microsoft.Extensions.AI;` and `using OllamaSharp;` at the top, next to `using System.Text.Json;`. Add the generator above the trail loading and the `vectors` line right after `trails` is loaded:
+Option A, embed live. The client is the same `IEmbeddingGenerator` as feature 04, and the helper checks for `embeddings.json` before calling the model, then writes it after. The NuGet packages are already in `starter/Recommend.csproj`. Make the top of `Program.cs` read:
+
+```csharp
+using Microsoft.Extensions.AI;
+using OllamaSharp;
+using System.Text.Json;
+```
+
+Add the generator below the `using` lines and above `var trails = ...`, then add the `vectors` line right after the `var trails = ...` statement (the one ending in `SnakeCaseLower })!;`):
 
 ```csharp
 IEmbeddingGenerator<string, Embedding<float>> generator =
@@ -113,6 +149,15 @@ var vectors = JsonSerializer.Deserialize<Dictionary<string, float[]>>(
 
 `embeddings.json` is written to the folder you run from, so it lands in `starter/`. Delete it to re-embed.
 
+For the Check, put temporary lines right after the `vectors` line and delete them once the numbers match:
+
+```csharp
+// Hint: three throwaway prints
+Console.WriteLine(vectors.Count);                                 // how many keys
+Console.WriteLine(vectors["trail-XXXX"].Length);                  // numbers per vector
+Console.WriteLine(string.Join(", ", vectors["trail-XXXX"].Take(3))); // first three numbers
+```
+
 **Why:** shortcut if you'd rather not call the model: load `../../data/trail-embeddings.json` instead. It is the same dictionary, already computed with the same model, and the run that `expected-output.md`'s scores come from.
 
 **Check:** 30 keys, each holding 768 numbers. `vectors["trail-0117"]` starts with `0.0091, 0.0802, -0.1689`. The second run does not call Ollama at all.
@@ -140,7 +185,12 @@ var vectors = JsonSerializer.Deserialize<Dictionary<string, float[]>>(
 
 2. Compute the cosine between the vectors for `trail-0117` and `trail-0086`, then between `trail-0117` and `trail-0041`. Print both.
 
-   Print each with `Console.WriteLine` and the `F4` format, the same format step 4 uses for scores. Delete the two lines once you have seen them.
+   Print each with `Console.WriteLine` and the `F4` format, the same format step 4 uses for scores. Put the lines right after the `vectors` line, fill in the ids, and write the second line the same way. Delete them once you have seen the numbers.
+
+   ```csharp
+   // Hint: vectors[id] gives a float[]; :F4 prints four decimals
+   Console.WriteLine($"{Cosine(vectors["trail-AAAA"], vectors["trail-BBBB"]):F4}");
+   ```
 
 **Check:** `trail-0117` vs `trail-0086` is `0.7849`. `trail-0117` vs `trail-0041` is `0.6117`. Two Glacier lake hikes score high and a Zion desert wash scores low. Equal numbers, or anything above 0.99, means you compared a vector to itself.
 
@@ -152,7 +202,7 @@ var vectors = JsonSerializer.Deserialize<Dictionary<string, float[]>>(
 3. Sort by score, highest first. Keep the top 5.
 4. Replace the random loop's output with one line per hit: score to four decimals, then `name (park, difficulty; features joined with commas)`. `expected-output.md` shows the id instead of the features; the scores and order are what to match, not the exact line shape.
 
-   Replace the random `foreach` loop with this, and drop "(picked at random, which is the current feature)" from the line above it:
+   Replace the random `foreach` loop (the `foreach` line, its braces, and the `Console.WriteLine` inside) with this. `vectors[target.Id]` is the target's vector from item 1:
 
    ```csharp
    var hits = trails
@@ -161,6 +211,12 @@ var vectors = JsonSerializer.Deserialize<Dictionary<string, float[]>>(
        .OrderByDescending(h => h.Score).Take(5);
    foreach (var (trail, score) in hits)
        Console.WriteLine($"  {score:F4}  {trail.Name} ({trail.Park}, {trail.Difficulty}; {string.Join(", ", trail.Features)})");
+   ```
+
+   Then drop "(picked at random, which is the current feature)" from the heading line above it, so it reads:
+
+   ```csharp
+   Console.WriteLine("You might also like:\n");
    ```
 
    ```bash
@@ -202,8 +258,78 @@ Pick any of these. The gear one is already built in `complete/`. The other two a
   dotnet run -- --gear Cascade 65
   ```
 
+  To build it yourself, check for the flag right after the `generator` line and before `var trails = ...`, so gear runs skip the trail code:
+
+  ```csharp
+  if (args.Length > 0 && args[0] == "--gear")
+  {
+      await RecommendGear(generator, string.Join(' ', args.Skip(1)));
+      return;
+  }
+  ```
+
+  `RecommendGear` is a `static` method at the bottom of `Program.cs`, next to `EmbedWithCache`. Add a record for one review line below the `Trail` record:
+
+  ```csharp
+  record Review(string Id, string Product, int Rating, string Reviewer, string Text);
+  ```
+
+  Start the method like this. JSON Lines means one JSON object per line, so read the lines and deserialize each one:
+
+  ```csharp
+  static async Task RecommendGear(IEmbeddingGenerator<string, Embedding<float>> generator, string query)
+  {
+      var reviews = File.ReadLines("../../data/gear-reviews.jsonl")
+          .Select(line => JsonSerializer.Deserialize<Review>(line,
+              new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower })!)
+          .ToList();
+  ```
+
+  `GroupBy` collects the reviews per product, and `ToDictionary` turns each group into product name to joined text, the same dictionary shape `EmbedWithCache` takes:
+
+  ```csharp
+      var reviewText = reviews
+          .GroupBy(r => r.Product)
+          .ToDictionary(g => g.Key, g => string.Join("\n", g.Select(r => r.Text)));
+
+      var vectors = await EmbedWithCache(generator, "gear-embeddings.json", reviewText);
+  ```
+
+  The rest of the method finds the target and ranks, like step 4 but over the `vectors` dictionary, whose entries have a `Key` (product name) and a `Value` (vector). Close the method with `}`:
+
+  ```csharp
+  // Hint: finish RecommendGear with the same shape as step 4
+  var target = reviewText.Keys.FirstOrDefault(p => /* name contains query, ignoring case */)
+      ?? throw new ArgumentException($"No product matches '{query}'.");
+  var hits = vectors
+      .Where(v => /* not the target */)
+      .Select(v => (Product: v.Key, Score: Cosine(/* target vector */, v.Value)))
+      /* sort highest first, take 5, print score:F4 and product */;
+  ```
+
 - **Average two trails.** Add the vectors for `trail-0117` and `trail-0003` position by position, divide each position by 2, rank every other trail against that average, and leave both source trails out. **Check:** Carlon Falls (`trail-0068`) is #1 at `0.7947` and every score is higher than before. That rise is a property of averaging vectors, not a better result.
+
+  Put this where step 4's `hits` query is (or right after the `vectors` line, as a throwaway). There is no averaging method to call; you fill a new `float[]` one position at a time:
+
+  ```csharp
+  // Hint: average two vectors, then rank against the average
+  var a = vectors["trail-AAAA"];
+  var b = vectors["trail-BBBB"];
+  var average = new float[a.Length];
+  for (var i = 0; i < a.Length; i++)
+      average[i] = /* a[i] plus b[i], divided by 2 */;
+  // In step 4's query: .Where(t => t.Id != /* first id */ && t.Id != /* second id */)
+  // and score with Cosine(average, vectors[t.Id]) instead of vectors[target.Id]
+  ```
+
 - **Filter by difficulty.** Run `trail-0117` again, this time dropping every trail whose `difficulty` is not `easy` or `moderate` before you sort. **Check:** Alum Cave (`trail-0010`) is #1 at `0.7642` and Fern Lake (`trail-0196`) is #2 at `0.7508`. The filter removes what a family cannot do; it cannot invent good results, because this slice has almost no easy lake hikes.
+
+  Add one more `.Where` to step 4's `hits` query, after the first `.Where` and before `.Select`. `Difficulty` holds lowercase strings (`easy`, `moderate`, `hard`):
+
+  ```csharp
+  // Hint: one extra filter line in the hits query
+  .Where(t => t.Difficulty == "/* one allowed value */" || t.Difficulty == "/* the other */")
+  ```
 
 ## What Is in This Folder
 

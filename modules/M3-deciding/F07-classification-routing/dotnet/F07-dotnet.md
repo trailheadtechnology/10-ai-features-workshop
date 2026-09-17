@@ -40,7 +40,27 @@ dotnet run -- inq-0035
 dotnet run -- inq-0013
 ```
 
-**Check:** one label per run, printed after the id. `inq-0013` says `emergency`. `inq-0035` flips between `conditions` and `permit` across runs. At least one run prints something that is not exactly one of the seven category names, such as `Emergency.` or a sentence. Nothing in the starter stops that. The rest of the lab does.
+The starter already does this. It picks the id from the command line (or `inq-0005`), reads the slice, and keeps the matching line:
+
+```csharp
+var wantedId = args.Length > 0 ? args[0] : "inq-0005";
+var inquiry = File.ReadLines("../../data/inquiries-slice.jsonl")
+    .Select(line => JsonSerializer.Deserialize<Inquiry>(line)!)
+    .First(i => i.id == wantedId);
+```
+
+The starter already does this too. The prompt is one big `$"""` string that ends with the message text, and the call sends it as one user message and prints whatever text comes back:
+
+```csharp
+    Message:
+    {inquiry.text}
+    """;
+
+var response = await client.GetResponseAsync(prompt);
+Console.WriteLine($"{inquiry.id}: {response.Text}");
+```
+
+**Check:** one label per run, printed after the id. `inq-0013` says `emergency`. `inq-0035` usually says `conditions`, and some runs say `unsure`, `emergency`, or `complaint`: measured over 30 runs across the three tracks, 24 `conditions`, 4 `unsure`, 1 `emergency`, 1 `complaint`. That spread on one message is the problem. Nothing in the starter stops a run from printing a label that is not one of the seven names, such as `Emergency.` or a sentence, either. The rest of the lab closes both gaps.
 
 ### Step 1: Load the 20 inquiries and the reference labels
 
@@ -48,7 +68,9 @@ dotnet run -- inq-0013
 1. Open `../../data/inquiries-slice.jsonl`. Every line is one JSON object with `id`, `channel`, `received`, `text`. Read it line by line, skip blanks, parse each line, keep the results in a list. The starter already resolves that `data/` folder into a constant; reuse it for both files.
 2. Open `../../data/reference-labels.json` and parse it: an object with `routing` (category to queue name), `labels` (id to correct category), and `notes` (why `inq-0013`/`inq-0041` are emergencies and why `inq-0035` is `unsure`). Keep the `routing` and `labels` dictionaries.
 
-Load `../../data/inquiries-slice.jsonl` line by line into a list of `Inquiry` records (the starter already declares `Inquiry`) and deserialize `../../data/reference-labels.json` into a record with `Routing` and `Labels` dictionaries. `[JsonPropertyName]` maps the lowercase JSON keys; it needs `using System.Text.Json.Serialization;`, which the starter does not have.
+Load `../../data/inquiries-slice.jsonl` line by line into a list of `Inquiry` records (the starter already declares `Inquiry`) and deserialize `../../data/reference-labels.json` into a record with `Routing` and `Labels` dictionaries. `[JsonPropertyName]` maps the lowercase JSON keys; it needs `using System.Text.Json.Serialization;`, which the starter does not have. Add that `using` line under `using System.Text.Json;` at the top.
+
+The .NET starter has no data-folder constant; it writes the relative path `../../data/...` inline, so do the same. Put these two statements right below the `IChatClient client = ...` line. Leave the starter's `wantedId`/`inquiry` lookup in place for now; step 3 removes it.
 
 ```csharp
 var inquiries = File.ReadLines("../../data/inquiries-slice.jsonl")
@@ -59,12 +81,19 @@ var reference = JsonSerializer.Deserialize<ReferenceLabels>(
     File.ReadAllText("../../data/reference-labels.json"))!;
 ```
 
-The record goes at the bottom of the file with `Inquiry`:
+The record goes at the bottom of the file, below the `record Inquiry(...)` line. In a file with top-level statements, every `record`, `enum`, and `static` helper declaration goes after the last top-level statement:
 
 ```csharp
 record ReferenceLabels(
     [property: JsonPropertyName("routing")] Dictionary<string, string> Routing,
     [property: JsonPropertyName("labels")] Dictionary<string, string> Labels);
+```
+
+To see the Check numbers, print them once below the two load statements (delete the line afterward):
+
+```csharp
+// Hint: a throwaway print for the Check
+Console.WriteLine($"{inquiries.Count} {inquiries[0].id} {reference.Routing.Count} {reference.Labels.Count}");
 ```
 
 **Why:** these 20 are drawn from the fictional Trailhead Guides 100-message inbox, chosen to mirror the inbox's mix, including both emergencies and the one ambiguous message. `unsure` was added to the taxonomy, labels, and routing table together once the ambiguous message needed a queue.
@@ -75,15 +104,21 @@ record ReferenceLabels(
 
 **Do:**
 1. Delete the line `Answer with the category name only.` from the starter's prompt. The schema below does that job now.
-2. Define the category as an enum type with exactly seven allowed values, wrapped in a result type with one field, `category`. If your language cannot spell `lost-and-found` as an identifier, map that member to the exact JSON name. The generated schema must list `lost-and-found`, or three of the 20 messages can never match their reference label.
 
-   C# identifiers cannot contain a hyphen, so `lost-and-found` needs `[JsonStringEnumMemberName]`, and the enum needs the `JsonStringEnumConverter` attribute so the generated schema lists the JSON names rather than `LostAndFound`. The declarations are in the snippet under item 3.
-
-3. Send the message through your chat client with that result type as the structured-output schema, temperature 0.
-
-   The typed call is `GetResponseAsync<TriageResult>`, temperature goes in `ChatOptions`, and the parsed record is `response.Result`. Pin temperature at 0; anything above it makes a scored comparison against fixed labels meaningless. The snippet below already has step 3's loop around the call; for this step, keep the starter's single-id lookup and make the one call on `prompt`. In `Program.cs` the `enum` and `record` declarations go after the top-level statements, at the bottom of the file, as in `complete/`.
+   In `Program.cs` it is this line near the end of the `var prompt = $"""` string, just above `Message:`. Delete it and the blank line under it:
 
    ```csharp
+       Answer with the category name only.
+   ```
+2. Define the category as an enum type with exactly seven allowed values, wrapped in a result type with one field, `category`. If your language cannot spell `lost-and-found` as an identifier, map that member to the exact JSON name. The generated schema must list `lost-and-found`, or three of the 20 messages can never match their reference label.
+
+   C# identifiers cannot contain a hyphen, so `lost-and-found` needs `[JsonStringEnumMemberName]`, and the enum needs the `JsonStringEnumConverter` attribute so the generated schema lists the JSON names rather than `LostAndFound`. Both attributes need the `using System.Text.Json.Serialization;` line you added in step 1.
+
+   Paste the enum and the one-field result record at the bottom of `Program.cs`, below `record ReferenceLabels(...)`. They are declarations, so they must come after all the top-level statements:
+
+   ```csharp
+   record TriageResult(Category Category);
+
    [JsonConverter(typeof(JsonStringEnumConverter<Category>))]
    enum Category
    {
@@ -95,17 +130,28 @@ record ReferenceLabels(
        [JsonStringEnumMemberName("general")] General,
        [JsonStringEnumMemberName("unsure")] Unsure,
    }
-   record TriageResult(Category Category);
-
-   var options = new ChatOptions { Temperature = 0 };
-   foreach (var inquiry in inquiries)
-   {
-       var response = await client.GetResponseAsync<TriageResult>(Prompt(inquiry.text), options);
-       results.Add((inquiry, response.Result.Category));
-   }
    ```
 
-   To see the wire form the step 2 Check describes, print `JsonSerializer.Serialize(response.Result)`.
+3. Send the message through your chat client with that result type as the structured-output schema, temperature 0.
+
+   The typed call is `GetResponseAsync<TriageResult>`, temperature goes in `ChatOptions`, and the parsed record is `response.Result`. Pin temperature at 0; anything above it makes a scored comparison against fixed labels meaningless.
+
+   First make the options object once. Put it right below the `IChatClient client = ...` line:
+
+   ```csharp
+   var options = new ChatOptions { Temperature = 0 };
+   ```
+
+   Then replace the starter's last two top-level lines (`var response = await client.GetResponseAsync(prompt);` and the `Console.WriteLine` under it). Keep the starter's single-id lookup for this step; step 3 adds the loop.
+
+   ```csharp
+   // Hint: the typed call on the one inquiry, then two prints
+   var response = await client.GetResponseAsync<TriageResult>(prompt, options);
+   Console.WriteLine($"{inquiry.id}: {response.Result.Category}");
+   Console.WriteLine(JsonSerializer.Serialize(response.Result));
+   ```
+
+   The first print shows the C# member name (`Conditions`, `LostAndFound`); step 4 adds a helper that turns it back into `lost-and-found`. The second print is the wire form the step 2 Check describes. C# writes it as `{"Category":"conditions"}`, with a capital `C` and no space, because `JsonSerializer` keeps the record's property name by default; the value is the part to check.
 
 4. Keep the prompt text:
 
@@ -123,6 +169,14 @@ You are the triage system for the Trailhead Guides shared inbox. Classify the vi
 Decide in this order. First, if anyone might be hurt, missing, or in danger, answer emergency and stop; never answer unsure for those, even when the message also mentions permits, conditions, or a lost item. Second, if one queue can resolve the whole message on its own, answer that queue; a booking or reservation problem with nothing else attached is permit, not unsure. Third, only if two queues must both act, answer unsure. Unsure is not a catch-all for anything hard.
 
 Message:
+```
+
+The starter already does this: its `var prompt = $"""` string holds that exact text, and it ends by putting the message after `Message:`. After item 1 the only change is the deleted line, so the end of the string still reads:
+
+```csharp
+    Message:
+    {inquiry.text}
+    """;
 ```
 
 This is the schema your client generates from that type:
@@ -152,6 +206,14 @@ And for `inq-0035`:
 Hi, I have a backcountry permit that includes a night at the Avalanche Lake area on June 24 (conf #GL-2026-07733). With the bridge out, is my itinerary even doable, and if not, will you let me swap that night for a different site without penalty, or refund it? I need to know before we leave Thursday. Thanks, Priya
 ```
 
+From `starter/`:
+
+```bash
+dotnet run -- inq-0005
+dotnet run -- inq-0041
+dotnet run -- inq-0035
+```
+
 **Why:** `inq-0035` now lands in `unsure`, while step 0's free-text version called it `conditions`. The enum made `unsure` a real choice for the model.
 
 **Check:** the parsed result's `category` is `conditions` for `inq-0005`, `emergency` for `inq-0041`, and `unsure` for `inq-0035`. Serialize the result back to JSON to see the wire form, `{"category": "conditions"}`. The value is always one of the seven strings.
@@ -164,7 +226,18 @@ Hi, I have a backcountry permit that includes a night at the Avalanche Lake area
 3. Read `category` from the response, store the (inquiry, category) pair in a results list.
 4. Print a `.` after each call to show progress, then a blank line after the loop.
 
-Turn the starter's `prompt` string into a function `Prompt(string text)` that puts `text` after `Message:`. It goes after the top-level statements:
+For item 1, delete the starter's single-id lookup. These are the lines to remove (the `inquiries` list from step 1 replaces them, and `complete/` takes no id argument):
+
+```csharp
+var wantedId = args.Length > 0 ? args[0] : "inq-0005";
+var inquiry = File.ReadLines("../../data/inquiries-slice.jsonl")
+    .Select(line => JsonSerializer.Deserialize<Inquiry>(line)!)
+    .First(i => i.id == wantedId);
+```
+
+Also delete step 2's single call and its two prints; the loop below replaces them.
+
+For item 2, turn the starter's `var prompt = $"""` string into a function `Prompt(string text)` that puts `text` after `Message:`. Delete the `var prompt` block from the top-level code and paste this at the bottom of the file, above `record Inquiry(...)`. Inside it the message is `{text}` instead of `{inquiry.text}`, because there is no `inquiry` variable in a static function:
 
 ```csharp
 static string Prompt(string text) => $"""
@@ -205,7 +278,7 @@ static string Prompt(string text) => $"""
     """;
 ```
 
-Then declare `results` as a list of `(Inquiry Inquiry, Category Category)` pairs before the loop, and print a dot inside it:
+For items 3 and 4, declare `results` as a list of `(Inquiry Inquiry, Category Category)` pairs (a tuple with two named parts) before the loop, and print a dot inside it. Put this where the deleted single call was, below the step 1 load statements and the `options` line. `Console.WriteLine('\n')` prints the newline character plus the line end, which gives the blank line:
 
 ```csharp
 var results = new List<(Inquiry Inquiry, Category Category)>();
@@ -228,7 +301,7 @@ Console.WriteLine('\n');
 3. Print a header line (`id`, `category`, `routed to`) and a rule of 62 dashes.
 4. Sort so emergencies come first. For each pair, print the id padded to 10 characters, category padded to 15, and the queue from `routing` for that category. If your category is an enum, convert it back to its JSON name (`lost-and-found`, not `LostAndFound`) before the `routing` lookup, and reuse that helper in step 5.
 
-`routing` and `labels` are both keyed by the JSON names. The enum has to go back to its wire string before either lookup, or `routing[...]` throws on the first `lost-and-found` row and accuracy scores 0/20. One helper does it; use it in the routing table print, the accuracy count, and the miss lines:
+`routing` and `labels` are both keyed by the JSON names. The enum has to go back to its wire string before either lookup, or `routing[...]` throws on the first `lost-and-found` row and accuracy scores 0/20. One helper does it; use it in the routing table print, the accuracy count, and the miss lines. Paste it at the bottom of the file next to `Prompt`:
 
 ```csharp
 static string Wire(Category c) => c switch
@@ -238,7 +311,7 @@ static string Wire(Category c) => c switch
 };
 ```
 
-The emergency block and the routing table:
+Items 1 and 2, the emergency block. It goes right below the loop's `Console.WriteLine('\n');`. `Where` keeps the matching pairs, and `foreach (var (inquiry, _) in ...)` splits each pair into its parts, with `_` ignoring the category:
 
 ```csharp
 var emergencies = results.Where(r => r.Category == Category.Emergency).ToList();
@@ -249,14 +322,18 @@ if (emergencies.Count > 0)
         Console.WriteLine($"!!! {inquiry.id}  {Clip(inquiry.text, 70)}");
     Console.WriteLine();
 }
+```
 
+Items 3 and 4, the routing table, directly below the emergency block. In `{inquiry.id,-10}` the `,-10` pads the value with spaces to 10 characters, left-aligned. `OrderBy(r => r.Category != Category.Emergency)` sorts on `false` before `true`, so emergencies come first:
+
+```csharp
 Console.WriteLine($"{"id",-10} {"category",-15} routed to");
 Console.WriteLine(new string('-', 62));
 foreach (var (inquiry, category) in results.OrderBy(r => r.Category != Category.Emergency))
     Console.WriteLine($"{inquiry.id,-10} {Wire(category),-15} {reference.Routing[Wire(category)]}");
 ```
 
-`Clip(text, max)` cuts the text at `max` characters and appends `...`:
+`Clip(text, max)` cuts the text at `max` characters and appends `...`. It is another helper for the bottom of the file:
 
 ```csharp
 static string Clip(string text, int max) =>
@@ -272,6 +349,8 @@ static string Clip(string text, int max) =>
 2. Collect ids in `labels` valued `emergency`; count how many appear in the step 4 emergency list. That count is emergency recall.
 3. Print `Accuracy vs reference labels: N/20` and `Emergency recall: N/2`.
 4. For each mismatch, print `miss: ` plus the id, the model's category, and the reference category.
+
+This goes below the routing table, at the end of the top-level code. `results.Count(r => ...)` counts the pairs where the test is true (item 1). The `emergencyIds` line keeps the `labels` entries whose value is `emergency` and takes their keys (item 2). `Wire` turns the enum back into the JSON name before each comparison:
 
 ```csharp
 var correct = results.Count(r => Wire(r.Category) == reference.Labels[r.Inquiry.id]);
@@ -312,20 +391,97 @@ dotnet run
 4. Leave `Decide in this order` and the `unsure` description alone.
 5. Run all 20 again and read the scoreboard.
 
+All four edits happen inside the `static string Prompt(string text) => $"""` string at the bottom of `Program.cs`. It is a raw string, so each description is plain text: keep every line indented at least as far as the closing `"""`, and a description may wrap onto more lines. For item 1, replace the three `- permit:` lines with the new wording:
+
+```csharp
+// Hint: the permit lines inside Prompt, rewritten (wrap where you like)
+    - permit: reserving, changing, canceling, or paying for a permit, pass,
+      or reservation, and questions about whether an activity requires a
+      permit at all, including billing problems and missing confirmations.
+```
+
+Items 2 and 3 are the same kind of edit on the `- conditions:` and `- general:` lines. The wording is yours:
+
+```csharp
+// Hint: same shape, your words
+    - conditions: <only whether a trail, road, or area is physically passable>
+    - general: <park rules and regulations, plus what general already covers>
+```
+
+Then from `starter/`:
+
 ```bash
 dotnet run
 ```
 
+This program prints the routing table, not JSON. Where the Check below says `{"category": "emergency"}` or `{"category": "unsure"}`, read the `category` column of the table for that id.
+
 **Why:** the category descriptions in the prompt are what decide accuracy. When the model files something wrong, fix the description before touching the code.
 
-**Check:** `inq-0030` moves to `permit` and `inq-0008` (Half Dome lottery) stays there. `inq-0051` moves to `general`. `inq-0041` and `inq-0013` still return `{"category": "emergency"}`, and `inq-0035` still returns `{"category": "unsure"}`. At most one or two messages besides `inq-0035` sit in `unsure`. Accuracy lands between 17 and 19 out of 20. A run at 20/20 means check whether the descriptions now fit only these 20 messages. `inq-0013` or `inq-0041` leaving `emergency` fails, even when accuracy improves. `inq-0035` confidently in `conditions` or `permit` fails too.
+**Check:** `inq-0051` (Sperry campfires) moves to `general`, `inq-0001` moves from `unsure` to `permit`, and `inq-0008` (Half Dome lottery) stays `permit`. `inq-0030` (wedding photographer) usually stays `general` on `llama3.2`, even with the permit description above; a commercial-photography permit is a hard call for a small model, so treat it as a known miss rather than a sign your edit failed. `inq-0005` may move to `unsure`. `inq-0041` and `inq-0013` still return `{"category": "emergency"}`, and `inq-0035` still returns `{"category": "unsure"}`. At most one or two messages besides `inq-0035` sit in `unsure`. Accuracy lands between 17 and 19 out of 20; measured over 5 runs on `llama3.2`, every run scored 18/20, missing `inq-0030` and `inq-0005`. A run at 20/20 means check whether the descriptions now fit only these 20 messages. `inq-0013` or `inq-0041` leaving `emergency` fails, even when accuracy improves. `inq-0035` confidently in `conditions` or `permit` fails too.
 
 ### Stretch goals
 
 Pick either. Neither is built in `complete/`. The reasoning is in [`expected-output.md`](../expected-output.md) under "Stretch Goal".
 
 - **Add a priority field.** Add `priority` to the result type next to `category`, with its own small set of allowed values. Print it in the routing table. Priority is a second axis. It says how fast, and category says where. Mixing the two is how a lost inhaler ends up in line behind a lost wedding ring. **Check:** `inq-0006` (lost daypack with a child's inhaler) stays `lost-and-found` with a high priority.
+
+  Give priority its own enum, built like `Category`, and add it to the record. Both go at the bottom of the file:
+
+  ```csharp
+  // Hint: a second field on the result record, and a second small enum
+  record TriageResult(Category Category, Priority Priority);
+
+  [JsonConverter(typeof(JsonStringEnumConverter<Priority>))]
+  enum Priority
+  {
+      [JsonStringEnumMemberName("<value>")] <Member>,
+      [JsonStringEnumMemberName("<value>")] <Member>,
+  }
+  ```
+
+  Then carry it through the loop and the table. The tuple gains a third part, and every line that builds or splits a pair changes to match:
+
+  ```csharp
+  // Hint: three parts instead of two
+  var results = new List<(Inquiry Inquiry, Category Category, Priority Priority)>();
+  results.Add((inquiry, response.Result.Category, response.Result.Priority));
+  foreach (var (inquiry, category, priority) in results.OrderBy(r => r.Category != Category.Emergency))
+      Console.WriteLine($"{inquiry.id,-10} {Wire(category),-15} {priority,-8} {reference.Routing[Wire(category)]}");
+  ```
+
+  The step 4 emergency `foreach` and the step 5 miss `foreach` split the pair too; give them a third `_` or name.
+
 - **Add a confidence threshold.** Add a numeric `confidence` field to the result type and schema. After the loop, change the category to `unsure` on any result whose confidence is under a threshold you pick. Run the scoreboard again. **Check:** both emergencies stay `emergency` with high confidence, `inq-0035` stays `unsure`, and the `unsure` queue does not fill up with ordinary permit questions. If a third of the slice lands in `unsure`, the threshold is too high and you have rebuilt the unsorted inbox.
+
+  A `double` on the record becomes a number in the generated schema:
+
+  ```csharp
+  // Hint: a number field next to Category
+  record TriageResult(Category Category, double Confidence);
+  ```
+
+  Store the confidence in the tuple the way the priority stretch stores priority. The tuple gains a third part, and every line that builds or splits a pair changes to match. Printing the confidence in the routing table lets you check it:
+
+  ```csharp
+  // Hint: three parts instead of two
+  var results = new List<(Inquiry Inquiry, Category Category, double Confidence)>();
+  results.Add((inquiry, response.Result.Category, response.Result.Confidence));
+  foreach (var (inquiry, category, confidence) in results.OrderBy(r => r.Category != Category.Emergency))
+      Console.WriteLine($"{inquiry.id,-10} {Wire(category),-15} {confidence,-5:0.00} {reference.Routing[Wire(category)]}");
+  ```
+
+  The step 4 emergency `foreach` and the step 5 miss `foreach` split the pair too; give them a third `_` or name.
+
+  Then rewrite `results` after the loop and before the emergency block. `results` is declared with `var`, so it can be reassigned:
+
+  ```csharp
+  // Hint: after the loop, pick your own threshold
+  const double threshold = <your number>;
+  results = results
+      .Select(r => r.Confidence < threshold ? (r.Inquiry, Category.Unsure, r.Confidence) : r)
+      .ToList();
+  ```
 
 ## What Is in This Folder
 
