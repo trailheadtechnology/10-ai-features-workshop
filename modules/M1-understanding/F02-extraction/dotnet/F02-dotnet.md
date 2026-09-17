@@ -3,12 +3,22 @@
 
 *You are on the .NET track. Other tracks: [Python](../python/F02-python.md), [TypeScript](../typescript/F02-typescript.md). Lab overview: [F02-lab.md](../F02-lab.md).*
 
+**The User Problem:** Trailhead Guides wants a "trail stats" panel: which trails were hiked, when, how far, what wildlife showed up, what shape the trail was in. All of that information already exists, scattered through forty rambling trip reports as prose. Today a human would have to re-read every report and re-type the facts into a form, which is why the panel doesn't exist.
+
 *A Challenge lab. Do it if you finished [Module 1](../../M1-overview.md)'s Recommended lab and want another, or skip it without guilt: you will have seen this feature demonstrated either way.*
 
 - **Goal:** turn a trip report into one JSON record of eight trail facts, `null` for anything unstated, then reject the values the model made up.
 - **Input:** `data/tr-0007.md`, the fact-rich report (copied from feature 01's corpus); `data/tr-0011.md`, the fact-sparse one.
 - **How:** send each report to `llama3.2` with a JSON schema as the response format, parse the reply into a record, then run five plain-code rules over the record.
 - **Model:** `llama3.2`, local. No key.
+
+## The Concept
+
+Extraction is summarization's sibling with one critical difference: the output is structured data your code can consume, not text a human reads. You hand the model a document and a schema, and you get back JSON ready for a database insert or an API response. This is the feature where the LLM stops being a chat feature and becomes a data-pipeline component.
+
+Two mechanics matter. The first is JSON mode: modern models, including local ones, can be constrained to emit valid JSON matching your schema, so you're not regex-parsing prose and hoping. The second is that the schema does most of the prompting. Field names, descriptions, and an explicit "use `null` when the report doesn't say" rule do more for accuracy than any clever prompt wording.
+
+Then there's the part most tutorials skip. The classic extraction failure is a missing fact hallucinated into a field, and the schema reduces that failure without eliminating it. On the sparse report in this lab, `llama3.2` returns `elevation_gain_ft: 0` where the honest answer is `null`, which is the more dangerous kind of miss: zero is a value, and a pipeline will store it without complaint. Run it a few times and you will also see invented distances and date strings that no date parser will accept. A structured shape guarantees the JSON parses; it does not guarantee the JSON is true. That is why this feature ends in validation code rather than in a prompt, and why what you ship is the schema plus a rejection rule. All of it works on a local model, which matters here more than anywhere: extraction pipelines often process private data at volume, where free and on-prem beats per-token pricing.
 
 Every step below is one thing to make the program do. The `starter/` is the simple version that does not work yet. Edit it until it does all six steps. Look at `complete/` when you get stuck; its comments say why each piece is there.
 

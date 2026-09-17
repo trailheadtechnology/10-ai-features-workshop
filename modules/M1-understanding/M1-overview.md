@@ -6,9 +6,9 @@ The three features in this module all take unstructured text and give you back s
 
 | | Feature | What it does | Runs on |
 |---|---|---|---|
-| **Recommended** | [01 Summarization](F01-summarization/F01-spec.md) | Long trip report to a 3-bullet conditions briefing | Ollama `llama3.2` |
-| Challenge | [02 Extraction](F02-extraction/F02-spec.md) | Messy prose to validated structured JSON | Ollama `llama3.2` |
-| Challenge | [03 Sentiment](F03-sentiment/F03-spec.md) | Gear reviews labeled, small model against big | Ollama `phi3` + cloud |
+| **Recommended** | [01 Summarization](F01-summarization/F01-lab.md) | Long trip report to a 3-bullet conditions briefing | Ollama `llama3.2` |
+| Challenge | [02 Extraction](F02-extraction/F02-lab.md) | Messy prose to validated structured JSON | Ollama `llama3.2` |
+| Challenge | [03 Sentiment](F03-sentiment/F03-lab.md) | Gear reviews labeled, small model against big | Ollama `phi3` + cloud |
 
 ## How the Hands-On Works
 
@@ -32,4 +32,4 @@ A better model does not fix any of that. What does is a more specific instructio
 
 ## The Leadership Beats
 
-We collect all three at the debrief. Each feature's spec ends with the same card: when to reach for it, the one-liner for your CTO, and a difficulty rating. Those become rows 1 through 3 of the [decision framework](../../docs/decision-framework.md).
+We collect all three at the debrief. Each feature's card in the decision framework carries the same three parts: when to reach for it, the one-liner for your CTO, and a difficulty rating. Those become rows 1 through 3 of the [decision framework](../../docs/decision-framework.md).

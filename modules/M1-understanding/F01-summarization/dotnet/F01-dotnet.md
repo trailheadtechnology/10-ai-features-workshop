@@ -3,12 +3,20 @@
 
 *You are on the .NET track. Other tracks: [Python](../python/F01-python.md), [TypeScript](../typescript/F01-typescript.md). Lab overview: [F01-lab.md](../F01-lab.md).*
 
+**The User Problem:** A hiker planning this weekend's trip opens Trailhead Guides and finds forty trip reports for Avalanche Lake Trail, each one 1,200 words of trail diary, gear opinions, and granola recipes. Somewhere in there is the one thing they need to know: is the bridge out, and are the mosquitoes bad? Nobody reads forty essays; they skim three, miss the warning in the fourth, and have a bad Saturday.
+
 *This is the Recommended lab for [Module 1](../../M1-overview.md): start here unless you have a reason not to. The hands-on period runs about 60 minutes, so there is room to do it properly rather than fast.*
 
 - **Goal:** turn a raw trip report into a 3-bullet "conditions briefing" for hikers.
 - **Input:** `data/tr-0001.md`, a clean report (mud and crowds, no closure), and `data/tr-0004.md`, the report with the washed-out footbridge buried mid-text. The other 38 files in `data/` are the rest of the synthetic Avalanche Lake corpus described in the repo's [README.md](../../../../README.md); no build script produced them.
 - **How:** one chat call per report. Read the file, put an instruction above its text, send the whole thing to Ollama as a single user message, and print the reply.
 - **Model:** `llama3.2`, local. No key.
+
+## The Concept
+
+Summarization is the simplest possible LLM feature: one chat-completion call with a document and an instruction. You don't need fine-tuning, a vector database, or any pipeline at all. That makes it the right first feature, because by the end of the lab everyone in the room has called a model and built something useful.
+
+The craft is all in the instruction, because "summarize this" produces a book report and real products ask for a summary with a purpose: "In 3 bullets, tell a hiker planning a trip this week about current conditions, hazards, and crowding. Ignore gear talk." The second lesson is that summaries can be shaped to fit the UI slot that needs them: plain prose, bullets, a fixed template, or a single headline. A small local model handles all of this well, which is why this feature never touches the cloud.
 
 Each step below is one thing to make the program do. The starter already reads a report and sends the naive prompt. Edit it until it does all three steps. Look at `complete/` when you get stuck; its comments say why each piece is there.
 

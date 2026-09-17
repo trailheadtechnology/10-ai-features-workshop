@@ -3,12 +3,22 @@
 
 *You are on the TypeScript track. Other tracks: [.NET](../dotnet/F08-dotnet.md), [Python](../python/F08-python.md). Lab overview: [F08-lab.md](../F08-lab.md).*
 
+**The User Problem:** Trail-condition reports trickle into Trailhead Guides all season, about 500 of them across 200 trails. Almost all say some version of "muddy in spots, otherwise fine." Then over one week, three separate hikers report a washed-out bridge on the same trail, and a fourth mentions aggressive bear activity two trails over. Nobody notices, because nobody reads 500 routine reports. The park finds out about the bridge from a one-star review a month later.
+
 *A Challenge lab. Do it if you finished [Module 3](../../M3-overview.md)'s Recommended lab and want another, or skip it without guilt: you will have seen this feature demonstrated either way.*
 
 - **Goal:** find the condition reports for one trail that do not look like the rest, using distance from a centroid. Then raise one alert when several of them land close together in time.
 - **Input:** `data/reports-0117.jsonl`, 40 reports for trail-0117 with the planted washout cluster; `data/embeddings-0117.json`, their `nomic-embed-text` vectors, unnormalized, `classification: ` prefixed; `data/reports-0042.jsonl`, trail-0042, for a stretch goal.
 - **How:** embed the reports through your track's embeddings client against local Ollama. The centroid, distances, threshold, and alert rule are plain arithmetic you write yourself.
 - **Model:** `nomic-embed-text`, local. Every track's `starter/` runs offline on the precomputed vectors. Only step 5 onward needs Ollama.
+
+## The Concept
+
+This feature is barely an AI feature: it's embeddings plus arithmetic. Embed every condition report for a trail, and the routine ones ("muddy," "buggy," "fine") cluster together in vector space. Average them and you get a centroid, the mathematical center of "normal" for that trail. A report's distance from that centroid is an anomaly score. "Bridge washed out" sits farther from the mud cluster than the mud reports sit from each other, so it rises without a large model or any training. Cosine distance and a threshold do most of the job.
+
+The word "most" is doing real work in that sentence, and this feature is honest about it. Ranking single reports by distance is noisy: routine reports about parking or wildflowers can outrank a genuine hazard, and when 8 of 40 reports describe the same washout, the anomalies drag the centroid toward themselves and partially hide. Two things rescue it, and both are the actual lesson. First, embedding models have contracts: `nomic-embed-text` is trained with task prefixes, and embedding `"classification: " + text` instead of the bare text moves the first washout report from rank 11 to rank 2. Second, the alert rule beats the ranking. Requiring two flagged reports within a two-week window fires exactly one alert on this trail, all three of its reports genuine, zero false positives. One outlier might be a rambling hiker; several outliers in a week that also sit near each other are an event.
+
+The pattern generalizes to any stream of routine text: support tickets, log messages, form submissions, review streams. Define normal from the data itself, and let distance flag what deserves human eyes. It also pairs naturally with feature 07: classification handles the categories you knew to define, and anomaly detection catches the things you didn't.
 
 Every step below is one thing to make the program do. The `starter/` already does steps 1 through 4 using the precomputed vectors. Read those four steps next to the starter code and find each one. Then edit the starter until it does steps 5 through 7. Compare against `complete/` when you get stuck; its comments say why each piece is there.
 

@@ -22,22 +22,22 @@ We will cover ten features grouped into 4 modules.
 |---|---|
 | 30 min | **[Module 0: Opening](modules/M0-opening/M0-overview.md)** · environment check, the day's thesis, a tour of the data |
 | 90 min | **[Module 1: Understanding](modules/M1-understanding/M1-overview.md)** · making sense of messy content |
-| | [01 Summarization](modules/M1-understanding/F01-summarization/F01-spec.md) [RECOMMENDED] |
-| | [02 Extraction](modules/M1-understanding/F02-extraction/F02-spec.md) [CHALLENGE] |
-| | [03 Sentiment](modules/M1-understanding/F03-sentiment/F03-spec.md) [CHALLENGE] |
+| | [01 Summarization](modules/M1-understanding/F01-summarization/F01-lab.md) [RECOMMENDED] |
+| | [02 Extraction](modules/M1-understanding/F02-extraction/F02-lab.md) [CHALLENGE] |
+| | [03 Sentiment](modules/M1-understanding/F03-sentiment/F03-lab.md) [CHALLENGE] |
 | 15 min | Break |
 | 90 min | **[Module 2: Finding](modules/M2-finding/M2-overview.md)** · surfacing the right thing |
-| | [04 Semantic Search](modules/M2-finding/F04-semantic-search/F04-spec.md) [RECOMMENDED] |
-| | [05 RAG](modules/M2-finding/F05-rag/F05-spec.md) [CHALLENGE] |
-| | [06 Recommendations](modules/M2-finding/F06-recommendations/F06-spec.md) [CHALLENGE] |
+| | [04 Semantic Search](modules/M2-finding/F04-semantic-search/F04-lab.md) [RECOMMENDED] |
+| | [05 RAG](modules/M2-finding/F05-rag/F05-lab.md) [CHALLENGE] |
+| | [06 Recommendations](modules/M2-finding/F06-recommendations/F06-lab.md) [CHALLENGE] |
 | 60 min | Lunch |
 | 90 min | **[Module 3: Deciding](modules/M3-deciding/M3-overview.md)** · triage and judgment |
-| | [07 Classification & Routing](modules/M3-deciding/F07-classification-routing/F07-spec.md) [RECOMMENDED] |
-| | [08 Anomaly Detection](modules/M3-deciding/F08-anomaly-detection/F08-spec.md) [CHALLENGE] |
-| | [09 Human-in-the-Loop](modules/M3-deciding/F09-human-in-the-loop/F09-spec.md) [CHALLENGE] |
+| | [07 Classification & Routing](modules/M3-deciding/F07-classification-routing/F07-lab.md) [RECOMMENDED] |
+| | [08 Anomaly Detection](modules/M3-deciding/F08-anomaly-detection/F08-lab.md) [CHALLENGE] |
+| | [09 Human-in-the-Loop](modules/M3-deciding/F09-human-in-the-loop/F09-lab.md) [CHALLENGE] |
 | 15 min | Break |
 | 60 min | **[Module 4: Doing](modules/M4-doing/M4-overview.md)** · the capstone |
-| | [10 Agentic Workflows](modules/M4-doing/F10-agentic-workflows/F10-spec.md) [EVERYONE] |
+| | [10 Agentic Workflows](modules/M4-doing/F10-agentic-workflows/F10-lab.md) [EVERYONE] |
 | 30 min | **Closing** · the [decision framework](docs/decision-framework.md), pitching AI features to leadership, and Q&A |
 
 **Ten features, four modules, but you are not expected to build all ten.** Each 90-minute module opens with 30 minutes in which I introduce the theme and demo all three features, and then hands you 60 minutes to build. One feature per module is marked **Recommended**, and that is the lab to start with unless you have a reason not to; the other two are **Challenge** labs for anyone with time left, and every lab has a stretch goal beyond that. The capstone is the one lab everyone does. Finishing one lab properly is the intended outcome for most people. You will see all ten features demonstrated either way.
@@ -48,7 +48,7 @@ Each module's overview is the menu: what the three features are, which one is Re
 
 All ten features work through one fictional product: Trailhead Guides, a national-park trip-planning app with a messy, realistic corpus of trip reports, gear reviews, trail descriptions, park regulations, and visitor inquiries. Every feature folder carries the data its lab reads in its own `data/`, described in that feature's lab doc, so you meet each dataset when its feature does. The data is synthetic; where a real park name appears, every rule attached to it is fiction, and nobody should plan an actual trip from it.
 
-During the workshop, open the module overview to pick a feature, then open that feature's `FNN-lab.md`: the goal, the input, the model, and a link to the lab for each language. `dotnet/`, `python/`, and `typescript/` each have that language's full lab (`FNN-<language>.md`: the steps, success checks, and stretch goals, with the exact calls, imports, and run commands inline), a `starter/` to edit, and a `complete/` answer key. Every language checks against the same `expected-output.md`. The spec (`FNN-spec.md`) is the short read before the lab: the user problem, the concept, and the leadership beat. The instructor's demo scripts live with the slides, in `docs/slides/outlines/`.
+During the workshop, open the module overview to pick a feature, then open that feature's `FNN-lab.md`: the user problem, the goal, the input, the model, and a link to the lab for each language. `dotnet/`, `python/`, and `typescript/` each have that language's full lab (`FNN-<language>.md`: the user problem, the concept, the steps, success checks, and stretch goals, with the exact calls, imports, and run commands inline), a `starter/` to edit, and a `complete/` answer key. Every language checks against the same `expected-output.md`. The instructor's demo scripts live with the slides, in `docs/slides/outlines/`.
 
 Feature 00 is the exception: its lab is a raw-HTTP smoke test (`http/smoke-test.http`) that checks your environment is wired up before the day starts, not a coding track. Every other feature runs only in .NET, Python, or TypeScript.
 
@@ -67,8 +67,7 @@ Before the workshop, do the pre-work in [`SETUP.md`](SETUP.md). It's mostly "ins
     └── MN-theme/             # a module: three related features, one hands-on period
         ├── MN-overview.md    # the menu: which feature is Recommended, what each lab costs
         └── FNN-feature/      # one AI feature
-            ├── FNN-spec.md   # the read-first page: problem, concept, leadership beat
-            ├── FNN-lab.md    # attendee landing page: goal, input, model, links to the three language labs
+            ├── FNN-lab.md    # attendee landing page: user problem, goal, input, model, links to the three language labs
             ├── expected-output.md
             ├── data/         # everything the lab and the code read
             ├── dotnet/       # FNN-dotnet.md full lab plus starter/ and complete/ projects

@@ -3,6 +3,8 @@
 
 *You are on the TypeScript track. Other tracks: [.NET](../dotnet/F04-dotnet.md), [Python](../python/F04-python.md). Lab overview: [F04-lab.md](../F04-lab.md).*
 
+**The User Problem:** A user types "dog-friendly waterfall hike, not too steep" into Trailhead Guides. The catalog has at least a dozen perfect matches, but keyword search returns almost nothing, because no trail description contains the phrase "not too steep." One trail says "a gentle grade shaded by cedars." Another says "easy elevation, good for families." The user gets three bad results, assumes the app has no good trails, and goes back to asking strangers on Reddit.
+
 *This is the Recommended lab for [Module 2](../../M2-overview.md): start here unless you have a reason not to. The hands-on period runs about 60 minutes, so there is room to do it properly rather than fast.*
 
 - **Goal:** rank trails by similarity to a natural-language query, and beat keyword search on three queries it fails.
@@ -11,6 +13,12 @@
 - **Model:** `nomic-embed-text` on Ollama at `http://localhost:11434`. No key. 768 floats per input.
 
 The big idea is to turn every trail description into a list of numbers (a vector), turn the search query into the same kind of list, and rank trails by how close the two lists are.
+
+## The Concept
+
+Embeddings turn text into vectors, points in a high-dimensional space where distance means similarity of meaning. "Gentle grade" and "not too steep" land close together in that space even though they share no words. Semantic search is the whole trick applied to a catalog: embed every trail description once, embed the user's query at search time, and rank by distance. The math at the center is cosine similarity, which is a few lines of code in any language.
+
+Two things make this feature land. First, it runs entirely locally: `nomic-embed-text` is a small, free embedding model, and 200 trail descriptions embed in seconds on a laptop. Second, the search box stays a search box. Users don't have to learn anything new; the same input just starts understanding what they meant. This is also the foundation feature for the rest of the day, since RAG (05), recommendations (06), and anomaly detection (08) all reuse the idea, and 06 and 08 reuse the actual infrastructure.
 
 Every step below is one thing to make the program do. The `starter/` is a plain keyword search with no AI in it. Edit it until it does all four steps. Compare against `complete/` when you get stuck; its comments say why each piece is there.
 

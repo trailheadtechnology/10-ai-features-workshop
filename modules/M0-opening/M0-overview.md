@@ -4,7 +4,7 @@
 
 | | Feature | What it does |
 |---|---|---|
-| **Everyone** | [00 Setup & Framing](F00-setup-and-framing/F00-spec.md) | Environment check, the day's thesis, a tour of the data |
+| **Everyone** | [00 Setup & Framing](F00-setup-and-framing/F00-lab.md) | Environment check, the day's thesis, a tour of the data |
 
 Nothing gets built in this half hour, but it decides whether the other four modules go well. Everyone runs the same three-request smoke test, broken setups surface while there is still slack to fix them, and the room starts Module 1 together.
 
@@ -15,6 +15,12 @@ The environment check comes first, about ten minutes in, because the most expens
 After that comes the framing. Every company is currently asking "where can we add AI?", and this workshop spends the day practicing the better question, which is what problems AI can solve for your users. "Users" is defined broadly on purpose, since three of the ten features exist for the people running the product rather than the people using it.
 
 Then two minutes on Trailhead Guides, the fictional trip-planning app every feature works inside: rambling trip reports, opinionated gear reviews, a trail catalog, park regulations, a visitor inbox, and a stream of trail-condition reports. Every feature folder carries the data its lab reads, and its lab doc describes it, so you meet each dataset when its feature does rather than all at once here.
+
+## Who This Is For
+
+This workshop is for people who write software for a living, can make an HTTP request in their language, and have not yet shipped an LLM feature, or have shipped one and want the other nine. No ML background is assumed.
+
+Each module leaves you able to do one thing, and each module's debrief comes back to it: turn a document into a purpose-shaped summary and a validated record with a local model (Understanding); build embedding search over your own catalog and ground answers in your own documents with verified citations (Finding); route an inbox so the expensive class is never missed and gate anything irreversible behind a human with an audit trail (Deciding); wire tools into a bounded agent loop and read its trace (Doing).
 
 ## How the Day Is Shaped
 

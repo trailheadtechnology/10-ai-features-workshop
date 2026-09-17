@@ -3,12 +3,26 @@
 
 *You are on the .NET track. Other tracks: [Python](../python/F05-python.md), [TypeScript](../typescript/F05-typescript.md). Lab overview: [F05-lab.md](../F05-lab.md).*
 
+**The User Problem:** A visitor asks Trailhead Guides: "Can I have a campfire at Sperry Chalet in September?" The answer exists, in paragraph four of a 12-page backcountry regulations document that nobody will ever read. Search alone returns the document, not the answer. A plain chatbot answers fluently and makes it up, and a confidently wrong answer about fire regulations is worse than no answer at all.
+
 *A Challenge lab. Do it if you finished [Module 2](../../M2-overview.md)'s Recommended lab and want another, or skip it without guilt. You will have seen this feature demonstrated either way.*
 
 - **Goal:** answer questions from the park docs with citations you can verify, and refuse when the docs are silent.
 - **Input:** `data/chunks.jsonl`, 250 chunks of park regulations; `data/questions.json`, four test questions, one unanswerable.
 - **How:** embed the chunks and the question with Ollama, then rank the chunks by cosine similarity using feature 04's code. Paste the top 3 into a prompt and send it to a chat model. Then check every citation the model wrote against the chunks you gave it.
 - **Model:** `nomic-embed-text` for the vectors, `llama3.2` for the answer. Both run locally without a key. The stretch goals swap in `gpt-4.1` on Azure.
+
+## The Concept
+
+RAG bolts feature 04's retrieval onto an LLM's generation. Instead of asking the model what it knows, you retrieve the most relevant chunks of your own documents and hand them over with the question: "Answer using only this context. If the context doesn't cover it, say so." The model becomes a reading assistant for your content rather than an oracle, and it can cite which document the answer came from.
+
+The mechanics you'll touch: chunking (splitting 25 park docs into retrievable pieces), retrieval (feature 04's embedding search, plus a lexical signal it turns out to need), and grounded prompting (context in, citation out, refusal when the context is silent).
+
+A third mechanic is easy to leave out and expensive to leave out: **the model has to be told what "now" means.** The park corpus is written the way operational documents are actually written, in dated notices ("Avalanche Lake Trail: CLOSED effective June 20, 2026, until further notice"). Ask "is the trail open right now?" and a model with no calendar cannot connect the two, so it refuses a question its documents answer twice over. The finished demo puts the current date in the prompt next to the refusal rule, and the refusal rate on that question drops from better than half to one run in twenty. Almost every real knowledge base is a corpus of dated notices, and a RAG system that never tells the model the date will either refuse answerable questions or answer them as of an unknown date, with nothing in the output to tell you which.
+
+Each of those mechanics has a failure mode worth showing rather than glossing. **Chunking is a correctness decision.** Splitting the park docs one chunk per numbered section is the obvious default, and it put a conditional fire rule and the absolute exception that overrides it into the same 256-word chunk. Retrieval ranked that chunk first on every phrasing of the question, and the model read the conditional, stopped, and told the visitor a campfire was fine in 4 runs out of 20. Splitting oversized sections at their own subsection boundaries took that to 0 in 60, with the retrieval scores barely moving. **Embedding search alone is weak on proper nouns.** Blending a plain keyword score into the ranking, weighted by how rare each word is in the corpus, makes "Sperry" count for something; that blend is called hybrid retrieval and it is most production RAG systems' first upgrade. **And a citation is only a string the model typed.** Small models emit chunk ids that look right and point nowhere. Checking each cited id against the set you actually retrieved is a five-line function, and without it a citation proves nothing.
+
+The model strategy is hybrid in a second sense, on purpose. Retrieval runs on free local embeddings, and you'll try generation both ways: a local model first, then Azure OpenAI. Watching the cloud model handle a multi-document answer more cleanly is the honest version of the "when do I pay for the big model" conversation from feature 03, now applied to generation.
 
 Every step below is one thing to make the program do. The `starter/` is the plain chatbot. Edit it until it does all seven of steps 1 through 7, and compare against `complete/` when you get stuck; its comments say why each piece is there.
 

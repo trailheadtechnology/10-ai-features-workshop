@@ -3,12 +3,20 @@
 
 *You are on the TypeScript track. Other tracks: [.NET](../dotnet/F06-dotnet.md), [Python](../python/F06-python.md). Lab overview: [F06-lab.md](../F06-lab.md).*
 
+**The User Problem:** A hiker just finished Avalanche Lake Trail and loved it. Trailhead Guides says nothing. The obvious next screen ("you'd probably like these three trails") never got built, because everyone assumes recommendations require a data-science team, a ratings matrix, and six months. Meanwhile the gear store has the same gap: someone who bought the Cascade 65 gets shown a random carousel instead of the products that actually go with it.
+
 *A Challenge lab. Do it if you finished [Module 2](../../M2-overview.md)'s Recommended lab and want another, or skip it without guilt: you will have seen this feature demonstrated either way.*
 
 - **Goal:** build "more like this" for trails from item embeddings.
 - **Input:** `data/trails.json` (30 trails including the three targets), `data/trail-embeddings.json` (their `nomic-embed-text` vectors by id, so you can skip the embed call), `data/gear-reviews.jsonl` (300 reviews across 25 products, for the gear stretch goal).
 - **How:** turn each trail description into a vector once with the embedding model. Score every other trail by cosine against the target trail's own vector, sort high to low, leave the target out, keep the top 5. The model only gives you vectors. The ranking is code you write. If you skipped feature 04, use the precomputed vectors in step 2.
 - **Model:** `nomic-embed-text`, local. No chat model, no key.
+
+## The Concept
+
+The classical answer to recommendations is collaborative filtering over user-behavior data, and it's real work with a real cold-start problem: it can't say anything about a new trail nobody has rated. This feature shows the shortcut that gets you most of the value: content-based recommendations from the embeddings you already have. If feature 04 gave every trail a position in meaning-space, then "trails similar to the one you just loved" is nothing more than nearest neighbors of that trail's vector. You don't train anything or build a ratings matrix, new items have no cold-start problem, and the infrastructure already exists.
+
+That's the deliberate narrative beat of this feature: one embedding investment keeps paying. Search (04), recommendations (06), and anomaly detection (08) are three features from one piece of infrastructure. The honest caveat gets said out loud too. Content similarity recommends things that are alike, and it will never discover that people who hike waterfalls also buy headlamps. When behavior data accumulates, collaborative filtering complements this; it doesn't replace it on day one.
 
 Every step below is one thing to make the program do. The starter picks trails at random. Edit it until it does all six steps. Look at `complete/` when you get stuck; its comments say why each piece is there.
 

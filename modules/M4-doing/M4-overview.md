@@ -6,7 +6,7 @@ The last module is a single feature with a double-length slot, and it draws on e
 
 | | Feature | What it does | Runs on |
 |---|---|---|---|
-| **Everyone** | [10 Agentic Workflows](F10-agentic-workflows/F10-spec.md) | "Plan me a 3-day trip in Glacier" becomes real tool calls | `gpt-5.5` on Microsoft Foundry (Ollama fallback) |
+| **Everyone** | [10 Agentic Workflows](F10-agentic-workflows/F10-lab.md) | "Plan me a 3-day trip in Glacier" becomes real tool calls | `gpt-5.5` on Microsoft Foundry (Ollama fallback) |
 
 There is no Recommended-or-Challenge choice in this module; everyone attempts the capstone, and the lab is sized so that a partial result still teaches the lesson.
 

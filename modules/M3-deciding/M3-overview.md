@@ -8,9 +8,9 @@ The user of these three features is usually a colleague, a ranger or an ops lead
 
 | | Feature | What it does | Runs on |
 |---|---|---|---|
-| **Recommended** | [07 Classification & Routing](F07-classification-routing/F07-spec.md) | Sorts an inbox, never misses an emergency | Ollama `llama3.2` |
-| Challenge | [08 Anomaly Detection](F08-anomaly-detection/F08-spec.md) | Finds the washed-out bridge in 500 routine reports | Ollama embeddings + math |
-| Challenge | [09 Human-in-the-Loop](F09-human-in-the-loop/F09-spec.md) | AI drafts, a ranger approves, everything is logged | Whatever the draft needs |
+| **Recommended** | [07 Classification & Routing](F07-classification-routing/F07-lab.md) | Sorts an inbox, never misses an emergency | Ollama `llama3.2` |
+| Challenge | [08 Anomaly Detection](F08-anomaly-detection/F08-lab.md) | Finds the washed-out bridge in 500 routine reports | Ollama embeddings + math |
+| Challenge | [09 Human-in-the-Loop](F09-human-in-the-loop/F09-lab.md) | AI drafts, a ranger approves, everything is logged | Whatever the draft needs |
 
 ## How the Hands-On Works
 

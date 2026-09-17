@@ -3,12 +3,20 @@
 
 *You are on the Python track. Other tracks: [.NET](../dotnet/F09-dotnet.md), [TypeScript](../typescript/F09-typescript.md). Lab overview: [F09-lab.md](../F09-lab.md).*
 
+**The User Problem:** Feature 07 routed the inbox, so now a ranger stares at forty messages that all need replies. Most answers are boilerplate the ranger has typed a hundred times, and typing them eats the afternoon. The obvious move is to let the AI answer, and the obvious disaster is the AI telling a visitor that campfires are fine during a burn ban, on official park letterhead. The ranger's problem is drudgery; the park's problem is that full automation of outbound communication is how you end up apologizing publicly.
+
 *A Challenge lab. Do it if you finished [Module 3](../../M3-overview.md)'s Recommended lab and want another, or skip it without guilt: you will have seen this feature demonstrated either way.*
 
 - **Goal:** put a human between the model and the visitor. The model drafts, a ranger approves, edits, or rejects, every decision is logged, and emergencies never reach the model at all.
 - **Input:** `data/inquiries.jsonl`, six inquiries routed by feature 07, with category and park doc; `data/snippets/`, the four excerpts they cite (`glac-bc-2025-04.md`, `glac-cl-2026-01.md`, `yose-cl-2026-01.md`, `zion-nar-2026-01.md`); `policy-worksheet.md`, the lane table you fill in.
 - **How:** the starter already loops over the six inquiries and sends each one to the chat model with a drafting prompt. You add five things: a policy table, a gate above the model call, a review prompt, an outbox, and an audit log.
 - **Model:** `llama3.2`, local. No key.
+
+## The Concept
+
+Human-in-the-loop is a product pattern, not a model feature, and it's the difference between AI features that ship and AI features that get killed in legal review. The core move: the AI drafts, the human approves, edits, or rejects, and the system remembers what happened. The user-facing risk drops to near zero while most of the typing still disappears.
+
+The design question is where to put the human, and the answer comes from error cost and reversibility, which connects straight back to feature 07's asymmetry lesson. A sensible policy has three lanes: full automation for cheap, reversible, low-stakes replies; draft-plus-approval for the middle; human-only for the expensive and irreversible (in Trailhead Guides terms, emergencies never get an AI draft at all). Two practical details do a lot of work in real systems. Keep an audit trail of what was drafted, who approved it, and what they changed. And measure the gap between draft and final text, because how much humans edit tells you whether trust in each lane is earned, and edit patterns show you exactly where the drafts fall short.
 
 Every step below is one thing to make the program do. The `starter/` drafts and "sends" every inquiry with no review. Edit it until it does all seven steps. Compare against `complete/` when stuck; its comments say why each piece is there.
 

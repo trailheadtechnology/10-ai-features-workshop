@@ -6,9 +6,9 @@ The three features in this module are built on one idea. Embeddings turn text in
 
 | | Feature | What it does | Runs on |
 |---|---|---|---|
-| **Recommended** | [04 Semantic Search](F04-semantic-search/F04-spec.md) | Finds trails by meaning, not keywords | Ollama `nomic-embed-text` |
-| Challenge | [05 RAG](F05-rag/F05-spec.md) | Answers questions from park regulations, with citations | Local embeddings + generation |
-| Challenge | [06 Recommendations](F06-recommendations/F06-spec.md) | "You liked this trail, try these" | Ollama `nomic-embed-text` |
+| **Recommended** | [04 Semantic Search](F04-semantic-search/F04-lab.md) | Finds trails by meaning, not keywords | Ollama `nomic-embed-text` |
+| Challenge | [05 RAG](F05-rag/F05-lab.md) | Answers questions from park regulations, with citations | Local embeddings + generation |
+| Challenge | [06 Recommendations](F06-recommendations/F06-lab.md) | "You liked this trail, try these" | Ollama `nomic-embed-text` |
 
 ## How the Hands-On Works
 
