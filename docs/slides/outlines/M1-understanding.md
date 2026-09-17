@@ -1,9 +1,9 @@
 # Deck 1: Module 1, Understanding (about 90 minutes)
 
-Demo-centric rhythm: name the three features, then for each one — divider, DEMO, the lab, the leadership card. Slides appear only where a concept needs a picture (in this module: extraction's validate-or-reject pipeline). Everything J. says lives in Notes; the demo scripts live under each "What to Watch" slide.
+Demo-centric rhythm: name the three features, then for each one: divider, DEMO, the lab, the leadership card. Slides appear only where a concept needs a picture (in this module: extraction's validate-or-reject pipeline). Everything J. says lives in Notes; the demo scripts live under each "What to Watch" slide.
 
 Runsheet (lengths, not clock times):
-- 30 min instructor: opener 2 min, then per feature — spoken problem setup 1–2 min over the section slide, demo, leadership card. Demo budget: 01 ≈ 8, 02 ≈ 10 (it has the one concept slide), 03 ≈ 10.
+- 30 min instructor: opener 2 min, then per feature: spoken problem setup 1-2 min over the section slide, demo, leadership card. Demo budget: 01 ≈ 8, 02 ≈ 10 (it has the one concept slide), 03 ≈ 10.
 - 60 min build: the Hands-On slide up; 01 is Recommended, 02 and 03 are Challenge. Walk the room. Sticky check at about 20 min: green if output matches `expected-output.md`, red if stuck.
 - Cut if behind: the break-it-on-purpose beats in demos 02 and 03, then the "one-line trail status" reshape in demo 01, then say a leadership card in one sentence instead of revealing it.
 - Last 5 min: debrief; ask two people what surprised them.
@@ -44,7 +44,7 @@ The concept needs no slide: one chat call, a document, an instruction. "Summariz
 - The raw report first
 - ❌ Naive prompt: faithful, generic, useless
 - ✅ Purpose-built prompt: the bridge surfaces
-- Grounding lines — without them, ~half of runs invent a closure
+- Grounding lines: without them, ~half of runs invent a closure
 - Same call, new shape: a one-line trail status
 
 Notes: ~8 min · `cd modules/M1-understanding/F01-summarization/dotnet`
@@ -75,8 +75,8 @@ Easy. If asked about cost: days of work, free local models, no new infrastructur
 
 ## [section] F02 · Extraction
 
-Notes: The user problem, spoken, 60 seconds: Trailhead wants a "trail stats" panel — which trails, when, how far, what wildlife, what condition. All of it exists as prose across the forty reports, and today a human would re-read and re-type it. So the panel doesn't exist.
-This one gets the module's one concept slide, because the pipeline — and where it lies to you — is the lesson.
+Notes: The user problem, spoken, 60 seconds: Trailhead wants a "trail stats" panel: which trails, when, how far, what wildlife, what condition. All of it exists as prose across the forty reports, and today a human would re-read and re-type it. So the panel doesn't exist.
+This one gets the module's one concept slide, because the pipeline, and where it lies to you, is the lesson.
 
 ## F02 · How It Works
 
@@ -110,7 +110,7 @@ A rejected record is a good outcome; it is the pipeline telling you the truth.
 - ❌ No distance in the report → `distance_mi: 5.0`
 - ✅ Nullable fields + "null when not stated"
 - Run it 3×: better ≠ guaranteed
-- The last mile is a validator — ordinary code
+- The last mile is a validator: ordinary code
 
 Notes: ~10 min · `cd modules/M1-understanding/F02-extraction/dotnet`
 Files: `tr-0007.md` = full report, every field present · `tr-0011.md` = sparse report, no distance stated (the null test)
@@ -139,8 +139,8 @@ Medium. If asked about cost: days to a working pipeline; the real work is schema
 
 ## [section] F03 · Sentiment
 
-Notes: The user problem, spoken, 60 seconds: the Cascade 65 backpack has 300 reviews. Are people happy, and what are they mad about? Star ratings lie — "4 stars, but the hip belt broke on day two." The user here is the product team, not the hiker; track the signal weekly and a defect surfaces months before returns spike.
-No concept slide: this is classification, and the demo IS the lesson — the day's model-selection experiment. phi3 free and local vs gpt-4.1 on Azure, same prompt, and you measure instead of assume.
+Notes: The user problem, spoken, 60 seconds: the Cascade 65 backpack has 300 reviews. Are people happy, and what are they mad about? Star ratings lie: "4 stars, but the hip belt broke on day two." The user here is the product team, not the hiker; track the signal weekly and a defect surfaces months before returns spike.
+No concept slide: this is classification, and the demo IS the lesson: the day's model-selection experiment. phi3 free and local vs gpt-4.1 on Azure, same prompt, and you measure instead of assume.
 
 ## [demo] **DEMO** · F03 Sentiment
 
@@ -149,8 +149,8 @@ No concept slide: this is classification, and the demo IS the lesson — the day
 - One method · `positive | negative | mixed` · swap = one DI line
 - 20 easy through `phi3`: fast, free, correct
 - Same 20 through Azure: 9 of 10 identical
-- The hard set through both — diff on screen
-- 📊 `phi3` 9/10 · 7/10 — `gpt-4.1` 10/10 · 10/10
+- The hard set through both, diff on screen
+- 📊 `phi3` 9/10 · 7/10 vs `gpt-4.1` 10/10 · 10/10
 
 Notes: ~10 min · `cd modules/M1-understanding/F03-sentiment/dotnet`
 Files: `easy.jsonl` = 10 plain reviews · `hard.jsonl` = 10 sarcastic or split reviews · `reference-labels.json` = the hand labels
@@ -179,13 +179,14 @@ Easy. If asked about cost: days; the classifier is trivial, the diligence is a l
 
 ## [static] Lab 1: ~60 Minutes
 
-- ⭐ Recommended: **F01 Summarization**
-- ⛰️ Challenge: **F02 Extraction** · **F03 Sentiment**
-- `FNN-lab.md` · `dotnet/` · `python/` · `typescript/` · `expected-output.md` · `data/`
-- ✅ Done = your output similar to `expected-output.md`
+- ⭐ Recommended:
+- **F01 Summarization**
+-
+- ⛰️ Challenge:
+- **F02 Extraction** · **F03 Sentiment**
 
 Notes: Start with 01 regardless of experience: one endpoint, one prompt, two reports; everything else today assumes you've made one model call and seen what comes back. New to this? Budget the full time and do the stretch goal.
-Pick 03 if your question at work is "which model should we pay for" — its Azure half needs the room key. 02's done-check: the sparse report comes back with nulls and the validator says PASS/REJECT honestly.
+Pick 03 if your question at work is "which model should we pay for"; its Azure half needs the room key. 02's done-check: the sparse report comes back with nulls and the validator says PASS/REJECT honestly.
 Finished everything? Help someone near you.
 
 ## [static] Lab 1: Debrief
@@ -193,4 +194,4 @@ Finished everything? Help someone near you.
 - How'd it go?				  Observations?			        Questions?
 
 Notes: Ask two people what surprised them.
-Prompts if quiet: what surfaced the buried bridge, and what invented one? Rows 1–3 of the framework are done. Break, then Module 2.
+Prompts if quiet: what surfaced the buried bridge, and what invented one? Rows 1-3 of the framework are done. Break, then Module 2.

@@ -2,6 +2,8 @@
 
 Fifteen minutes of pre-work saves you from fighting conference wifi on the day. Everything below is optional in the sense that we have fallbacks, but please try. The whole room moves faster when the models are already on your laptop.
 
+**Using a work laptop? You need admin rights to it.** Installing Ollama and the SDK for your language requires administrator access on your machine, and many company laptops don't grant it. Check now, not on the day: you also need to download about 5GB of models and run a local model server, which some IT policies block. Corporate proxies and VPNs often break model downloads, package installs, or the cloud endpoint, so run every step below on the network you'll bring to the workshop. If you don't have admin rights or your IT policy doesn't allow this, ask IT a week ahead, or bring a personal laptop.
+
 ## 1. Install Ollama and Pull Three Models
 
 Install Ollama from [ollama.com/download](https://ollama.com/download) (macOS, Windows, and Linux), then pull the three models the labs use:
@@ -46,9 +48,9 @@ curl http://localhost:11434/api/chat -d '{
 
 If you got JSON back with a message in it, you're done with the required pre-work.
 
-## 3. An Editor That Runs `.http` Files
+## 3. An Editor
 
-Every lab ships its requests as `.http` files, and the quickest way to run them is [VS Code](https://code.visualstudio.com/) with the [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) extension (`humao.rest-client`): open the file, click "Send Request" above a request, read the response in a side pane. JetBrains IDEs open the same files with their built-in HTTP client, so if that's home for you, nothing to install.
+Feature 00's smoke test is the workshop's one `.http` file, and the quickest way to run it is [VS Code](https://code.visualstudio.com/) with the [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) extension (`humao.rest-client`): open the file, click "Send Request" above a request, read the response in a side pane. JetBrains IDEs open the same files with their built-in HTTP client, so if that's home for you, nothing to install.
 
 Add the extension for whatever language you'll write your own code in: [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit) for the .NET path, [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python), or nothing extra for TypeScript, which VS Code supports out of the box. Then clone the repo:
 
@@ -56,7 +58,7 @@ Add the extension for whatever language you'll write your own code in: [C# Dev K
 git clone https://github.com/trailheadtechnology/10-ai-features-workshop.git
 ```
 
-If you'd rather use curl or your language's HTTP client, that works too; every `.http` request is plain enough to port by hand.
+If you'd rather use curl, that works too; the smoke test's requests are plain enough to port by hand.
 
 ## 4. Azure OpenAI: Nothing to Do
 
@@ -68,16 +70,16 @@ Three features (sentiment comparison, RAG generation, and the agent capstone) us
 
 If you are working from the .NET, Python, or TypeScript starters, the same three values go in `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, and `AZURE_OPENAI_KEY`.
 
-## 5. Optional: The .NET, Python, or TypeScript Path
+## 5. Pick a Language: .NET, Python, or TypeScript
 
-The instructor demos in C#, and every feature ships `starter/` and `complete/` projects in three stacks if you want to follow along in code rather than from the `.http` files:
+The instructor demos in C#, and every feature ships `starter/` and `complete/` projects in three stacks. The labs give step-by-step code for these three, so install the one you'll use:
 
 - **.NET**: install the current .NET SDK ([dot.net](https://dot.net); the repo pins the SDK in `global.json`) and confirm `dotnet --version` runs. `dotnet build workshop.slnx` at the repo root builds all twenty projects once, so the first `dotnet run` in the room is not a compile wait.
 - **Python**: install [uv](https://docs.astral.sh/uv/) (`curl -LsSf https://astral.sh/uv/install.sh | sh` on macOS/Linux, `winget install astral-sh.uv` on Windows, or `brew install uv`). Then `uv sync` once at the repo root: it fetches a Python if you need one, makes the venv, and installs `openai`, the track's only dependency. After that every script is `uv run main.py` from its own folder, on every OS, with nothing to activate. Prefer plain pip? `python3 -m venv .venv && source .venv/bin/activate && pip install openai` at the root does the same job, and then `python main.py` replaces `uv run main.py`.
 - **TypeScript**: Node 20.11 or newer (the starters use `import.meta.dirname`). Each feature's `typescript/` folder has a `package.json`; `npm install` there pulls `openai` and `tsx`, and `npm run complete` runs the demo with no build step.
 
-The Python and TypeScript versions use the official `openai` package against Ollama's OpenAI-compatible endpoint, so they need nothing beyond the Ollama install in section 1. If you'd rather work in Java, Go, or anything else with an HTTP client, skip this entirely. The labs don't require any of the three.
+The Python and TypeScript versions use the official `openai` package against Ollama's OpenAI-compatible endpoint, so they need nothing beyond the Ollama install in section 1. If you'd rather work in Java, Go, or another language, you can port the steps yourself, but the labs only give code for these three.
 
 ## If You Did None of This Before Arriving
 
-You'll still be fine. We bring the Ollama models on USB drives for local copying, the venue keys are handed out either way, and every lab can be completed with nothing but the provided `.http` request files and any HTTP client you already have. You'll just spend the first coffee break copying models instead of chatting, which is a fate we'd like to help you avoid.
+You'll still be fine. We bring the Ollama models on USB drives for local copying, and the venue keys are handed out either way. You'll just spend the first coffee break copying models instead of chatting, which is a fate we'd like to help you avoid. You will still need one of the three language setups from section 5 to do the labs.

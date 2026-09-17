@@ -56,4 +56,4 @@ Three failure modes to watch for, in ascending order of embarrassment:
 
 **Check:** `request_permit` does not execute on the model's say-so. Your code prints the summary, waits for input, and only then runs the tool and returns the result. Declining should send back something the model can act on rather than silence, and the final answer should say no permit was filed.
 
-**Check:** a step budget exists. `dotnet/complete` caps function-invocation iterations per request; in an `.http` file you are the budget, so decide up front how many round-trips you will do before you stop.
+**Check:** a step budget exists. Every track's `complete/` caps the loop at 12 round-trips per request: .NET through `UseFunctionInvocation`'s iteration limit, Python and TypeScript through `MAX_ITERATIONS` in the hand-written loop.

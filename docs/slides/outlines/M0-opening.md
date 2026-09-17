@@ -20,7 +20,7 @@ Ask who did the SETUP.md pre-work. Anyone who didn't should say so now, not in t
 - 🦙 ollama.com/download
 - ⬇️ `ollama pull` · `llama3.2` · `phi3` · `nomic-embed-text`
 - 🧰 VS Code + REST Client (`humao.rest-client`)
-- ⌨️ C#, Python, or TypeScript — and its runtime
+- ⌨️ C#, Python, or TypeScript, and its runtime
 - 📦 `git clone` github.com/trailheadtechnology/10-ai-features-workshop
 - ☁️ Azure OpenAI: nothing to install
 
@@ -95,7 +95,7 @@ Notes: This is not an AI story yet. This is a product failure story.
 The data was in the product. A user needed one sentence of it, and the product's job was to surface that sentence.
 Every feature you build today exists to close exactly this kind of gap. And this bridge, this trail, this corpus: you'll meet them all day. That washout is planted in the workshop data, and by this afternoon your code will find it.
 
-## [promise] Ten **shippable** AI features that solve problems your users **already have** — and the judgment to know **which to build first**
+## [promise] Ten **shippable** AI features that solve problems your users **already have**, and the judgment to know **which to build first**
 
 Notes: The promise of the day.
 Not a survey, not vendor slides: you build these, you measure them, and you leave with a decision framework for picking the first one to ship at work.
@@ -128,7 +128,7 @@ Stakeholders are users too. "Nobody has time to read all of this" is a real user
 
 ## What You Leave Able to Do
 
-- Purpose-shaped summaries · validated records — locally
+- Purpose-shaped summaries · validated records, locally
 - Embedding search · grounded answers, with verified citations
 - Routing that never misses the expensive class · a human gate with an audit trail
 - A bounded agent loop you can read
@@ -149,10 +149,10 @@ If someone in the room has shipped all of this already, they are a helper for th
 
 ## The Modules
 
-- 1 · Understanding — summarize, extract, sentiment
-- 2 · Finding — search, RAG, recommend
-- 3 · Deciding — route, detect, approve
-- 4 · Doing — the agent capstone
+- 1 · Understanding: summarize, extract, sentiment
+- 2 · Finding: search, RAG, recommend
+- 3 · Deciding: route, detect, approve
+- 4 · Doing: the agent capstone
 
 Notes: Module 1, Understanding: summarize, extract, sentiment. 90 minutes.
 ~
@@ -188,17 +188,11 @@ The capstone splits 10 and 50 instead of 30 and 60, and there is no menu: everyo
 ~
 Set expectations hard here. Ten labs in a day is not the goal, and nobody is behind. Helping the person next to you is a good use of leftover time.
 
-## Any Language
+## Many Language Choices
 
-- `.http` files: VS Code · JetBrains · curl
-- Can you make an HTTP request? You're equipped.
-- `dotnet/` · `python/` · `typescript/` — each with `starter/` and `complete/`
+- `dotnet/` · `python/` · `typescript/`, each with `starter/` and `complete/`
 
-Notes: Every lab ships as raw .http files against Ollama and Azure OpenAI. VS Code with REST Client, JetBrains, or curl.
-~
-Java, Go, Rust, anything with an HTTP client is welcome.
-~
-The .NET projects are the demo; the Python and TypeScript ports produce the same output, so pick whichever you read fastest.
+Notes: The .NET projects are the demo; the Python and TypeScript ports produce the same output, so pick whichever you read fastest.
 
 ## Every Feature Ends with the Same Card
 
@@ -217,7 +211,7 @@ The cards become the framework we assemble in the closing session; it's the arti
 
 ## Local First, Cloud When Needed
 
-- 💻 `llama3.2` · `phi3` · `nomic-embed-text` — ~5 GB, no GPU
+- 💻 `llama3.2` · `phi3` · `nomic-embed-text`: ~5 GB, no GPU
 - ☁️ Foundry only where quality matters: F03, F05, F10
 - Free, private, offline-tolerant
 
@@ -265,7 +259,7 @@ Foundry serves gpt-4.1 and gpt-5.5 per deployment name, at the chat/completions 
 ~
 Show one request to each on screen: the smoke test's local chat and its cloud chat, side by side. Point at the URL and the header. Same request shape, a URL and a key apart.
 ~
-The http/ track is the real thing with the SDK removed; Microsoft.Extensions.AI and the openai package are wrappers over these POSTs. This is why "any language" is true and why local-to-cloud is a config change, which the next slide makes concrete in code.
+Feature 00's smoke test sends these requests raw, with the SDK removed; Microsoft.Extensions.AI and the openai package are wrappers over these POSTs. This is why the three language tracks look alike and why local-to-cloud is a config change, which the next slide makes concrete in code.
 
 ## One Line of Code, Any Provider
 

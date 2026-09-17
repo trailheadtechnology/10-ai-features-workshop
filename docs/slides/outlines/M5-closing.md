@@ -55,7 +55,7 @@ Don't read it. Let it sit on screen while you explain how to use it, which is th
 
 ## What the Day Measured, Not Assumed
 
-- Sentiment: 7/10 vs 10/10 — only on the hard slice
+- Sentiment: 7/10 vs 10/10, only on the hard slice
 - Chunking: 75% → 97% · a 10× model bought 3 points
 - Classifier: 2/2 emergencies · drafter: 0/3
 - Local agent: all four tools < 1 run in 5
@@ -101,10 +101,10 @@ Mark every row that describes a problem your users actually have.
 Row 0 is the same exercise before any feature: list the ten things they hate doing, and the features pick themselves.
 This is the workshop's framing question turned into a Monday-morning exercise. It happens in a meeting room, not a codebase.
 
-## Sort by Cost, Cheapest First
+## Sort by Difficulty, Easiest First
 
-- The cheapest marked row = your first AI feature
-- Rows 1–8: mostly free local models
+- The easiest marked row = your first AI feature
+- Rows 1-8: mostly free local models
 
 Notes: Sort your marked rows by the difficulty column, easiest first; the top of that list is the first feature, and the Think column is how you pitch it.
 ~
@@ -137,7 +137,7 @@ Ask for one feature. This is the shape of the conversation the framework enables
 ## [static] Everything Is in the Repo
 
 - github.com/trailheadtechnology/10-ai-features-workshop
-- Every lab · every `.http` · every expected output
+- Every lab · every expected output
 - `starter/` and `complete/` in .NET, Python, TypeScript
 - The corpus is yours
 - `SETUP.md` still works tomorrow

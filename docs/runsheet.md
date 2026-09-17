@@ -8,7 +8,7 @@ The whole day on one page: what to have open, what to run, what to cut. Timings 
 - Every new terminal loads `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY` (key1, yours), and `AZURE_OPENAI_DEPLOYMENT=gpt-4.1` from the repo's `.env` via `~/.zshrc`. Check once with `echo $AZURE_OPENAI_DEPLOYMENT`. Only F03, F05, and F10 read them; every other demo is local regardless.
 - For F10, prefix the run: `AZURE_OPENAI_DEPLOYMENT=gpt-5.5 dotnet run`.
 - All six decks open in PowerPoint, in order, presenter view checked once.
-- VS Code open at the repo root, REST Client extension installed, for the `.http` labs.
+- VS Code open at the repo root, REST Client extension installed, for the F00 smoke test (`.http`).
 - Room key (key2) written on the whiteboard before Module 0's smoke test, never on a slide. The command to fetch it is in `instructor.local.md`.
 - Every .NET project built once so first runs are not compile waits: `dotnet build workshop.slnx` at the repo root builds all twenty.
 

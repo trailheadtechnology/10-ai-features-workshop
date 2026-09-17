@@ -19,7 +19,7 @@ Notes: The capstone. "Plan me a 3-day trip in Glacier" becomes real tool calls. 
 Icon (robot): F10 Agentic Workflows
 
 Notes: The capstone. Everyone builds it, no menu, and it uses F02, F04, F08, and F09.
-The user problem, spoken: "Plan me a 3-day trip in Glacier for mid-September." Today the user checks the forecast, searches trails, cross-references conditions, checks campsites, and files a permit in a separate system — five tools, one afternoon, and the app helped with exactly one step. They didn't want search results; they wanted the trip planned.
+The user problem, spoken: "Plan me a 3-day trip in Glacier for mid-September." Today the user checks the forecast, searches trails, cross-references conditions, checks campsites, and files a permit in a separate system: five tools, one afternoon, and the app helped with exactly one step. They didn't want search results; they wanted the trip planned.
 Why it's the capstone: it searches trails semantically (04), grounds itself in 08's condition reports, consumes structured tool results (02 in reverse), and pauses for a human before the permit (09). And it fails every way the first nine fail, at once, compounding.
 
 ## [define] A model that **picks which tools to call**, in a loop, until the job is done.
@@ -98,15 +98,15 @@ Cut: 4 if the first run already hit the bridge.
 ## [static] Lab 4: ~50 Minutes · Everyone
 
 - `modules/M4-doing/F10-agentic-workflows/`
-- `dotnet/` · `python/` · `typescript/` — **you are the loop**
-- Step 1: the two-tool round-trip, written for you
-- Step 2: add `get_weather` — do something about the 16th
-- Step 3: `trail-0117` — dropped, for a tool-given reason
+- `dotnet/` · `python/` · `typescript/`: **you are the loop**
+- Steps 1 and 2: two tools and the round-trip loop
+- Step 3: add `get_weather`, do something about the 16th
+- Step 4: `trail-0117`, dropped for a tool-given reason
 - Stretch: the human gate before `request_permit`
 - `reference-transcript.md` when it goes sideways. It will.
 
-Notes: Send the request with the tools array, read the tool call out of the response, send the follow-up with the tool result. Step 1's round-trip is `search_trails` + `check_campsites`.
-If you get an itinerary instead of a tool call on step 1, the model never saw your tools. Three failure modes on step 3, in ascending order of embarrassment: never calls conditions; calls it, reads "bridge is OUT", schedules anyway; drops the trail but invents a reason without calling. The third guessed right, which is worse.
+Notes: Send the request with the tools array, read the tool call out of the response, send the follow-up with the tool result. Step 2's round-trip is `search_trails` + `check_campsites`.
+If you get an itinerary instead of a tool call on step 2, the model never saw your tools. Three failure modes on step 4, in ascending order of embarrassment: never calls conditions; calls it, reads "bridge is OUT", schedules anyway; drops the trail but invents a reason without calling. The third guessed right, which is worse.
 
 ## F10 · Agentic Workflows · Leadership Card
 
@@ -128,4 +128,4 @@ Hard. If asked about cost: the highest of the ten. Weeks to months, frontier-mod
 - How'd it go?				  Observations?			        Questions?
 
 Notes: Ask two people what surprised them.
-Prompts if quiet: whose agent checked the bridge, and whose scheduled it anyway? Row 10 is done — all ten rows are done. Closing next: the framework, and the pitch. Hand off to the closing deck.
+Prompts if quiet: whose agent checked the bridge, and whose scheduled it anyway? Row 10 is done, so all ten rows are done. Closing next: the framework, and the pitch. Hand off to the closing deck.

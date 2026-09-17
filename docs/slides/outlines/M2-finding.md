@@ -1,9 +1,9 @@
 # Deck 2: Module 2, Finding (about 90 minutes)
 
-Demo-centric rhythm: name the three features and the one idea under them, then per feature — divider, DEMO, the lab, the leadership card. Concept slides only where a picture earns it: the shared embeddings pipeline, 04's index/search flow, and 05's RAG flow. Everything J. says lives in Notes; demo scripts live under each "What to Watch" slide.
+Demo-centric rhythm: name the three features and the one idea under them, then per feature: divider, DEMO, the lab, the leadership card. Concept slides only where a picture earns it: the shared embeddings pipeline, 04's index/search flow, and 05's RAG flow. Everything J. says lives in Notes; demo scripts live under each "What to Watch" slide.
 
 Runsheet (lengths, not clock times):
-- 30 min instructor: opener 4 min (This Module + the Same First Half diagram), then per feature — spoken problem setup over the section slide, demo, leadership card. Demo budget: 04 ≈ 8, 05 ≈ 12 (the big one), 06 ≈ 6.
+- 30 min instructor: opener 4 min (This Module + the Same First Half diagram), then per feature: spoken problem setup over the section slide, demo, leadership card. Demo budget: 04 ≈ 8, 05 ≈ 12 (the big one), 06 ≈ 6.
 - 60 min build: the Hands-On slide up; 04 is Recommended, 05 and 06 are Challenge. Sticky check at about 20 min. 05 needs the Foundry key on the board.
 - Cut if behind: the zero-overlap second query in demo 04 (step 6), the drone and Avalanche Lake questions in demo 05 (steps 8 and 8b), the gear failure in demo 06 (step 5), then say a card in one sentence.
 - Last 5 min: debrief.
@@ -56,7 +56,7 @@ Recommendations swap the query for an item, and nothing else changes.
 
 ## [section] F04 · Semantic Search
 
-Notes: The user problem, spoken, 60 seconds: "dog-friendly waterfall hike, not too steep." The catalog has a dozen matches and keyword search returns almost nothing, because no description says "not too steep" — the best trail says "a gentle grade shaded by cedars." Three bad results and the user goes back to asking strangers on Reddit.
+Notes: The user problem, spoken, 60 seconds: "dog-friendly waterfall hike, not too steep." The catalog has a dozen matches and keyword search returns almost nothing, because no description says "not too steep"; the best trail says "a gentle grade shaded by cedars." Three bad results and the user goes back to asking strangers on Reddit.
 
 ## [define] Search by what words **mean**, not by which words appear.
 
@@ -105,7 +105,7 @@ Cut: 4.
 
 ## F04 · Semantic Search · Leadership Card
 
-- **When:** A search box users complain about — they describe what they want, it matches what things are called.
+- **When:** A search box users complain about: they describe what they want, it matches what things are called.
 - **Think:** "Our search finds what users mean, not just what they type."
 
 Difficulty: easy
@@ -120,7 +120,7 @@ Easy. If asked about cost: days to a prototype on an existing catalog; embedding
 
 ## [section] F05 · RAG
 
-Notes: The user problem, spoken, 60 seconds: "Can I have a campfire at Sperry Chalet in September?" The answer exists — paragraph four of a 12-page regulations document nobody will read. Search returns the document, not the answer; a plain chatbot answers fluently and makes it up, and a confidently wrong answer about fire rules is worse than no answer.
+Notes: The user problem, spoken, 60 seconds: "Can I have a campfire at Sperry Chalet in September?" The answer exists: paragraph four of a 12-page regulations document nobody will read. Search returns the document, not the answer; a plain chatbot answers fluently and makes it up, and a confidently wrong answer about fire rules is worse than no answer.
 
 ## [define] Look up your documents first; the model **answers from what it finds**.
 
@@ -155,7 +155,7 @@ Two failure spots: the wrong chunk, or a bad split. The bad-split lesson gets it
 - Embeddings only: 5 of 8 chunks, wrong park
 - ✅ Hybrid: "Sperry" starts to count
 - ✅ Grounded prompt: right answer, cited
-- Citations are strings — validate the ids
+- Citations are strings: validate the ids
 - "Drone?" → "The documents don't say."
 - "Open right now?" needs the date in the prompt
 - One-line swap to `gpt-4.1`
@@ -191,7 +191,7 @@ Hard. If asked about cost: a day to demo, weeks to production quality.
 ## [section] F06 · Recommendations
 
 Notes: The user problem, spoken, 60 seconds: a hiker just finished Avalanche Lake Trail and loved it, and the app says nothing. "You'd probably like these three" never got built because everyone assumes it needs a data-science team and six months. Same gap in the gear store: buy the Cascade 65, get a random carousel.
-No concept slide: the Same First Half diagram already told this story — same vectors, same similarity code, the query swapped for an item, no model call while the user waits.
+No concept slide: the Same First Half diagram already told this story: same vectors, same similarity code, the query swapped for an item, no model call while the user waits.
 
 ## [define] Suggest the **next thing** a user will want, from what they liked already.
 
@@ -205,7 +205,7 @@ Notes: The textbook version: a recommender system predicts what a user will pref
 
 - Same vectors, still in memory
 - "More like this" = search, query → item
-- Lakes cluster — but mostly *hard*, and one has no lake
+- Lakes cluster, but mostly *hard*, and one has no lake
 - Difficulty and park aren't in the description text
 - Cascade 65 → Cascade 40: substitutes, not complements
 
@@ -236,12 +236,13 @@ Easy. If asked about cost: nearly free once search exists; days from scratch.
 
 ## [static] Lab 2: ~60 Minutes
 
-- ⭐ Recommended: **F04 Semantic Search**
-- ⛰️ Challenge: **F05 RAG** (☁️ room key) · **F06 Recommendations**
-- `FNN-lab.md` · `dotnet/` · `python/` · `typescript/` · `expected-output.md` · `data/`
-- ✅ Done = your output similar to `expected-output.md`
+- ⭐ Recommended:
+- **F04 Semantic Search**
+-
+- ⛰️ Challenge:
+- **F05 RAG** (☁️ room key) · **F06 Recommendations**
 
-Notes: 04: embed 30 trails, embed a query, rank by cosine; keyword baseline provided. Two honest routes: if RAG is why you came, go straight to 05 and come back to 04 after — nobody should leave having never built the thing they came for. 06 is 04's code with the query swapped for an item.
+Notes: 04: embed 30 trails, embed a query, rank by cosine; keyword baseline provided. Two honest routes: if RAG is why you came, go straight to 05 and come back to 04 after. Nobody should leave having never built the thing they came for. 06 is 04's code with the query swapped for an item.
 05's step that says run question 1 twenty times matters: a wrong answer one run in five is invisible in a single run and is the only defect here that could hurt somebody.
 
 ## [static] Lab 2: Debrief
@@ -249,4 +250,4 @@ Notes: 04: embed 30 trails, embed a query, rank by cosine; keyword baseline prov
 - How'd it go?				  Observations?			        Questions?
 
 Notes: Ask two people what surprised them.
-Prompts if quiet: who got Taft Point for the kids query? Who got the Cascade 40? Rows 4–6 of the framework are done. Lunch, then Module 3.
+Prompts if quiet: who got Taft Point for the kids query? Who got the Cascade 40? Rows 4-6 of the framework are done. Lunch, then Module 3.

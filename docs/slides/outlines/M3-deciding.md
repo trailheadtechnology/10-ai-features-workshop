@@ -1,9 +1,9 @@
 # Deck 3: Module 3, Deciding (about 90 minutes)
 
-Demo-centric rhythm: name the three features and the thread (errors are not symmetric), then per feature — divider, DEMO, the lab, the leadership card. Concept slides only where a picture earns it: the Three Ways to Decide comparison, 08's centroid/threshold pipeline, and 09's human-gate flow. Everything J. says lives in Notes; demo scripts live under each "What to Watch" slide.
+Demo-centric rhythm: name the three features and the thread (errors are not symmetric), then per feature: divider, DEMO, the lab, the leadership card. Concept slides only where a picture earns it: the Three Ways to Decide comparison, 08's centroid/threshold pipeline, and 09's human-gate flow. Everything J. says lives in Notes; demo scripts live under each "What to Watch" slide.
 
 Runsheet (lengths, not clock times):
-- 30 min instructor: opener 4 min (This Module + the Three Ways to Decide diagram), then per feature — spoken problem setup over the section slide, demo, leadership card. Demo budget: 07 ≈ 8, 08 ≈ 9, 09 ≈ 9.
+- 30 min instructor: opener 4 min (This Module + the Three Ways to Decide diagram), then per feature: spoken problem setup over the section slide, demo, leadership card. Demo budget: 07 ≈ 8, 08 ≈ 9, 09 ≈ 9.
 - 60 min build: the Hands-On slide up; 07 is Recommended, 08 and 09 are Challenge. Sticky check at about 20 min.
 - Cut if behind: the "unsure" route in demo 07 (step 5), the `--raw` first pass in demo 08 (step 3, go straight to the prefixed run), the audit log in demo 09 (step 4), then say a card in one sentence.
 - Last 5 min: debrief.
@@ -12,7 +12,7 @@ Runsheet (lengths, not clock times):
 
 ## [deck-title] Module 3: Deciding
 
-Notes: The first two modules produced answers for a user. This one produces decisions for the people running the product — a ranger, an ops lead, a support manager.
+Notes: The first two modules produced answers for a user. This one produces decisions for the people running the product: a ranger, an ops lead, a support manager.
 
 ## This Module
 
@@ -35,7 +35,7 @@ Flow (08 Detect): Reports -> Embed -> Distance from "normal" -> Threshold rule -
 Flow (09 Approve): Inquiry -> Model drafts a reply -> Human approves, edits, or rejects -> Send + log
 
 - A label · a "this is unusual" · a signature
-- 08 never asks the model to decide — only for numbers
+- 08 never asks the model to decide, only for numbers
 - 09 wraps the other two
 
 Notes: One row per advance. Say which box in each row is the decision.
@@ -55,8 +55,8 @@ Only 07 and 09 ask a model to decide anything; 08 asks it only for numbers.
 
 ## [section] F07 · Classification & Routing
 
-Notes: The user problem, spoken, 60 seconds: every message to Trailhead lands in one inbox — permits, conditions, complaints, lost-and-found, and occasionally an actual emergency. A ranger triages by hand once or twice a day; the permit waits behind the granola questions, and the emergency sits unread for four hours. The user's real problem: their message goes into a hole.
-No concept slide: it's classification again (03 was the warm-up), now with consequences. Zero-shot, taxonomy as plain-language descriptions, and the demo shows the whole thing — including fixing a misroute by editing a sentence, not the model.
+Notes: The user problem, spoken, 60 seconds: every message to Trailhead lands in one inbox: permits, conditions, complaints, lost-and-found, and occasionally an actual emergency. A ranger triages by hand once or twice a day; the permit waits behind the granola questions, and the emergency sits unread for four hours. The user's real problem: their message goes into a hole.
+No concept slide: it's classification again (03 was the warm-up), now with consequences. Zero-shot, taxonomy as plain-language descriptions, and the demo shows the whole thing, including fixing a misroute by editing a sentence, not the model.
 
 ## [define] Give each message a **label**, and let the label pick the **queue**.
 
@@ -81,7 +81,7 @@ Args: an inquiry id; starter default inq-0005, complete with none = all 20
 1. Open `data/inquiries.jsonl`, scroll. Let the room find the emergency.
 2. Before: `cd starter && dotnet run`. One label, free text. Nothing stops a label that does not exist.
 3. After: `cd ../complete && dotnet run`. All 20 routed and scored, enum-constrained. The emergency at the top of its own queue.
-4. inq-0030 is wrong. Edit its category description in `Program.cs`, not the code. `dotnet run` again.
+4. inq-0030 is wrong. Edit its category description in `Program.cs`, not the code: add "and asking whether an activity such as commercial photography needs a special use permit" to the end of the permit line. `dotnet run` again: inq-0030 moves to permit, 18/20.
 5. `dotnet run -- inq-0035`: `unsure`, correctly. The description forbids anything dangerous landing here.
 6. 17/20, 2/2 emergencies. Which number matters.
 Cut: 5.
@@ -103,7 +103,7 @@ Easy. If asked about cost: days; no training data to start; local models make pe
 
 ## [section] F08 · Anomaly Detection
 
-Notes: The user problem, spoken, 60 seconds: about 500 trail-condition reports a season across 200 trails, and almost all of them say "muddy in spots, otherwise fine." Then in one week three hikers report a washed-out bridge on the same trail and a fourth mentions aggressive bear activity two trails over — and nobody notices. The park hears about the bridge from a one-star review a month later.
+Notes: The user problem, spoken, 60 seconds: about 500 trail-condition reports a season across 200 trails, and almost all of them say "muddy in spots, otherwise fine." Then in one week three hikers report a washed-out bridge on the same trail and a fourth mentions aggressive bear activity two trails over, and nobody notices. The park hears about the bridge from a one-star review a month later.
 
 ## [define] Spot the item in a stream that **doesn't look like the rest**.
 
@@ -179,7 +179,7 @@ Medium. If asked about cost: days to build, cheap to run forever; embeddings are
 ## [section] F09 · Human-in-the-Loop
 
 Notes: The user problem, spoken, 60 seconds: 07 routed the inbox, and now the ranger has forty messages that need replies, most of them boilerplate typed a hundred times. The obvious move is to let the AI answer; the obvious disaster is the AI telling a visitor campfires are fine during a burn ban, on official letterhead. The ranger's problem is drudgery; the park's problem is that fully automating outbound communication is how you end up apologizing publicly.
-The demo opens with the failure that makes the point: asked to draft a reply to a woman whose husband is four hours overdue, the model writes a warm, reassuring, useless note — every run, even with the escalation instruction moved to the top, where it announces ESCALATE and then writes the note anyway. More prompt engineering is not the lesson; the policy lives in code.
+The demo opens with the failure that makes the point: asked to draft a reply to a woman whose husband is four hours overdue, the model writes a warm, reassuring, useless note, every run, even with the escalation instruction moved to the top, where it announces ESCALATE and then writes the note anyway. More prompt engineering is not the lesson; the policy lives in code.
 
 ## [define] The AI drafts; a **person approves** before anything goes out.
 
@@ -220,7 +220,7 @@ Today's edits are tomorrow's prompt. The human is the feedback signal as much as
 - One grounded draft: good, not perfect
 - Approve · edit · reject-and-rewrite
 - The audit log, with edit distance
-- The policy table — point at the emergency row
+- The policy table: point at the emergency row
 
 Notes: ~9 min · `cd modules/M3-deciding/F09-human-in-the-loop/dotnet`
 Files: `inquiries.jsonl` = a queue of 6, one is the overdue-husband emergency · `outbox/` = what got sent · `decisions.jsonl` = the audit log
@@ -249,17 +249,18 @@ Medium. If asked about cost: drafting is trivial; the approval UI, audit trail, 
 
 ## [static] Lab 3: ~60 Minutes
 
-- ⭐ Recommended: **F07 Classification & Routing**
-- ⛰️ Challenge: **F08 Anomaly Detection** · **F09 Human-in-the-Loop**
-- `FNN-lab.md` · `dotnet/` · `python/` · `typescript/` · `expected-output.md` · `data/`
-- ✅ Done = 2/2 emergencies caught — 19/20 with a miss is a fail
+- ⭐ Recommended:
+- **F07 Classification & Routing**
+-
+- ⛰️ Challenge:
+- **F08 Anomaly Detection** · **F09 Human-in-the-Loop**
 
 Notes: 07 is structured output with an enum plus an honest scoring pass; the number that matters is emergency recall, not overall accuracy.
-Then choose by energy as much as by interest: 08 lets you go straight to the math; 09 is mostly a decision about what your software may do unsupervised — running out of gas? Take this. It is also the one most likely to matter back at work.
+Then choose by energy as much as by interest: 08 lets you go straight to the math; 09 is mostly a decision about what your software may do unsupervised. Running out of gas? Take this. It is also the one most likely to matter back at work.
 
 ## [static] Lab 3: Debrief
 
 - How'd it go?				  Observations?			        Questions?
 
 Notes: Ask two people what surprised them.
-Prompts if quiet: whose classifier caught both emergencies? Whose model wrote the reassuring note? Rows 7–9 of the framework are done. Break, then Module 4 — everyone does it.
+Prompts if quiet: whose classifier caught both emergencies? Whose model wrote the reassuring note? Rows 7-9 of the framework are done. Break, then Module 4, and everyone does it.
