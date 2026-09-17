@@ -113,7 +113,7 @@ Then open `data/park-docs/glacier-backcountry-camping-guide.md`, Section 4.2, an
 ### Step 1: Load the chunks
 
 **Do:**
-1. Open `../../data/chunks.jsonl`. Every line is one JSON object with `chunk_id`, `source`, `text`. That path is relative to your `starter/` folder.
+1. Open `../../data/chunks.jsonl`. Every line is one JSON object with `chunk_id`, `source`, `text`. That is where the data folder sits relative to `starter/`; your track's block below says how to point at it.
 2. Read it line by line, parse each line, and keep the results in a list. Name your parsed fields exactly `chunk_id`, `source`, and `text` so the JSON keys map without extra configuration.
 
 Resolve the path from the script's own location, not the working directory. First, the imports. They go at the very top of `main.py`, next to the starter's `import sys`. `math` and `cache_path` below are for steps 2 and 3:

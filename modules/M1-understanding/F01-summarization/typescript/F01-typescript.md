@@ -44,15 +44,72 @@ npm run complete -- --briefing --audience ranger
 
 **Do:**
 1. Open `data/tr-0001.md` and read the whole file into one string. The starter already defaults to this file.
+
+   The starter already does this, on lines 19 and 20 of `starter/index.ts`. `process.argv[2]` is the first word typed after `npm run starter --` (`process.argv[0]` and `[1]` are Node and the script itself). When nothing was typed it is `undefined`, and `??` falls back to `tr-0001.md` in the `DATA` folder. `readFileSync(path, "utf8")` returns the whole file as one string, which goes straight into `stripFrontMatter` (item 2):
+
+   ```typescript
+   const reportPath = process.argv[2] ?? resolve(DATA, "tr-0001.md");
+   const report = stripFrontMatter(readFileSync(reportPath, "utf8"));
+   ```
+
+   `readFileSync` and `resolve` come from Node's built-in modules, imported at the top of the file. `DATA` is built on line 12: `import.meta.dirname` is the folder this `.ts` file sits in (`starter/`), and `resolve` joins it with `../../data` into one absolute path:
+
+   ```typescript
+   import { readFileSync } from "node:fs";
+   import { resolve } from "node:path";
+   ```
+
+   ```typescript
+   const DATA = resolve(import.meta.dirname, "../../data");
+   ```
+
 2. Strip the front matter: split on the `---` lines, keep the third part, trim it. What is left starts at the report's title.
+
+   The starter already does this with a helper function on lines 14 to 17, above the code that calls it. `split("---")` cuts the text at every `---`, so part 0 is the empty text before the first `---` and part 1 is the front matter. `slice(2)` keeps every part from the third on, and `join("---")` glues them back together in case the report body itself contains a `---`. `.trim()` removes the blank lines at the ends:
+
+   ```typescript
+   function stripFrontMatter(markdown: string): string {
+     const parts = markdown.split("---");
+     return parts.length >= 3 ? parts.slice(2).join("---").trim() : markdown.trim();
+   }
+   ```
+
 3. Build the prompt: the one line below, a blank line, then the report text.
 
    ```text
    Summarize this trip report.
    ```
 
+   The starter already does this inside the call, on line 24. The backtick string is a template literal: `\n\n` is a line break plus a blank line, and `${report}` drops the report text in:
+
+   ```typescript
+     messages: [{ role: "user", content: `Summarize this trip report.\n\n${report}` }],
+   ```
+
 4. Send the prompt as a single user message to `llama3.2`: the model name, plus one message with role `user` and that content. No system message, no temperature, no streaming.
+
+   The starter already does this. The client is created once near the top of `index.ts` (line 10); `apiKey: "ollama"` is a placeholder because Ollama needs no key, but the package refuses to start without one:
+
+   ```typescript
+   const client = new OpenAI({ baseURL: "http://localhost:11434/v1", apiKey: "ollama" });
+   ```
+
+   The call on lines 22 to 25 passes one object holding the model name and a `messages` array with one message, an object with a `role` and a `content`. `await` waits for the reply; a file with `"type": "module"` in `package.json` may use `await` at the top level, outside any function:
+
+   ```typescript
+   const response = await client.chat.completions.create({
+     model: "llama3.2",
+     messages: [{ role: "user", content: `Summarize this trip report.\n\n${report}` }],
+   });
+   ```
+
 5. Print the reply text.
+
+   The starter already does this, on the last line. The reply text sits in the first choice's message:
+
+   ```typescript
+   console.log(response.choices[0].message.content);
+   ```
 
 The starter already does all five. Run it twice:
 
@@ -81,7 +138,9 @@ Step 2 only changes the instruction string. Reading the file, stripping the fron
    If the report does state a closure or hazard, it must appear in the first bullet.
    ```
 
-   Use a template literal (backticks) so the embedded quotes and line breaks survive as-is. `${report}` drops the report text in after the blank line, and the call does not change:
+   This replaces the starter's whole call on lines 22 to 25, from `const response = await client.chat.completions.create({` down to its closing `});`, with the two statements below. The `console.log(...)` line under it stays. Paste the prompt lines starting at the left edge with no indentation, because spaces at the start of a line inside the backticks become part of the prompt.
+
+   Use a template literal (backticks) so the embedded quotes and line breaks survive as-is. `${report}` drops the report text in after the blank line. The call is the same call written on one line, with `prompt` as the message content:
 
    ```typescript
    const prompt = `You are helping a hiker planning to hike this trail within the next week.
@@ -97,6 +156,12 @@ Step 2 only changes the instruction string. Reading the file, stripping the fron
    ```
 
 2. Run it on `data/tr-0001.md` four or five times, not once. The check below has to hold on every run.
+
+   From `typescript/`, with no path so the default `tr-0001.md` is used:
+
+   ```bash
+   npm run starter
+   ```
 
 **Why:** the reflowed prompt behaves differently, so keep the line breaks. The last two lines exist because a prompt that demands a hazards bullet will invent one (a bear sighting, the word "avalanche" in the trail name) when the report has no real hazard; they give the model a legal way to report nothing. Measured rate with and without those lines is in [`expected-output.md`](../expected-output.md).
 
@@ -114,6 +179,10 @@ Step 2 only changes the instruction string. Reading the file, stripping the fron
 2. Leave the step 2 prompt exactly as it is.
 3. Run `tr-0001.md` once more with the same prompt, to confirm the clean report still passes.
 
+   ```bash
+   npm run starter
+   ```
+
 **Why:** `tr-0004.md` has the same front matter and rambling shape as `tr-0001.md`; the difference is a washed-out footbridge and a closed trail buried in its fourth paragraph. That placement is deliberate, because a summarizer that misses it fails the feature.
 
 **Check:** the first bullet is the washed-out footbridge and the closed trail, a fact buried between airport sandwiches and huckleberry ice cream in the source. A second bullet reading "no other closures reported" is normal. Bullets about the sister, the deer, or Moby the rental SUV mean the prompt in your program is not the one above; diff it against the seven lines, and the usual cause is a reflowed or missing line. `tr-0001.md` still comes back with nothing closed.
@@ -128,16 +197,30 @@ Pick any. `complete/` already has each one built in, behind the flag named below
   You are helping a park ranger who cares about maintenance issues, closures, safety incidents, and visitor impacts, not scenery.
   ```
 
-  The starter has no argument parsing, so hard-code `const audience = "ranger";` and rerun, or copy the `for` loop over `process.argv.slice(2)` from `complete/index.ts`:
+  The starter has no argument parsing, so hard-code the audience. Put this line below `const report = ...` and above `const prompt = ...`. It is the exact line from `complete/index.ts`, where `--audience` changes the variable instead (that is why it is `let`, not `const`); change `"hiker"` to `"ranger"` to switch readers:
+
+  ```typescript
+  let audience = "hiker";
+  ```
+
+  Put these lines right below it. This is one statement: the text after `?` if `audience === "ranger"`, otherwise the text after `:`:
 
   ```typescript
   const audienceFocus = audience === "ranger"
     ? "a park ranger who cares about maintenance issues, closures, safety incidents, and visitor impacts, not scenery"
     : "a hiker planning to hike this trail within the next week";
-  // then the prompt's first line becomes: You are helping ${audienceFocus}.
   ```
 
-  **Check:** the ranger version leads with where the bridge went out and the barricade; the hiker version keeps the crowding. Identical output means the audience line is not reaching the prompt.
+  Then replace the first line of your step 2 prompt, the one that starts ``const prompt = `You are helping a hiker``, with the line below, so `${audienceFocus}` is filled in when the string is built. The other lines of the prompt and the call stay as they are:
+
+  ```typescript
+  // Hint: this is only the first line; the rest of the prompt follows it unchanged
+  const prompt = `You are helping ${audienceFocus}.
+  ```
+
+  Run `npm run starter -- ../data/tr-0004.md` once with `"hiker"` and once with `"ranger"`.
+
+  **Check:** the ranger version leads with the washed-out bridge as a maintenance or closure item and drops the crowding; the hiker version keeps the crowding. Identical output means the audience line is not reaching the prompt.
 
 - **Shrink the summary to a headline.** Same file, same call, different instruction. Replace the whole step 2 prompt with the three lines below and run `data/tr-0004.md`. `complete/` does this with `--headline`.
 
@@ -146,6 +229,8 @@ Pick any. `complete/` already has each one built in, behind the flag named below
   suitable for a status badge on a trail card in an app.
   Lead with the most important condition or closure. No preamble.
   ```
+
+  This replaces your whole step 2 ``const prompt = `...`;`` statement, all nine lines from ``const prompt = `You are helping`` down to ``${report}`;``. The `const response = ...` and `console.log(...)` lines below it stay as they are. If you did the audience goal, the `audience` lines can stay; this prompt just does not use them. Paste the lines starting at the left edge. Run `npm run starter -- ../data/tr-0004.md`:
 
   ```typescript
   const prompt = `From the trip report below, write ONE line of at most 12 words,
@@ -158,6 +243,13 @@ Pick any. `complete/` already has each one built in, behind the flag named below
   **Check:** one line, at most 12 words, that leads with the closure. No bullets, no preamble. Only the instruction changed. A new spot in the UI costs a new prompt rather than new infrastructure.
 
 - **See the hallucination the grounding lines prevent.** If you did the headline stretch goal, put the step 2 prompt back first. Then delete the two lines of the step 2 prompt that begin "Report only what the trip report states" and end "when it says none." Run `data/tr-0001.md` (the starter's default) ten or more times. Put the lines back when done.
+
+  These are the two lines to delete from inside your ``const prompt = `...` `` string. Delete the whole lines, so no blank line is left behind. Then run `npm run starter` repeatedly:
+
+  ```typescript
+  Report only what the trip report states. Do not turn a wildlife sighting into a
+  hazard or a closure, and write "no closures or hazards reported" when it says none.
+  ```
 
   **Check:** some runs now invent a closure from the bear, the creek, or the word "avalanche" in the trail's name. Measured over 24 runs on `tr-0001.md`: 11 of 24 (46%) without the lines, 1 of 24 (4%) with them. `tr-0004.md` led with the bridge in 12 of 12 runs either way. Full numbers in [`expected-output.md`](../expected-output.md).
 

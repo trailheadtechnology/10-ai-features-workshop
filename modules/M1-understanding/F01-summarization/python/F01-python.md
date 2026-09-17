@@ -200,7 +200,7 @@ Pick any. `complete/` already has each one built in, behind the flag named below
 
   Run `uv run main.py ../../data/tr-0004.md` once with `"hiker"` and once with `"ranger"`.
 
-  **Check:** the ranger version leads with where the bridge went out and the barricade; the hiker version keeps the crowding. Identical output means the audience line is not reaching the prompt.
+  **Check:** the ranger version leads with the washed-out bridge as a maintenance or closure item and drops the crowding; the hiker version keeps the crowding. Identical output means the audience line is not reaching the prompt.
 
 - **Shrink the summary to a headline.** Same file, same call, different instruction. Replace the whole step 2 prompt with the three lines below and run `data/tr-0004.md`. `complete/` does this with `--headline`.
 

@@ -231,7 +231,7 @@ print(f"phi3 {correct}/{total}")
    ```
 
 3. When falling back, print `AZURE_OPENAI_* not set; using llama3.2 on Ollama as the big-model stand-in.`
-4. Change nothing in classify. The second model is just a different client.
+4. Change nothing in the body of classify. The second model is just a different client; some tracks pass that client in as a parameter, so its signature line may change.
 
    `classify(*small, text)` unpacks the pair into the starter's `(client, model, text)` signature; `complete/` instead changes the signature to take the pair, and the body is identical either way.
 
@@ -364,7 +364,7 @@ Pick any. The first two are already built in `complete/`.
   Review: {text}"""
   ```
 
-- **Aspect-based sentiment.** Ask for `{"overall": ..., "aspects": {"comfort": ..., "durability": ..., "price": ...}}` instead of one word, and tell the model to reply with that JSON and nothing else. Parse the reply, and catch the parse error so one bad reply doesn't stop the run. **Check:** most replies parse, with aspects left `null` when the review never mentions them. `phi3` sometimes adds a sentence after the JSON; that is the parse error you catch, and it is why production code uses a structured-output schema like step 1 of feature 02. A `price` sentiment on a review that never mentions price is the failure to look for.
+- **Aspect-based sentiment.** Ask for `{"overall": ..., "aspects": {"comfort": ..., "durability": ..., "price": ...}}` instead of one word, and tell the model to reply with that JSON and nothing else. Parse the reply, and catch the parse error so one bad reply doesn't stop the run. **Check:** the run finishes without crashing, and the replies that parse leave aspects `null` when the review never mentions them. Expect many `phi3` replies not to parse: in one measured run only 7 of 20 did, and the rest added an explanation after the JSON or wrapped it in a ```` ```json ```` fence. Those are the parse errors you catch, and they are why production code uses a structured-output schema like step 1 of feature 02. A `price` sentiment on a review that never mentions price is the failure to look for.
 
   `complete/` does not build this one. Write a second function below `classify` with a prompt that asks for that JSON. `complete/main.py` makes no `format` or `response_format` call, so this hint parses the reply text with `json.loads` instead. In an f-string, `{{` and `}}` print a literal `{` and `}`, so only `{text}` is filled in. JSON `null` becomes Python `None`:
 

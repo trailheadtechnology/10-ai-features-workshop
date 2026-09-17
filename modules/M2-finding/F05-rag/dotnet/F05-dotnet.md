@@ -105,7 +105,7 @@ Then open `data/park-docs/glacier-backcountry-camping-guide.md`, Section 4.2, an
 ### Step 1: Load the chunks
 
 **Do:**
-1. Open `../../data/chunks.jsonl`. Every line is one JSON object with `chunk_id`, `source`, `text`. That path is relative to your `starter/` folder.
+1. Open `../../data/chunks.jsonl`. Every line is one JSON object with `chunk_id`, `source`, `text`. That is where the data folder sits relative to `starter/`; your track's block below says how to point at it.
 2. Read it line by line, parse each line, and keep the results in a list. Name your parsed fields exactly `chunk_id`, `source`, and `text` so the JSON keys map without extra configuration.
 
 `dotnet run` runs from `starter/`, so the path relative to the working directory is the right one, and `complete/Program.cs` uses it the same way. Add `using System.Text.Json;` at the top. Put these lines below the starter's `Console.WriteLine($"Q: {question}\n");` line. `File.ReadLines` hands you one line at a time, and `JsonSerializer.Deserialize<Chunk>` turns each line into a `Chunk`:

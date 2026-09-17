@@ -546,7 +546,7 @@ Pick any. Each one is already built in `complete/`, with the measured reason for
   dotnet run -- ../../data/inquiries-miscategorized.jsonl
   ```
 
-  **Check:** on the copy, `inq-0013` prints `ESCALATE:` and then the reply anyway, 3 runs out of 3 in the record, and the reply invents an active search. Under the same prompt the model also escalated `inq-0002` and `inq-0005`, which are routine mail. Tightening the prompt trades one failure for the other. Put the original prompt back.
+  **Check:** on the copy, `inq-0013` usually prints `ESCALATE:` and then the reply anyway (3 runs out of 3 in the record), and the reply invents an active search; some runs skip the `ESCALATE:` line and just invent the search. Under the same prompt the model also escalates a routine message or two, such as `inq-0002`, `inq-0003`, or `inq-0005`; which ones changes from run to run. Tightening the prompt trades one failure for the other. Put the original prompt back.
 
   The system message is the `SystemPrompt` constant at the top of Program.cs. A `"""` raw string keeps every line between the opening and closing quotes, so replace only the text inside them. Keep the original somewhere (a copy of the file is fine) so you can put it back:
 
@@ -579,7 +579,7 @@ Pick any. Each one is already built in `complete/`, with the measured reason for
   dotnet run -- ../../data/inquiries-miscategorized.jsonl
   ```
 
-- **Add the flags `complete/` supports.** `--policy` prints the routing table and exits without reading the queue. `--auto-approve-dry-run` sets the reviewer to `auto-approve-dry-run`, approves every draft without asking, and prints `--auto-approve-dry-run: approving every draft unread. Testing only, never a shipping mode.` under the table. `--outbox <dir>` and `--decisions <file>` move the run artifacts. Any other argument is the path to a queue file. **Check:** `--policy` prints six rows and nothing else. `--auto-approve-dry-run` writes six lines to `decisions.jsonl`, five `approved` and one `escalated`, and five files to `outbox/`.
+- **Add the flags `complete/` supports.** `--policy` prints the routing table and exits without reading the queue. `--auto-approve-dry-run` sets the reviewer to `auto-approve-dry-run`, approves every draft without asking, and prints `--auto-approve-dry-run: approving every draft unread. Testing only, never a shipping mode.` under the table. `--outbox <dir>` and `--decisions <file>` move the run artifacts. Any other argument is the path to a queue file. **Check:** `--policy` prints six rows and nothing else. `--auto-approve-dry-run` writes six lines to `decisions.jsonl`, five `approved` and one `escalated` (or four and two, if you added the backstop and `llama3.2` wrote a spurious `ESCALATE` on a routine message), and one file in `outbox/` for each approved draft.
 
   `complete/Program.cs` shows the argument loop: a `for` over `args` with a `switch`. First change the starter's `inquiriesPath` line so it no longer reads `args[0]`. The loop has to come after all four variables it sets exist and before `var dataDir` and `Directory.CreateDirectory(outboxDir);`, which use them, so delete the `inquiriesPath`, `outboxDir`, `decisionsPath`, and `autoApprove` lines from where they are now and put all four together directly below the `policy` dictionary, above `var dataDir`:
 

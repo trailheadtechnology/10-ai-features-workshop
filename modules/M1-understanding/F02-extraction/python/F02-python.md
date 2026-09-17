@@ -393,7 +393,7 @@ Run `tr-0011.md` three or four more times.
 
 **Why:** looking for a name in the report text works as a grounding check; looking for a free-text phrase like "some wet spots" does not, which is why only the two name fields get the grounding rule.
 
-**Check:** on `tr-0011.md`, the rejections in [`expected-output.md`](../expected-output.md) (`REJECT trail_name ""`, `REJECT date_hiked last month`, `REJECT distance_mi 0 mi`, `REJECT elevation_gain_ft 0 ft`), each with its reason on the next line. On `tr-0007.md`, `July 4, 2026` passes with `normalized to: 2026-07-04`. Never throw from a rule; every field gets a verdict.
+**Check:** on `tr-0011.md`, the rejections in [`expected-output.md`](../expected-output.md) (`REJECT trail_name ""`, `REJECT date_hiked last month`, `REJECT distance_mi 0 mi`, `REJECT elevation_gain_ft 0 ft`), each with its reason on the next line. `llama3.2` sometimes returns the text `"null"` instead of a real null; the validator rejects it (for a name, with `no mention of "null"`), and that rejection is correct, because a string that says null is not a missing value. On `tr-0007.md`, `July 4, 2026` passes with `normalized to: 2026-07-04`. Never throw from a rule; every field gets a verdict.
 
 ### Step 5: Coerce rejected fields to `null` and print what you would store
 

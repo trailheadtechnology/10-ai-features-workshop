@@ -29,7 +29,14 @@ Two scripts, both using the official `openai` package pointed at Ollama's OpenAI
 - `starter/index.ts`: one client, one `classify` function, one review (`gr-0007`, the sarcastic two-star). Prints the review and what `phi3` says.
 - `complete/index.ts`: the finished demo. Both review sets through both models with the byte-identical four-line prompt, a table with disagreements flagged, accuracy per set, and the disagreement list with a verdict on who was right.
 
-Run everything from the `typescript/` folder, where `package.json` lives. Setup once (`npm install`), then:
+Run everything from the `typescript/` folder, where `package.json` lives. Setup once (`npm install`, which downloads `openai` and `tsx` into `node_modules/`). You edit `starter/index.ts` and run it with `npm run starter`; anything after `--` is handed to the script, not to npm:
+
+```bash
+npm run starter              # gr-0007, the sarcastic trail runner review
+npm run starter -- gr-0034   # any id from ../data/easy.jsonl or hard.jsonl
+```
+
+Then the finished version:
 
 ```bash
 npm run complete             # both sets, both models
@@ -50,11 +57,39 @@ it mentions. Reply with only the label.
 Review: Absolutely love it when the mesh blew out at the pinky toe inside two weeks the second day of a trip. Five-star experience, truly, if the stars are measuring my personal growth through adversity. Rating it what it deserves.
 ```
 
+The starter already does this. It picks the id from the command line (or `gr-0007`), reads both data files into one array of `Review` objects, finds the matching review, prints it, and classifies it:
+
+```typescript
+const wanted = process.argv[2] ?? "gr-0007";
+const review = reviews.find((r) => r.id === wanted)!;
+
+console.log(`${review.product} (${review.rating} stars), reviewed by ${review.reviewer}`);
+console.log(review.text);
+console.log();
+```
+
+```typescript
+console.log(`phi3 says: ${await classify(client, "phi3", review.text)}`);
+```
+
+`process.argv[2]` is the first word after the script name on the command line, and `??` supplies `"gr-0007"` when there is none. `find` returns the first array element the arrow function says yes to; the `!` tells TypeScript it is not `undefined`. The `await` on the last line works outside any function because the file is an ES module (`"type": "module"` in `package.json`), which allows top-level `await`. Run it from the `typescript/` folder:
+
 ```bash
 npm run starter
 ```
 
 **Why:** the four line breaks matter; every later step sends this same prompt and only changes the text after `Review: `.
+
+The prompt lives inside the starter's `classify` function. The starter already does this; the backticks make a template literal that keeps the line breaks, and `${text}` is where the review goes:
+
+```typescript
+  const prompt = `Classify this gear review as exactly one word: positive, negative, or mixed.
+Positive means the reviewer is happy with the product, negative means unhappy,
+mixed means genuinely both. Judge the review text only; ignore any star rating
+it mentions. Reply with only the label.
+
+Review: ${text}`;
+```
 
 **Check:** `phi3 says: negative`. The review has two stars and says "five-star experience, truly". That is sarcasm, and the small model gets it right. Pass a different id (`gr-0034`, for instance) to classify a different review.
 
@@ -66,11 +101,47 @@ npm run starter -- gr-0034
 
 **Do:**
 1. Open `../../data/easy.jsonl` (relative to `starter/`; the starter already has a constant pointing at that `data/` folder, so reuse it): 10 reviews where text and stars agree, one JSON object per line (`id`, `product`, `rating`, `reviewer`, `text`).
+
+   The starter already does this. `import.meta.dirname` is the folder `index.ts` sits in, and `resolve` joins paths, so `resolve(DATA, "easy.jsonl")` is the easy file:
+
+   ```typescript
+   const DATA = resolve(import.meta.dirname, "../../data");
+   ```
+
 2. Read it one line at a time, skip blanks, parse each line into a list.
+
+   The starter already has a `lines()` helper that reads a file, splits it on line breaks, and drops blank lines, and a `reviews` line that parses both files at once. `JSON.parse` turns one line into an object:
+
+   ```typescript
+   type Review = { id: string; product: string; rating: number; reviewer: string; text: string };
+   const lines = (name: string) => readFileSync(resolve(DATA, name), "utf8").split("\n").filter((l) => l.trim());
+   const reviews: Review[] = [...lines("easy.jsonl"), ...lines("hard.jsonl")].map((l) => JSON.parse(l));
+   ```
+
+   For the easy file alone, put this below the `reviews` line. `map` runs `JSON.parse` on every line and collects the results into a new array:
+
+   ```typescript
+   // Hint: one Review per non-blank line of the easy file
+   const easy: Review[] = lines("easy.jsonl").map((l) => JSON.parse(l));
+   ```
+
+   `complete/` skips the array: its loop in step 2 reads the file line by line directly, so you can delete `easy` once the check below passes.
+
 3. Open `../../data/reference-labels.json`: one object keyed by review `id`, each value a `set` (`easy`/`hard`), a `label`, and on hard cases a `rationale`.
 4. Parse it into a dictionary keyed by `id`. You only need `label` in code.
 
-`DATA`, the `lines()` helper (which already skips blank lines), and the `Review` type already exist.
+`DATA`, the `lines()` helper (which already skips blank lines), and the `Review` type already exist. Put this below your `easy` line (it is the same in `complete/index.ts`). `readFileSync(..., "utf8")` reads the whole file as one string and `JSON.parse` turns it into an object of objects. `Record<string, { set: string; label: string }>` is the TypeScript type for "any string key, each value with a `set` and a `label`", so `labels["gr-0002"].label` gives you one label:
+
+```typescript
+const labels: Record<string, { set: string; label: string }> = JSON.parse(readFileSync(resolve(DATA, "reference-labels.json"), "utf8"));
+```
+
+To see the check below, print the counts once and then delete the line. `Object.keys` lists an object's keys, so its `length` is the number of labels:
+
+```typescript
+// Hint: print what you loaded
+console.log(easy.length, easy[0].id, Object.keys(labels).length, labels["gr-0002"].label);
+```
 
 **Why:** `gr-0004`'s label changed from `positive` to `mixed`. `gpt-4.1` called it `mixed` on every soak-test run, and a reread agreed that a two-star review which praises the product is split. `expected-output.md` tells that story.
 
@@ -80,12 +151,36 @@ npm run starter -- gr-0034
 
 **Do:**
 1. Keep the starter's classify function as-is: one review text in, one prompt out, `phi3`, temperature 0.
+
+   The starter already does this. `client` and `model` are passed in, and `temperature: 0` is set on every call. `async` plus `Promise<string>` means the function returns its string later, so every call needs `await`:
+
+   ```typescript
+   async function classify(client: OpenAI, model: string, text: string): Promise<string> {
+   ```
+
+   ```typescript
+     const response = await client.chat.completions.create({ model, messages: [{ role: "user", content: prompt }], temperature: 0 });
+   ```
+
 2. The starter already does this: lowercase the reply, look for `positive`/`negative`/`mixed`, keep whichever shows up first (or the trimmed reply if none do).
+
+   The starter already does this, at the end of `classify`. `indexOf` gives where each label appears (-1 if absent); `map` pairs each label with its position, `filter` drops the absent ones, and `sort` puts the earliest first. `found[0]?.label` is `undefined` when nothing was found, and `??` then falls back to the trimmed reply:
+
+   ```typescript
+     const raw = (response.choices[0].message.content ?? "").toLowerCase();
+     // Small models sometimes wrap the label in a sentence; keep the first label mentioned.
+     const found = ["positive", "negative", "mixed"]
+       .map((label) => ({ label, at: raw.indexOf(label) }))
+       .filter((x) => x.at >= 0)
+       .sort((a, b) => a.at - b.at);
+     return found[0]?.label ?? raw.trim();
+   ```
+
 3. Loop over the easy list, classify each review's `text`, look up the reference label by `id`.
 4. Print one row per review: `id`, reference label, `phi3` label.
 5. Count matches; print `phi3 N/10`.
 
-`client` is the starter's Ollama client. Replace the starter's single-review block (everything after `classify`) with steps 1 and 2 together:
+`client` is the starter's Ollama client. Delete the starter's single-review lines (from `const wanted = ...` down to the first `console.log();`, and the last line, ``console.log(`phi3 says: ...`)``) and your step 1 lines (`easy`, `labels`, and the print). Keep `classify`, and put this at the bottom of the file, below it. It covers steps 1 and 2 together. `lines("easy.jsonl")` gives the non-blank lines, `padEnd(9)` pads a value to 9 characters so the columns line up, and `let` (not `const`) lets `correct` and `total` change:
 
 ```typescript
 const labels: Record<string, { set: string; label: string }> = JSON.parse(readFileSync(resolve(DATA, "reference-labels.json"), "utf8"));
@@ -111,15 +206,25 @@ console.log(`phi3 ${correct}/${total}`);
 
    The endpoint is `https://trailhead-ai-workshop.openai.azure.com`, the deployment is `gpt-4.1`, and the key is handed out in the room.
 
+   Set them in the terminal you run `npm run starter` from (they last until you close it; skip this to use the `llama3.2` fallback):
+
+   ```bash
+   export AZURE_OPENAI_ENDPOINT=https://trailhead-ai-workshop.openai.azure.com
+   export AZURE_OPENAI_KEY=<KEY FROM INSTRUCTOR>
+   export AZURE_OPENAI_DEPLOYMENT=gpt-4.1
+   ```
+
+   In Node, `process.env.NAME` reads one of them and is `undefined` when it is not set. The code under item 2 does the reading.
+
 2. Build a second chat client from those three variables, falling back to `llama3.2` when any is missing; name it `azure:<deployment>` or `llama3.2` for printing.
 
-   The starter imports only the default `OpenAI` export. The Azure client is a named export of the same `openai` package (already in `package.json`, nothing to install), so change the import:
+   The starter imports only the default `OpenAI` export. The Azure client is a named export of the same `openai` package (already in `package.json`, nothing to install), so change the import. At the top of `index.ts`, replace `import OpenAI from "openai";` with:
 
    ```typescript
    import OpenAI, { AzureOpenAI } from "openai";
    ```
 
-   Rename the starter's `client` to `ollama`, then build the second client from the three env vars. `AzureOpenAI` takes `endpoint`, `apiKey`, `apiVersion` (a REST API date, not a model version), and `deployment`; the deployment name is also what you pass as `model` on each call, which is why the `Target` below carries it. This also covers item 3:
+   Rename the starter's `client` to `ollama`, then build the second client from the three env vars. The block below replaces the starter's `const client = new OpenAI(...)` line, so your step 2 call `classify(client, "phi3", review.text)` no longer works; item 5 replaces it. `Target` is a type for a pair of client and model name. `AzureOpenAI` takes `endpoint`, `apiKey`, `apiVersion` (a REST API date, not a model version), and `deployment`; the deployment name is also what you pass as `model` on each call, which is why the `Target` below carries it. The `const { AZURE_OPENAI_ENDPOINT: endpoint, ... } = process.env` line reads the three variables into `endpoint`, `key`, and `deployment` (each `undefined` when not set). `let big: Target;` declares a variable that the `if` or the `else` fills in. This also covers item 3:
 
    ```typescript
    type Target = { client: OpenAI; model: string };
@@ -141,20 +246,30 @@ console.log(`phi3 ${correct}/${total}`);
    ```
 
 3. When falling back, print `AZURE_OPENAI_* not set; using llama3.2 on Ollama as the big-model stand-in.`
-4. Change nothing in classify. The second model is just a different client.
+4. Change nothing in the body of classify. The second model is just a different client; some tracks pass that client in as a parameter, so its signature line may change.
 
    Call it as `classify(small.client, small.model, text)`. `complete/` instead changes the signature to destructure a `Target`, and the body is identical either way.
 
 5. In the step 2 loop, classify each review with both `phi3` and the big model; store a record with the review, set name, reference label, small label, big label.
 6. Add a fourth column for the big model's label; append `  <- disagree` when the two differ.
 
-   Add a record type and grow the step 2 loop to a four-column table:
+   Add a record type right below the starter's `type Review = ...` line. A `type` only describes an object's shape, so `{ review, set: "easy", reference, small: s, big: b }` is a `Result` and `r.small` reads one field back (`review` alone is short for `review: review`):
 
    ```typescript
    type Result = { review: Review; set: string; reference: string; small: string; big: string };
+   ```
+
+   Then grow the step 2 loop to a four-column table. Replace the step 2 `let correct = 0, total = 0;` line with these two lines:
+
+   ```typescript
    const results: Result[] = [];
    console.log(`${"id".padEnd(9)} ${"reference".padEnd(10)} ${"phi3".padEnd(10)} ${bigName.padEnd(10)}`);
-   // inside the loop, in place of the single classify call and console.log:
+   ```
+
+   Inside the loop, replace the three lines from `const label = await classify(...)` down to `total++; if (label === reference) correct++;` with the five lines below. Delete the ``console.log(`phi3 ${correct}/${total}`);`` line after the loop; step 4 brings scoring back:
+
+   ```typescript
+   // Hint: "easy" is a stand-in set name until step 4 adds the outer loop
    const s = await classify(small.client, small.model, review.text);
    const b = await classify(big.client, big.model, review.text);
    results.push({ review, set: "easy", reference, small: s, big: b });
@@ -173,20 +288,42 @@ console.log(`phi3 ${correct}/${total}`);
 2. After both tables, loop over the two set names again; count matches for small and big labels against the reference.
 3. Print one line per set: name, `phi3 N/10`, big model's name with `N/10`.
 
-Use `set` instead of the literal `"easy"` in the record:
+Use `set` instead of the literal `"easy"` in the record. Put the set names directly above your step 3 `const results: Result[] = [];` line, so `results` stays above the outer loop:
 
 ```typescript
+// Hint: both sets, in order
 const sets = ["easy", "hard"];
+```
 
+Then replace everything below `const results: Result[] = [];` to the end of the file with the block below (it is the same in `complete/index.ts`). Your step 3 loop moves inside the outer loop, and `` `${set}.jsonl` `` picks the file per set; `complete/` reads the file with `readFileSync` and skips blank lines itself, which does the same as `lines()`. `set: "easy"` becomes plain `set`, short for `set: set`:
+
+```typescript
 for (const set of sets) {
   console.log(`── ${set} set ──`);
   console.log(`${"id".padEnd(9)} ${"reference".padEnd(10)} ${"phi3".padEnd(10)} ${bigName.padEnd(10)}`);
-  for (const line of lines(`${set}.jsonl`)) {
-    ...
+  for (const line of readFileSync(resolve(DATA, `${set}.jsonl`), "utf8").split("\n")) {
+    if (!line.trim()) continue;
+    const review: Review = JSON.parse(line);
+    const reference = labels[review.id].label;
+    const s = await classify(small, review.text);
+    const b = await classify(big, review.text);
+    results.push({ review, set, reference, small: s, big: b });
+    const flag = s !== b ? "  <- disagree" : "";
+    console.log(`${review.id.padEnd(9)} ${reference.padEnd(10)} ${s.padEnd(10)} ${b.padEnd(10)}${flag}`);
   }
   console.log();
 }
+```
 
+This block, like `complete/`, passes the whole `Target` to `classify`, so replace the first line of `classify` (`async function classify(client: OpenAI, model: string, text: string): Promise<string> {`) with the line below. `{ client, model }: Target` pulls the two fields out of the `Target` under the same names the body already uses, so the body does not change:
+
+```typescript
+async function classify({ client, model }: Target, text: string): Promise<string> {
+```
+
+The accuracy loop goes right after it. `results.filter(...)` keeps only that set's records, and `.length` of a second `filter` counts the ones that match:
+
+```typescript
 console.log("── accuracy vs. reference labels ──");
 for (const set of sets) {
   const batch = results.filter((r) => r.set === set);
@@ -208,6 +345,8 @@ console.log();
 4. Print one line per disagreement: `id`, set in brackets, `ref=`, `phi3=`, big model `=`, verdict in parens; then on its own indented line the review text in quotes, cut to 100 characters with `...` if longer.
 5. If empty, print `(none this run)`.
 
+Put these lines at the very end of the file, below the accuracy loop's final `console.log();` (they are the same in `complete/index.ts`). The `verdict` line chains two `? :` conditionals: it reads left to right like an if / else if / else. `t.slice(0, 100)` is the first 100 characters:
+
 ```typescript
 const disagreements = results.filter((r) => r.small !== r.big);
 console.log(`── disagreements (${disagreements.length} of ${results.length}) ──`);
@@ -227,8 +366,57 @@ if (disagreements.length === 0) console.log("(none this run)");
 Pick any. The first two are already built in `complete/`.
 
 - **Add `--easy` and `--hard` flags.** If `--easy` is present, run only the easy set; if `--hard`, only the hard set; otherwise both. **Check:** `--hard` prints one table, one accuracy line, and a disagreement count out of 10 instead of 20.
+
+  Replace your step 4 `const sets = ["easy", "hard"];` line with these two lines from `complete/index.ts`. `process.argv.slice(2)` is the words after the script name, and `args.includes("--easy")` is `true` when that word was passed:
+
+  ```typescript
+  const args = process.argv.slice(2);
+  const sets = args.includes("--easy") ? ["easy"] : args.includes("--hard") ? ["hard"] : ["easy", "hard"];
+  ```
+
+  ```bash
+  npm run starter -- --hard
+  ```
+
 - **Reflow the prompt onto one line and measure the damage.** Replace the four line breaks with spaces, rerun both sets on both models, then put the line breaks back. **Check:** `phi3` drops from 9/10 to 7/10 easy and from 7/10 to somewhere between 4/10 and 6/10 hard (4/10 in the recorded run, 6/10 in two later runs), every miss `mixed`. `llama3.2` scores the same either way. The small model is the one that cares about prompt shape.
-- **Aspect-based sentiment.** Ask for `{"overall": ..., "aspects": {"comfort": ..., "durability": ..., "price": ...}}` instead of one word, and tell the model to reply with that JSON and nothing else. Parse the reply, and catch the parse error so one bad reply doesn't stop the run. **Check:** most replies parse, with aspects left `null` when the review never mentions them. `phi3` sometimes adds a sentence after the JSON; that is the parse error you catch, and it is why production code uses a structured-output schema like step 1 of feature 02. A `price` sentiment on a review that never mentions price is the failure to look for.
+
+  The change is inside `classify`. Join the four instruction lines into one (spaces where the line breaks were) and leave the blank line and the `Review:` line alone:
+
+  ```typescript
+  // Hint: same words, one line; fill in the middle sentences
+    const prompt = `Classify this gear review as exactly one word: positive, negative, or mixed. Positive means ... Reply with only the label.
+
+  Review: ${text}`;
+  ```
+
+- **Aspect-based sentiment.** Ask for `{"overall": ..., "aspects": {"comfort": ..., "durability": ..., "price": ...}}` instead of one word, and tell the model to reply with that JSON and nothing else. Parse the reply, and catch the parse error so one bad reply doesn't stop the run. **Check:** the run finishes without crashing, and the replies that parse leave aspects `null` when the review never mentions them. Expect many `phi3` replies not to parse: in one measured run only 7 of 20 did, and the rest added an explanation after the JSON or wrapped it in a ```` ```json ```` fence. Those are the parse errors you catch, and they are why production code uses a structured-output schema like step 1 of feature 02. A `price` sentiment on a review that never mentions price is the failure to look for.
+
+  `complete/` does not build this one. Write a second function below `classify` with a prompt that asks for that JSON. `complete/index.ts` makes no `response_format` call, so this hint parses the reply text with `JSON.parse` instead. Inside backticks, `{` and `}` are plain text; only `${text}` is filled in. JSON `null` stays `null`. `Promise<any>` skips type checking on the parsed object, so `parsed.aspects.price` compiles:
+
+  ```typescript
+  // Hint: a second classify that returns an object parsed from the reply
+  async function classifyAspects({ client, model }: Target, text: string): Promise<any> {
+    const prompt = `Classify this gear review. Reply with only JSON shaped like
+  {"overall": "positive|negative|mixed", "aspects": {"comfort": ..., "durability": ..., "price": ...}}
+  Use null for any aspect the review never mentions.
+
+  Review: ${text}`;
+    const response = await client.chat.completions.create({ model, messages: [{ role: "user", content: prompt }], temperature: 0 });
+    return JSON.parse(response.choices[0].message.content ?? "");
+  }
+  ```
+
+  If `JSON.parse` throws a `SyntaxError`, the reply was not pure JSON: a small model that adds a sentence or a second object after the JSON is the "parseable JSON every time" check failing. `phi3` does this on some reviews, so catch the error and print it instead of letting it stop the run:
+
+  ```typescript
+  // Hint: call it inside your loop, after the two classify calls
+  try {
+    const parsed = await classifyAspects(small, review.text);
+    console.log(review.id, parsed.overall, "price =", parsed.aspects?.price);
+  } catch (e) {
+    console.log(review.id, "not JSON:", String(e).slice(0, 80));
+  }
+  ```
 
 ## What Is in This Folder
 

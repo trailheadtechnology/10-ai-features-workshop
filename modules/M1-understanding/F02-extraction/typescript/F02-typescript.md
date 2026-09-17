@@ -42,6 +42,19 @@ npm run complete -- ../../F01-summarization/data/tr-0002.md   # any report path 
 npm run starter
 ```
 
+The starter already does this, in `starter/index.ts`. Line one is the path (the first argument, or `tr-0007.md` in the `data/` folder), line two reads the file and drops the front matter, and the call sends the naive prompt and prints the raw reply text. The `await` works at the top level of the file, outside any function, because `package.json` sets `"type": "module"`:
+
+```typescript
+const reportPath = process.argv[2] ?? resolve(DATA, "tr-0007.md");
+const report = stripFrontMatter(readFileSync(reportPath, "utf8"));
+
+const response = await client.chat.completions.create({
+  model: "llama3.2",
+  messages: [{ role: "user", content: `Extract the details of this trip report as JSON.\n\n${report}` }],
+});
+console.log(response.choices[0].message.content);
+```
+
 **Why:** `tr-0007.md` is a note-taker's report that states every fact the schema will later ask for outright (trail name, park, date, distance, elevation, wildlife), so any gap you see here is the model's fault, not the source's.
 
 **Check:** a prose preamble, a markdown fence, and a nested shape the model invented, as in the starter block of [`expected-output.md`](../expected-output.md). Run it twice and the field names change. Nothing here can go into a database. The rest of the lab fixes that.
@@ -50,11 +63,29 @@ npm run starter
 
 **Do:**
 1. Read `data/tr-0007.md`, strip the front matter (split on `---`, keep the third part, trimmed).
+
+   The starter already does this. `stripFrontMatter` is the function near the top of `starter/index.ts`. Splitting on `---` gives the empty text before the front matter, the front matter, and then the report; `parts.slice(2).join("---")` glues everything from the third part on back together, so a `---` inside the report body survives:
+
+   ```typescript
+   function stripFrontMatter(markdown: string): string {
+     const parts = markdown.split("---");
+     return parts.length >= 3 ? parts.slice(2).join("---").trim() : markdown.trim();
+   }
+   ```
+
+   and the read is the line under `const reportPath = ...`. `readFileSync` comes from the `node:fs` import at the top:
+
+   ```typescript
+   const report = stripFrontMatter(readFileSync(reportPath, "utf8"));
+   ```
+
 2. Build the user message: the prompt below, a blank line, then the report text.
 
    ```text
    Extract the trail facts from this trip report. Use null for any field the report does not state, and empty arrays when nothing applies. Do not guess.
    ```
+
+   In TypeScript the prompt, the blank line, and `${report}` all go into one template literal (a string between backticks), written straight into the call in item 4 below. `${report}` inserts the report text. The lines after the first one start at the very left edge, with no indentation, because every space inside the backticks is sent to the model.
 
 3. Define the record: eight fields, five scalars that may be `null` and three string arrays, each with a description saying when to use `null`. Define it as a typed record/schema object named `TripFacts`; your client turns it into a schema equivalent to this (key casing may follow your language's convention; the descriptions are what matter). Attaching a description in the wrong place silently drops every description from the schema, and the Check below will not catch that, so copy the form exactly:
 
@@ -83,10 +114,16 @@ npm run starter
 
    The two number descriptions below already carry step 3's `null, never 0,` wording; leave those two words out for now if you want to see step 2's inventions first.
 
+   First, add these two imports at the top of `index.ts`, under `import OpenAI from "openai";`:
+
    ```typescript
    import { zodResponseFormat } from "openai/helpers/zod";
    import { z } from "zod";
+   ```
 
+   Then paste the schema under the `stripFrontMatter` function, above `const reportPath = ...`. A `const` must be defined above any code that uses it. Each line is one field: its name, its type (`z.string().nullable()` means "a string or `null`"), and `.describe(...)` last. The `type` line under it reuses the name `TripFacts` for the matching TypeScript type:
+
+   ```typescript
    const TripFacts = z.object({
      trail_name: z.string().nullable().describe("The name of the trail hiked. null if the report never names the trail."),
      park: z.string().nullable().describe("The park the trail is in. null if the report never names the park."),
@@ -97,23 +134,66 @@ npm run starter
      conditions: z.array(z.string()).describe("Short phrases describing trail conditions the report mentions (mud, snow, water crossings, dry tread). Empty array if none."),
      hazards: z.array(z.string()).describe("Hazards or closures the report mentions. Empty array if none."),
    });
+   type TripFacts = z.infer<typeof TripFacts>;
+   ```
 
+   Last, replace the starter's call (every line from `const response = await client.chat.completions.create({` through `console.log(response.choices[0].message.content);`) with the typed call. `response_format` is the only thing that turns on the schema:
+
+   ```typescript
    const response = await client.chat.completions.parse({
      model: "llama3.2",
-     messages: [{ role: "user", content: `Extract the trail facts from this trip report.
+     messages: [{
+       role: "user",
+       content: `Extract the trail facts from this trip report.
    Use null for any field the report does not state, and empty arrays
    when nothing applies. Do not guess.
 
-   ${report}` }],
+   ${report}`,
+     }],
      response_format: zodResponseFormat(TripFacts, "trip_facts"),
    });
-   const facts = response.choices[0].message.parsed!;
    ```
 
 5. Take the reply as the record (already parsed).
+
+   Directly under the call's closing `});`, `.parsed` is already a `TripFacts` object. The `!` tells TypeScript it is not `null`:
+
+   ```typescript
+   const raw = response.choices[0].message.parsed!;
+   ```
+
 6. Print a heading with the file name, then, under a `-- what the model gave us --` line, the eight fields labelled `trail:`, `park:`, `date:`, `distance: N mi`, `elev gain: N ft`, `wildlife: [...]`, `conditions: [...]`, `hazards: [...]`, as in the complete-demo block of `expected-output.md`. Print `null` for a null.
 
    `complete/`'s `show()` has the eight labelled lines; `${value ?? "null"}` prints `null` for a null and `basename(reportPath)` gives the `== tr-0007.md ==` heading.
+
+   First, add `basename` to the `node:path` import at the top of `index.ts`, so the line reads:
+
+   ```typescript
+   import { basename, resolve } from "node:path";
+   ```
+
+   Put these three lines under `const raw = ...`. `basename` is just the file name, without the folders, and the `\n` adds the blank line:
+
+   ```typescript
+   console.log(`== ${basename(reportPath)} ==\n`);
+   console.log("-- what the model gave us --");
+   show(raw);
+   ```
+
+   and the function, copied from `complete/index.ts`, under the `type TripFacts = ...` line, above `const reportPath = ...`. `??` means "use the right side if the left side is `null` or `undefined`"; `.join(", ")` glues a list into one comma-separated string:
+
+   ```typescript
+   function show(f: TripFacts): void {
+     console.log(`  trail:      ${f.trail_name ?? "null"}`);
+     console.log(`  park:       ${f.park ?? "null"}`);
+     console.log(`  date:       ${f.date_hiked ?? "null"}`);
+     console.log(`  distance:   ${f.distance_mi ?? "null"} mi`);
+     console.log(`  elev gain:  ${f.elevation_gain_ft ?? "null"} ft`);
+     console.log(`  wildlife:   [${(f.wildlife ?? []).join(", ")}]`);
+     console.log(`  conditions: [${(f.conditions ?? []).join(", ")}]`);
+     console.log(`  hazards:    [${(f.hazards ?? []).join(", ")}]`);
+   }
+   ```
 
 Run it:
 
@@ -129,6 +209,13 @@ npm run starter
 
 **Do:**
 1. Make the report path a command-line argument, defaulting to `tr-0007.md`. The `starter/` already does this; keep it.
+
+   The starter already does this. `process.argv[2]` is the first thing you type after `npm run starter --` (the first two entries are Node and the script), it is `undefined` when you type nothing, and `??` then falls back to `tr-0007.md` in `DATA`, the feature's `data/` folder:
+
+   ```typescript
+   const reportPath = process.argv[2] ?? resolve(DATA, "tr-0007.md");
+   ```
+
 2. Run it on `data/tr-0011.md`, three or four times.
 
    ```bash
@@ -150,6 +237,17 @@ Round-trip distance in miles, as stated in the report. null, never 0, if the rep
 Elevation gain in feet, as stated in the report. null, never 0, if the report gives no elevation figure. Never estimate.
 ```
 
+In `const TripFacts = z.object({` near the top of `index.ts`, the `distance_mi` and `elevation_gain_ft` lines should end up reading exactly like this (if you pasted step 1's schema as shown, they already do):
+
+```typescript
+  distance_mi: z.number().nullable().describe("Round-trip distance in miles, as stated in the report. null, never 0, if the report gives no distance. Never estimate."),
+  elevation_gain_ft: z.number().nullable().describe("Elevation gain in feet, as stated in the report. null, never 0, if the report gives no elevation figure. Never estimate."),
+```
+
+```bash
+npm run starter -- ../data/tr-0011.md
+```
+
 Run `tr-0011.md` three or four more times.
 
 **Check:** `distance_mi` and `elevation_gain_ft` come back `null` on most runs. Some runs still return `0`, and some still put prose like `last month` in `date_hiked`. The schema got you JSON that parses; it does not get you JSON that is true. Step 4 is the fix for what the schema cannot express.
@@ -158,12 +256,8 @@ Run `tr-0011.md` three or four more times.
 
 **Do:**
 1. Define a `Verdict` type: `field`, `value` (as a string, or `null`), `passed`, `reason` (set on failure), `normalized` (set when a value passed only after being rewritten). Give it a pass helper and a fail helper for building one.
-2. **Non-empty rule:** `null` passes; an empty/whitespace-only string fails with `empty or whitespace-only string; should be null`; anything else passes.
-3. **Grounding rule** (for `trail_name`, `park`): run the non-empty rule first. Otherwise split the value on spaces/hyphens/commas/apostrophes, keep words ≥4 characters that are not in this boilerplate list (`national`, `park`, `state`, `trail`, `trailhead`, `loop`, `canyon`, `falls`, `the`), and require every kept word to appear in the report text (case-insensitive). If no words were kept, look for the whole trimmed value instead. Fail with `not grounded in the source report (no mention of "word")` if any is missing.
-4. **Date rule** (for `date_hiked`): run the non-empty rule first. Try only an explicit list of formats (`2026-07-04`, `2026/07/04`, `7/4/2026`, `July 4, 2026`, `Jul 4, 2026`, `4 July 2026`, `July 4 2026`), never a lenient parser. Fail with `does not parse as a date; no parser can store this` if none match, or `parses, but the year N is not plausible` if the year is before 1900 or after 2100. Otherwise pass with `normalized` set to the ISO form.
-5. **Range rule** (for the two numbers, `max`/`unit` supplied): `null` passes; exactly `0` fails with `0 is not a measurement; the report gave no figure, so this should be null`; negative fails with `negative value is impossible`; over `max` fails with `implausible: over {max} {unit} for a single day hike`. Call it with `max=100, unit="mi"` for `distance_mi` and `max=20000, unit="ft"` for `elevation_gain_ft`. The verdict's `value` for a number is the number followed by its unit (`0 mi`, `3400 ft`), which is what the PASS/REJECT line prints.
 
-   Below, copied from `complete/`, are the `Verdict` type with its `pass`/`fail` helpers, the non-empty rule, the date parser and date rule, and the range rule. Node has no strict date parser, so `parseDate` is three regexes covering the seven formats above; do not reach for `new Date(value)`, which accepts prose. `${value} ${unit}` already prints `12.8 mi` and `3400 ft` with no formatting step. The grounding rule is in `complete/` too.
+   Copied from `complete/index.ts`. Paste it under the `show` function, above `const reportPath = ...`. A `type` lists the fields an object has; `?` marks the two that may be left out. `pass` and `fail` are arrow functions that build and return one `Verdict` object, and `{ field, value }` is short for `{ field: field, value: value }`:
 
    ```typescript
    type Verdict = {
@@ -177,14 +271,49 @@ Run `tr-0011.md` three or four more times.
    };
    const pass = (field: string, value: string | null, normalized?: string): Verdict => ({ field, value, passed: true, normalized });
    const fail = (field: string, value: string | null, reason: string): Verdict => ({ field, value, passed: false, reason });
+   ```
 
+   Each rule below is a function under these lines, above `const reportPath = ...`, that takes a field name and a value and returns one `Verdict`.
+
+2. **Non-empty rule:** `null` passes; an empty/whitespace-only string fails with `empty or whitespace-only string; should be null`; anything else passes.
+
+   Copied from `complete/index.ts`. `value.trim()` removes the spaces from both ends, so a length of 0 means "nothing but whitespace"; `a ? b : c` returns `b` when `a` is true and `c` otherwise:
+
+   ```typescript
    function nonEmpty(field: string, value: string | null): Verdict {
      if (value === null) return pass(field, null);
      return value.trim().length === 0
        ? fail(field, `"${value}"`, "empty or whitespace-only string; should be null")
        : pass(field, value);
    }
+   ```
 
+3. **Grounding rule** (for `trail_name`, `park`): run the non-empty rule first. Otherwise split the value on spaces/hyphens/commas/apostrophes, keep words ≥4 characters that are not in this boilerplate list (`national`, `park`, `state`, `trail`, `trailhead`, `loop`, `canyon`, `falls`, `the`), and require every kept word to appear in the report text (case-insensitive). If no words were kept, look for the whole trimmed value instead. Fail with `not grounded in the source report (no mention of "word")` if any is missing.
+
+   `complete/` has the full `grounded` function. The shape, with the parts for you to fill in left as comments; it goes under `nonEmpty`. `new Set([...])` makes a list you can ask `.has(word)`. `value.split(/[ \-,']+/)` splits on any run of spaces, hyphens, commas, and apostrophes, `.filter(...)` keeps each `w` for which the arrow function returns true, and `text.includes(x)` is true when `x` appears anywhere in `text` (lowering both sides makes it ignore case):
+
+   ```typescript
+   // Hint: the building blocks of grounded(field, value, source)
+   const BOILERPLATE = new Set(["national", "park", /* ...the rest of the list */]);
+
+   function grounded(field: string, value: string | null, source: string): Verdict {
+     const basic = nonEmpty(field, value);
+     if (!basic.passed || value === null) return basic;
+     const lower = source.toLowerCase();
+     const words = value.split(/[ \-,']+/).filter((w) => w.length >= 4 && !BOILERPLATE.has(w.toLowerCase()));
+     const toCheck = words.length > 0 ? words : [/* no words kept: the whole trimmed value */];
+     const missing = toCheck.filter((w) => !lower.includes(w.toLowerCase()));
+     return missing.length === 0
+       ? pass(field, value)
+       : fail(field, value, `not grounded in the source report (no mention of "${missing[0]}")`);
+   }
+   ```
+
+4. **Date rule** (for `date_hiked`): run the non-empty rule first. Try only an explicit list of formats (`2026-07-04`, `2026/07/04`, `7/4/2026`, `July 4, 2026`, `Jul 4, 2026`, `4 July 2026`, `July 4 2026`), never a lenient parser. Fail with `does not parse as a date; no parser can store this` if none match, or `parses, but the year N is not plausible` if the year is before 1900 or after 2100. Otherwise pass with `normalized` set to the ISO form.
+
+   Copied from `complete/index.ts`; it goes under `grounded`. Node has no strict date parser, so `parseDate` is three regexes covering the seven formats above; do not reach for `new Date(value)`, which accepts prose. `s.match(regex)` returns `null` when the text does not match, or an array where `m[1]`, `m[2]`, `m[3]` are the parts inside the parentheses; the `+` in `+m[1]` turns that text into a number. `MONTHS.findIndex(...)` returns the position of the first month whose name starts with the same three letters, or `-1`. `padStart(2, "0")` turns `7` into `07`:
+
+   ```typescript
    const MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
    function parseDate(text: string): { y: number; m: number; d: number } | null {
      const s = text.trim();
@@ -213,7 +342,13 @@ Run `tr-0011.md` three or four more times.
      const canonical = `${parsed.y}-${String(parsed.m).padStart(2, "0")}-${String(parsed.d).padStart(2, "0")}`;
      return pass(field, value, canonical);
    }
+   ```
 
+5. **Range rule** (for the two numbers, `max`/`unit` supplied): `null` passes; exactly `0` fails with `0 is not a measurement; the report gave no figure, so this should be null`; negative fails with `negative value is impossible`; over `max` fails with `implausible: over {max} {unit} for a single day hike`. Call it with `max=100, unit="mi"` for `distance_mi` and `max=20000, unit="ft"` for `elevation_gain_ft`. The verdict's `value` for a number is the number followed by its unit (`0 mi`, `3400 ft`), which is what the PASS/REJECT line prints.
+
+   Copied from `complete/index.ts`, under `validDate`. `${value} ${unit}` already prints `12.8 mi` and `3400 ft` with no formatting step:
+
+   ```typescript
    function inRange(field: string, value: number | null, max: number, unit: string): Verdict {
      if (value === null) return pass(field, null);
      const shown = `${value} ${unit}`;
@@ -224,7 +359,35 @@ Run `tr-0011.md` three or four more times.
    ```
 
 6. Write `validate(record, report_text)` returning five verdicts in order: grounding on `trail_name`, grounding on `park`, date rule on `date_hiked`, range rule on `distance_mi`, range rule on `elevation_gain_ft`. The three arrays get no rule.
+
+   A function under the rules, above `const reportPath = ...`. It returns an array of the five verdicts:
+
+   ```typescript
+   // Hint: five rule calls, in the order the lab lists them
+   function validate(f: TripFacts, source: string): Verdict[] {
+     return [
+       grounded("trail_name", f.trail_name, source),
+       // ...park, then the date rule, then distance_mi...
+       inRange("elevation_gain_ft", f.elevation_gain_ft, 20000, "ft"),
+     ];
+   }
+   ```
+
 7. After the step 1 printout, print a `-- what the validator says --` block: one line per verdict, `PASS`/`REJECT`, field name, value (`null` when null); under a `REJECT` print `reason: `; under a `PASS` whose `normalized` differs from the value, print `normalized to: `.
+
+   Copied from `complete/index.ts`. Put it directly under `show(raw);`. `for (const v of verdicts)` runs the braces once per verdict, and `v.field.padEnd(18)` pads the field name to 18 characters so the values line up:
+
+   ```typescript
+   const verdicts = validate(raw, report);
+
+   console.log("\n-- what the validator says --");
+   for (const v of verdicts) {
+     console.log(`  ${v.passed ? "PASS  " : "REJECT"}  ${v.field.padEnd(18)} ${v.value ?? "null"}`);
+     if (!v.passed) console.log(`          reason: ${v.reason}`);
+     else if (v.normalized && v.normalized !== v.value) console.log(`          normalized to: ${v.normalized}`);
+   }
+   ```
+
 8. Run the sparse report several times:
 
    ```bash
@@ -233,18 +396,88 @@ Run `tr-0011.md` three or four more times.
 
 **Why:** looking for a name in the report text works as a grounding check; looking for a free-text phrase like "some wet spots" does not, which is why only the two name fields get the grounding rule.
 
-**Check:** on `tr-0011.md`, the rejections in [`expected-output.md`](../expected-output.md) (`REJECT trail_name ""`, `REJECT date_hiked last month`, `REJECT distance_mi 0 mi`, `REJECT elevation_gain_ft 0 ft`), each with its reason on the next line. On `tr-0007.md`, `July 4, 2026` passes with `normalized to: 2026-07-04`. Never throw from a rule; every field gets a verdict.
+**Check:** on `tr-0011.md`, the rejections in [`expected-output.md`](../expected-output.md) (`REJECT trail_name ""`, `REJECT date_hiked last month`, `REJECT distance_mi 0 mi`, `REJECT elevation_gain_ft 0 ft`), each with its reason on the next line. `llama3.2` sometimes returns the text `"null"` instead of a real null; the validator rejects it (for a name, with `no mention of "null"`), and that rejection is correct, because a string that says null is not a missing value. On `tr-0007.md`, `July 4, 2026` passes with `normalized to: 2026-07-04`. Never throw from a rule; every field gets a verdict.
 
 ### Step 5: Coerce rejected fields to `null` and print what you would store
 
 **Do:**
 1. Write `clean(record, verdicts)` returning a new record: for each of the five scalar fields, keep the (trimmed, if string) value if its verdict passed, else store `null`; for `date_hiked`, store the verdict's `normalized` value when set.
+
+   A function under `validate`, above `const reportPath = ...`. It returns a new object with all eight fields rather than changing the old one. `v("park")` finds the park's verdict (the `!` says it is always there), and `ok("park")` is `true` when it passed. `f.trail_name?.trim()` trims only when the value is not `null`, and `?? null` turns the leftover `undefined` back into `null`. Fill in each `/* ... */`:
+
+   ```typescript
+   // Hint: build a new TripFacts, keeping each scalar only if its verdict passed
+   function clean(f: TripFacts, verdicts: Verdict[]): TripFacts {
+     const v = (name: string) => verdicts.find((x) => x.field === name)!;
+     const ok = (name: string) => v(name).passed;
+     return {
+       trail_name: ok("trail_name") ? f.trail_name?.trim() ?? null : null,
+       park: /* same pattern as trail_name */,
+       date_hiked: ok("date_hiked") ? v("date_hiked").normalized ?? /* the trimmed value, or null */ : null,
+       distance_mi: ok("distance_mi") ? f.distance_mi : null,
+       elevation_gain_ft: /* same pattern as distance_mi */,
+       wildlife: f.wildlife, // item 2 replaces these three lines
+       conditions: f.conditions,
+       hazards: f.hazards,
+     };
+   }
+   ```
+
 2. Clean the three arrays: drop empty/whitespace-only entries, trim the rest. Nothing in an array is ever rejected.
+
+   Copied from `complete/index.ts`. The helper goes above `function clean`. `.filter(...)` keeps the entries that are not blank and `.map((s) => s.trim())` trims each one:
+
+   ```typescript
+   const cleanList = (items: string[] | null | undefined) => (items ?? []).filter((s) => s && s.trim()).map((s) => s.trim());
+   ```
+
+   Then change the three array lines inside `clean`'s returned object to call it, one per array:
+
+   ```typescript
+   wildlife: cleanList(f.wildlife),
+   ```
+
 3. Count failed verdicts; print `-- what we would store (nothing rejected this run) --` when 0, else `-- what we would store (N fields coerced to null) --` (`1 field`, not `1 fields`).
+
+   Copied from `complete/index.ts`. Put it under the validator printout loop's closing `}`. `.filter((v) => !v.passed).length` counts the verdicts that failed:
+
+   ```typescript
+   const rejected = verdicts.filter((v) => !v.passed).length;
+   console.log();
+   console.log(rejected === 0
+     ? "-- what we would store (nothing rejected this run) --"
+     : `-- what we would store (${rejected} ${rejected === 1 ? "field" : "fields"} coerced to null) --`);
+   ```
+
 4. Print the cleaned record with the same eight-line printout from step 1.
+
+   Copied from `complete/index.ts`, directly under the heading lines above:
+
+   ```typescript
+   show(clean(raw, verdicts));
+   console.log();
+   ```
+
 5. Loop over a list of report paths, defaulting to both `tr-0007.md` and `tr-0011.md` when none is given. Run with no arguments.
 
    `complete/index.ts` has `clean`, and its loop reads `process.argv.slice(2)`, defaulting to both data files.
+
+   Replace the starter's `const reportPath = ...` line with a list of paths and a `for` loop. `process.argv.slice(2)` is every argument after `npm run starter --`. Everything from `const report = ...` down to the last `console.log();` moves inside the loop's braces:
+
+   ```typescript
+   const reportPaths = process.argv.length > 2
+     ? process.argv.slice(2)
+     : [resolve(DATA, "tr-0007.md"), resolve(DATA, "tr-0011.md")];
+
+   for (const reportPath of reportPaths) {
+     const report = stripFrontMatter(readFileSync(reportPath, "utf8"));
+   ```
+
+   The loop's closing `}` goes after the last `console.log();`, at the very end of the file. The `function`s and `const`s above the loop stay where they are. Indenting the moved lines by two spaces is only for reading; the lines of the prompt inside the backticks that start at the left edge stay there.
+
+   ```bash
+   npm run starter
+   ```
 
 **Check:** both reports print three blocks each: what the model gave us, what the validator says, what we would store. A `0` in the "what we would store" block means the range rule is missing. A `""` there means the non-empty rule is missing. `distance: null mi` and `elev gain: null ft` under a run that rejected two zeros is the passing output; it matches "Run 4" in [`expected-output.md`](../expected-output.md). Reject means coerce to `null`, not throw: a gap is something a human can fill later, and a plausible wrong number is something nobody ever notices.
 
@@ -253,9 +486,61 @@ Run `tr-0011.md` three or four more times.
 Pick any. The first two are not in `complete/`, so the checks are your only answer key.
 
 - **Per-field confidence.** Add a second object named `"confidence"` to the schema, next to the eight fields, with the same eight keys, each a number 0-1. Print it next to each field. **Check:** `tr-0011.md`'s confidences come back lower than `tr-0007.md`'s. Every confidence at `1` on tr-0011 means the model is ignoring the field.
+
+  A second `z.object` becomes a nested object in the schema. Put the new `const` above `const TripFacts`, and add one more field at the end of `TripFacts`:
+
+  ```typescript
+  // Hint: one number per field, each with its own description
+  const FieldConfidence = z.object({
+    trail_name: z.number().describe("How sure you are of trail_name, from 0 to 1."),
+    // ...the other seven fields, same pattern...
+  });
+
+  // new last field of TripFacts, under hazards:
+    confidence: FieldConfidence.describe("A confidence from 0 to 1 for each field above."),
+
+  // in show:
+    console.log(`  trail:      ${f.trail_name ?? "null"}  (${f.confidence.trail_name})`);
+
+  // in clean, the returned object needs the new field too:
+      confidence: f.confidence,
+  ```
+
 - **One record per trail.** Make the top level of the schema an array of the same record. Feed it a report that covers two trails. **Check:** the array version returns one record per trail, and each record's `trail_name` grounds in the report on its own.
+
+  `zodResponseFormat` needs a schema whose top level is an object, so wrap the array in one `z.object` with a single array field, put it under `type TripFacts = ...`, and loop over that array inside the report loop. For a two-trail report, paste two reports into one file (for example `tr-0007.md` followed by feature 01's `tr-0002.md`) and pass its path:
+
+  ```typescript
+  // Hint: an object holding an array of TripFacts
+  const TripList = z.object({
+    trips: z.array(TripFacts).describe("One record per trail hiked in the report."),
+  });
+
+  const response = await client.chat.completions.parse({
+    model: "llama3.2",
+    messages: [/* same prompt, saying there may be several trails */],
+    response_format: zodResponseFormat(TripList, "trip_list"),
+  });
+  for (const raw of response.choices[0].message.parsed!.trips) {
+    // print, validate, clean each record as before
+  }
+  ```
+
 - **Any report.** Point the program at one of the other reports in feature 01's `data/`, for example `tr-0002.md`. **Check:** every scalar prints a `PASS` or a `REJECT` with a reason, and the validator never throws on a report it has not seen.
+
+  No code to write. From `typescript/`:
+
+  ```bash
+  npm run starter -- ../../F01-summarization/data/tr-0002.md
+  ```
+
 - **What the validator misses.** Run `tr-0011.md` until a run returns a made-up number that is still under the ceiling. `expected-output.md` records one such run: `distance_mi: 40`. **Check:** the range rule passes it. No cheap check can ground a number the way substring matching grounds a name, so what remains is sampling and review, which is a management answer, not a code answer.
+
+  No code to write. Run this until a distance or elevation passes that the report never states:
+
+  ```bash
+  npm run starter -- ../data/tr-0011.md
+  ```
 
 ## What Is in This Folder
 

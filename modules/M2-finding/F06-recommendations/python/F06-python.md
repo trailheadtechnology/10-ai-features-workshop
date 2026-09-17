@@ -83,8 +83,6 @@ uv run main.py
    print(f"You liked: {target['name']} ({target['park']})")
    ```
 
-The starter already does all three. `DATA` resolves to `../../data` from `starter/`, `trails` is the parsed list of 30, and `target` is the id-or-name lookup with `trail-0117` as the default. Nothing to change.
-
 **Why:** these 30 are lifted from the workshop's full 200-trail catalog (feature 10's `data/trails.json`), chosen to hold the three target trails plus enough real neighbors and enough noise to make ranking interesting. It's a different 30 from feature 04's slice (7 trails overlap), so feature 04's cached vectors won't cover it.
 
 **Check:** the list has 30 entries. The first `id` is `trail-0003`. Running with no argument prints `You liked: Avalanche Lake Trail (Glacier National Park)`.

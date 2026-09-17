@@ -47,9 +47,69 @@ npm run complete -- --auto-approve-dry-run        # non-interactive run for test
 **Do:** run `starter/` as it is. Read the code first. It is the loop you are about to change:
 
 1. It opens `../../data/inquiries.jsonl`: `id`, `channel`, `received`, `category`, `doc`, `text` per line.
+
+   The starter already does this. `import.meta.dirname` is the folder holding `index.ts`, so `DATA` is the `data/` folder two levels above it. `process.argv[2]` is the first argument you pass after `npm run starter --`. `readFileSync(path, "utf8")` reads the whole file as a string, `.split("\n")` cuts it into lines, and `JSON.parse` turns one line of JSON into an object, so later code reads fields as `inquiry.id` or `inquiry.text`. The `Inquiry` type names those fields:
+
+   ```typescript
+   const DATA = resolve(import.meta.dirname, "../../data");
+   const inquiriesPath = process.argv[2] ? resolve(process.argv[2]) : resolve(DATA, "inquiries.jsonl");
+   const dataDir = dirname(inquiriesPath);
+   ```
+
+   ```typescript
+   type Inquiry = { id: string; channel: string; received: string; category: string; doc: string; text: string };
+
+   for (const line of readFileSync(inquiriesPath, "utf8").split("\n")) {
+     if (!line.trim()) continue;
+     const inquiry: Inquiry = JSON.parse(line);
+   ```
+
 2. For each inquiry, if `doc` is not empty and `data/snippets/<doc>` exists, it reads and trims that file as the excerpt. Otherwise the excerpt is the literal text `(none on file for this message)`.
+
+   The starter already does this, inside the loop. `inquiry.doc || ""` uses an empty name when `doc` is missing, `existsSync` checks that the file is there, and `condition ? x : y` picks one of two values:
+
+   ```typescript
+     const snippetPath = resolve(dataDir, "snippets", inquiry.doc || "");
+     const snippet = inquiry.doc && existsSync(snippetPath) ? readFileSync(snippetPath, "utf8").trim() : "(none on file for this message)";
+   ```
+
 3. It builds a system message (the drafting prompt, unchanged across inquiries) and a user message (excerpt + channel + received + text), sends both to `llama3.2`, and trims the reply.
+
+   The starter already does this. `client` is created once above the loop. `client.chat.completions.create` takes the model name and the list of messages and returns a response object; `await` waits for it (a `.ts` file run as a module may use `await` outside any function). The reply text is `draft.choices[0].message.content`, which step 0 item 4 prints. The user message is a backtick template string, so `${...}` inserts a value and the line breaks are part of the text:
+
+   ```typescript
+   const client = new OpenAI({ baseURL: "http://localhost:11434/v1", apiKey: "ollama" });
+   ```
+
+   ```typescript
+     const draft = await client.chat.completions.create({
+       model: "llama3.2",
+       messages: [
+         { role: "system", content: SYSTEM_PROMPT },
+         { role: "user", content: `Reference excerpt:
+   ${snippet}
+
+   Visitor message (${inquiry.channel}, received ${inquiry.received}):
+   ${inquiry.text}
+
+   Draft the reply.` },
+       ],
+     });
+   ```
+
 4. It prints `=== SENT to visitor · <id> (<category>) ===`, the draft, then a blank line. After the loop: `All replies sent. Nobody read them. Nothing was logged.`
+
+   The starter already does this. The first three lines are the end of the loop body; `console.log()` with nothing inside prints the blank line, and `?? ""` uses an empty string if the model returned no content. The last line is after the loop's closing `}`:
+
+   ```typescript
+     console.log(`=== SENT to visitor · ${inquiry.id} (${inquiry.category}) ===`);
+     console.log((draft.choices[0].message.content ?? "").trim());
+     console.log();
+   ```
+
+   ```typescript
+   console.log("All replies sent. Nobody read them. Nothing was logged.");
+   ```
 
 The system prompt:
 
@@ -98,11 +158,7 @@ lost-and-found    draft-for-approval
 emergency         human-only
 ```
 
-2. Print the table once at the top of the run, under `Routing policy (error cost decides the lane):`, one row per entry, two-space indent, category left-aligned in a 16-character column, then the lane, then a blank line after the table.
-3. Inside the loop, right after parsing the inquiry, look up its `category`. If not found, use `human-only`.
-4. Print a per-inquiry header right after the lane lookup, before the excerpt is read (the old `SENT` line after the model call goes away in step 4): 72 dashes, `<id>  ·  <category>  ·  <channel>  ·  lane: <lane>`, another 72 dashes, the visitor's `text` prefixed with `  | ` per line, blank line.
-
-A `Record` above the loop, a function that prints it in the lab's format (`padEnd(16)` gives the 16-character category column), and a helper that prefixes every line with `  | `. Inside the loop, `??` with a default is the fail-closed lookup.
+A `Record<string, string>` is an object that maps each category (the key) to its lane (the value). Put it right below the closing `` `; `` of `SYSTEM_PROMPT`, above the `const DATA` line. This is exactly what `complete/` has:
 
 ```typescript
 const POLICY: Record<string, string> = {
@@ -113,26 +169,54 @@ const POLICY: Record<string, string> = {
   "lost-and-found": "draft-for-approval",
   "emergency": "human-only",
 };
-
-function printPolicy(): void {
-  console.log("Routing policy (error cost decides the lane):");
-  for (const [category, lane] of Object.entries(POLICY)) console.log(`  ${category.padEnd(16)} ${lane}`);
-  console.log();
-}
-
-const indent = (text: string) => text.split("\n").map((l) => "  | " + l.trimEnd()).join("\n");
 ```
 
-Call `printPolicy()` once before the loop. Inside the loop, right after `JSON.parse`:
+2. Print the table once at the top of the run, under `Routing policy (error cost decides the lane):`, one row per entry, two-space indent, category left-aligned in a 16-character column, then the lane, then a blank line after the table.
 
-```typescript
-  const lane = POLICY[inquiry.category] ?? "human-only";
+   Write the printout as a function so the `--policy` stretch goal can reuse it. Put it directly below the `POLICY` object, with a blank line between them. `Object.entries(POLICY)` walks the object and gives each key and value as `[category, lane]`, and `category.padEnd(16)` pads the value with spaces to 16 characters, left-aligned:
 
-  console.log("-".repeat(72));
-  console.log(`${inquiry.id}  ·  ${inquiry.category}  ·  ${inquiry.channel}  ·  lane: ${lane}`);
-  console.log("-".repeat(72));
-  console.log(indent(inquiry.text));
-  console.log();
+   ```typescript
+   function printPolicy(): void {
+     console.log("Routing policy (error cost decides the lane):");
+     for (const [category, lane] of Object.entries(POLICY)) console.log(`  ${category.padEnd(16)} ${lane}`);
+     console.log();
+   }
+   ```
+
+   Then call it once, with no indent, on its own line directly above `for (const line of readFileSync(inquiriesPath, "utf8").split("\n")) {`:
+
+   ```typescript
+   printPolicy();
+   ```
+
+3. Inside the loop, right after parsing the inquiry, look up its `category`. If not found, use `human-only`.
+
+   `POLICY[inquiry.category]` is `undefined` when the category is not in the object, and `?? "human-only"` replaces `undefined` with the second value, which is the fail-closed lookup. Add it on the line directly below `const inquiry: Inquiry = JSON.parse(line);`, at the same indent:
+
+   ```typescript
+     const lane = POLICY[inquiry.category] ?? "human-only";
+   ```
+
+4. Print a per-inquiry header right after the lane lookup, before the excerpt is read (the old `SENT` line after the model call goes away in step 4): 72 dashes, `<id>  ·  <category>  ·  <channel>  ·  lane: <lane>`, another 72 dashes, the visitor's `text` prefixed with `  | ` per line, blank line.
+
+   `"-".repeat(72)` builds a string of 72 dashes. Add these lines directly below the `const lane` line, above `const snippetPath`:
+
+   ```typescript
+     console.log("-".repeat(72));
+     console.log(`${inquiry.id}  ·  ${inquiry.category}  ·  ${inquiry.channel}  ·  lane: ${lane}`);
+     console.log("-".repeat(72));
+     console.log(indent(inquiry.text));
+     console.log();
+   ```
+
+   `indent` is a small helper written as an arrow function (`(text: string) => ...` takes `text` and returns the expression after `=>`). It splits the text on newlines, `.map` puts `  | ` in front of each line, and `.join("\n")` glues the lines back together. Put it above the loop, directly below the `type Inquiry = ...` line:
+
+   ```typescript
+   const indent = (text: string) => text.split("\n").map((l) => "  | " + l.trimEnd()).join("\n");
+   ```
+
+```bash
+npm run starter
 ```
 
 **Why:** an unknown category falls back to `human-only`, so the lookup fails closed. The inquiry gets the safest lane instead of a draft.
@@ -147,7 +231,7 @@ Call `printPolicy()` once before the loop. Inside the loop, right after `JSON.pa
 2. If true, print `  NO DRAFT. Policy routes this straight to a human. Paging dispatch.` and move to the next inquiry without reading the excerpt, building a request, or spending tokens.
 3. Only below that test, read the excerpt and call the model as before.
 
-The gate goes directly under the header, before the snippet is read and before `client.chat.completions.create` is reached. `continue` is what keeps the model out of it.
+Add this block directly below the header's final `console.log();`, above the `const snippetPath` line, at the same 2-space indent. `===` is TypeScript's equality test. `continue` jumps straight to the next inquiry, so nothing below it in the loop runs: no excerpt, no message, no `client.chat.completions.create` call. The `\n` at the end of the text prints the blank line after it.
 
 ```typescript
   if (lane === "human-only") {
@@ -156,7 +240,7 @@ The gate goes directly under the header, before the snippet is read and before `
   }
 ```
 
-Step 5 adds the log line inside this block.
+Step 5 adds the log line inside this block, above `continue;`.
 
 ```bash
 npm run starter
@@ -170,87 +254,152 @@ npm run starter
 
 **Do:**
 1. Replace the `SENT` printout: after the model call, print `  draft:`, blank line, the draft prefixed with `  | ` per line, blank line.
+
+   First, in the model call from step 0, rename the result from `draft` to `response`, so the name `draft` is free for the trimmed string. Change the first line of the call to:
+
+   ```typescript
+     const response = await client.chat.completions.create({
+   ```
+
+   Then delete the starter's three `SENT` lines after the call:
+
+   ```typescript
+     console.log(`=== SENT to visitor · ${inquiry.id} (${inquiry.category}) ===`);
+     console.log((draft.choices[0].message.content ?? "").trim());
+     console.log();
+   ```
+
+   In their place, directly below the `});` that ends the model call, show the draft. `indent` is the helper from step 2:
+
+   ```typescript
+     const draft = (response.choices[0].message.content ?? "").trim();
+     console.log("\r  draft:      \n");
+     console.log(indent(draft));
+     console.log();
+   ```
+
+   `complete/` also prints `  drafting...` on the line above `const response`, and the `\r` in the draft line moves the cursor back to overwrite it. `process.stdout.write` prints without a newline. Optional:
+
+   ```typescript
+     process.stdout.write("  drafting...");
+   ```
+
 2. Print `  [a]pprove  [e]dit  [r]eject  [s]kip > ` and read one line; trim and lowercase it.
+
+   Node has no one-line "wait for Enter" call, so you build one reader for the whole run with `node:readline/promises` and ask it a question at each prompt. Add the import at the top of the file, below the other imports:
+
+   ```typescript
+   import { createInterface } from "node:readline/promises";
+   ```
+
+   Create the reader once, above the loop, directly below the `const client = ...` line. `complete/` skips the reader when the `--auto-approve-dry-run` stretch flag is on, so it needs an `autoApprove` switch; declare it directly below the `const dataDir` line and leave it `false` until you add that flag. `let` (not `const`) means the stretch goal can change it later:
+
+   ```typescript
+   let autoApprove = false;
+   ```
+
+   ```typescript
+   const rl = autoApprove ? null : createInterface({ input: process.stdin, output: process.stdout });
+   ```
+
+   Inside the loop, below the draft display, ask the question. `rl.question(prompt)` prints the prompt without a newline and gives back the typed line once Enter is pressed; `await` waits for it. `rl` may be `null` in the stretch goal, and the `!` in `rl!` tells TypeScript it is not `null` here:
+
+   ```typescript
+     const key = (await rl!.question("  [a]pprove  [e]dit  [r]eject  [s]kip > ")).trim().toLowerCase();
+     console.log();
+   ```
+
+   The open reader keeps the program running after the last inquiry, so close it after the loop: add this line directly below the loop's closing `}`, above the closing `console.log` line. `?.` skips the call when `rl` is `null`:
+
+   ```typescript
+   rl?.close();
+   ```
+
 3. Map the key to a decision and final text: `a` → `approved`, final = draft. `e` → `edited`, final = what the reviewer types. `r` → `rejected`, no final text. Anything else → `skipped`, no final text.
+
+   Declare the two results first. `let` means the value can change; `string | null` means `final` may be `null`, which is how "no final text" is stored. A `switch` picks the `case` that matches `key`, `break` ends that case, and `default` catches everything else. Add below the `rl!.question` lines:
+
+   ```typescript
+     let decision: string;
+     let final: string | null = null;
+     switch (key) {
+       case "a": decision = "approved"; final = draft; break;
+       case "e": decision = "edited"; final = await readEdited(draft); break;
+       case "r": decision = "rejected"; break;
+       default: decision = "skipped"; break;
+     }
+   ```
+
+   `readEdited` does not exist yet. Item 4 writes it.
+
 4. For `e`, read lines until a line that is just `.`. If the first line is empty, copy the draft in first and keep reading (so the reviewer can append instead of retyping). Join, trim; if empty, fall back to the draft.
+
+   `readEdited` is a helper function, so it goes above the loop, directly below the `const indent = ...` line from step 2. It is `async` because it waits for typed lines, which is why the `switch` calls it with `await`. It asks `rl!.question("")` (no prompt text) once per line and collects the lines in an array inside a `for (;;)` loop, which runs until `break`. `lines.join("\n")` glues the lines back together:
+
+   ```typescript
+   async function readEdited(draft: string): Promise<string> {
+     console.log("  Type the reply you want to send. End with a single '.' on its own line.");
+     console.log("  Press Enter on the first line to start from the draft text instead.\n");
+     const lines: string[] = [];
+     let first = true;
+     for (;;) {
+       const line = await rl!.question("");
+       if (line === ".") break;
+       if (first && line.length === 0) {
+         lines.push(draft);
+         console.log("  (draft copied in; keep typing to append, '.' to finish)");
+       } else {
+         lines.push(line);
+       }
+       first = false;
+     }
+     const edited = lines.join("\n").trim();
+     return edited.length === 0 ? draft : edited;
+   }
+   ```
+
 5. At startup create `outbox/` in `starter/`, the folder holding the source file you are editing, and put `decisions.jsonl` beside it. Anchor those two paths so they land there under your track's run command, never next to a compiled binary. When there's a final text, write it plus a newline to `outbox/<id>.txt` and print `  -> <decision>, queued at <path>`, where `<path>` is that file relative to the folder you ran from (`outbox/<id>.txt` when you run from `starter/`). Otherwise print `  -> <decision>, nothing queued`.
 
-Two things to get right in TypeScript. First, paths: `npm run starter` runs with `typescript/` as the working directory, so a bare `"outbox"` would land next to `package.json`. Anchor the run artifacts to the script's own folder with `import.meta.dirname` (this is what `complete/` does) and create `outbox/` once at startup with `mkdirSync`. Second, stdin: Node has no synchronous line read, so build one `readline/promises` interface at startup and `await rl.question(...)` for every prompt. The interface holds the process open, so `rl.close()` after the loop is required or the program never exits.
+   `npm run starter` runs with `typescript/` as the working directory, so a bare `"outbox"` would land next to `package.json`. Anchor both paths to the script's own folder instead: `import.meta.dirname` is the folder holding `index.ts`, and `resolve(folder, name)` joins them into a full path. First replace the starter's two `node:fs` and `node:path` import lines at the top of the file with these (they add the file-writing functions and `relative`; this step and step 5 use them all):
 
-```typescript
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { userInfo } from "node:os";
-import { dirname, relative, resolve } from "node:path";
-import { createInterface } from "node:readline/promises";
+   ```typescript
+   import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+   import { dirname, relative, resolve } from "node:path";
+   ```
 
-const HERE = import.meta.dirname;
-const outboxDir = resolve(HERE, "outbox");
-const decisionsPath = resolve(HERE, "decisions.jsonl");
+   Declare the paths directly below the `const inquiriesPath = ...` line, above `const dataDir` (`decisionsPath` is used in step 5):
 
-mkdirSync(outboxDir, { recursive: true });
-const rl = createInterface({ input: process.stdin, output: process.stdout });
-const rel = (p: string) => relative(process.cwd(), p) || ".";
-```
+   ```typescript
+   const HERE = import.meta.dirname;
+   let outboxDir = resolve(HERE, "outbox");
+   let decisionsPath = resolve(HERE, "decisions.jsonl");
+   ```
 
-(`complete/` builds `rl` only when `--auto-approve-dry-run` is off, hence the `rl!` you will see there. Without that flag a plain `const rl` is enough.)
+   Create the folder once, directly below the `let autoApprove = false;` line. `{ recursive: true }` means "also create missing parent folders, and do not fail if it already exists":
 
-The edit helper reads with the same `rl.question("")` until a line that is only `.`; an empty first line copies the draft in so the reviewer can append.
+   ```typescript
+   mkdirSync(outboxDir, { recursive: true });
+   ```
 
-```typescript
-async function readEdited(draft: string): Promise<string> {
-  console.log("  Type the reply you want to send. End with a single '.' on its own line.");
-  console.log("  Press Enter on the first line to start from the draft text instead.\n");
-  const lines: string[] = [];
-  let first = true;
-  for (;;) {
-    const line = await rl.question("");
-    if (line === ".") break;
-    if (first && line.length === 0) {
-      lines.push(draft);
-      console.log("  (draft copied in; keep typing to append, '.' to finish)");
-    } else {
-      lines.push(line);
-    }
-    first = false;
-  }
-  const edited = lines.join("\n").trim();
-  return edited.length === 0 ? draft : edited;
-}
-```
+   `rel` is one more helper for above the loop (directly below `const indent` is fine). `relative(process.cwd(), p)` turns a full path into one relative to the folder you ran from:
 
-Replace the `SENT` printout after the model call with the draft display, the prompt, and the outbox write. The starter names the model response `draft`; rename it `response` so the first line below reads it. `writeFileSync(path, final + "\n")` is the trailing newline, and `rel(path)` prints the path relative to the folder you ran from, which is `starter/outbox/inq-0051.txt` under `npm run starter`.
+   ```typescript
+   const rel = (p: string) => relative(process.cwd(), p) || ".";
+   ```
 
-```typescript
-  const draft = (response.choices[0].message.content ?? "").trim();
-  console.log("  draft:\n");
-  console.log(indent(draft));
-  console.log();
+   Then, inside the loop below the `switch`, write the file only when there is final text. `` `${inquiry.id}.txt` `` builds the file name, `writeFileSync(path, final + "\n")` writes the text with a trailing newline (replacing any older file), and `rel(path)` prints `starter/outbox/inq-0051.txt` under `npm run starter`:
 
-  let decision: string;
-  let final: string | null = null;
-  const key = (await rl.question("  [a]pprove  [e]dit  [r]eject  [s]kip > ")).trim().toLowerCase();
-  console.log();
-  switch (key) {
-    case "a": decision = "approved"; final = draft; break;
-    case "e": decision = "edited"; final = await readEdited(draft); break;
-    case "r": decision = "rejected"; break;
-    default: decision = "skipped"; break;
-  }
+   ```typescript
+     if (final !== null) {
+       const path = resolve(outboxDir, `${inquiry.id}.txt`);
+       writeFileSync(path, final + "\n");
+       console.log(`  -> ${decision}, queued at ${rel(path)}\n`);
+     } else {
+       console.log(`  -> ${decision}, nothing queued\n`);
+     }
+   ```
 
-  if (final !== null) {
-    const path = resolve(outboxDir, `${inquiry.id}.txt`);
-    writeFileSync(path, final + "\n");
-    console.log(`  -> ${decision}, queued at ${rel(path)}\n`);
-  } else {
-    console.log(`  -> ${decision}, nothing queued\n`);
-  }
-```
-
-After the loop, before the closing lines:
-
-```typescript
-rl.close();
-```
+   That `if`/`else` is the last thing in the loop body for now. Step 5 adds the log line below it.
 
 ```bash
 npm run starter
@@ -264,57 +413,102 @@ The file is `starter/outbox/inq-0051.txt`, and the process exits on its own afte
 
 **Do:**
 1. Write a Levenshtein edit-distance function (single-character inserts/deletes/substitutions to turn one string into another; two-row DP is fine).
+
+   Another helper function for above the loop, directly below `readEdited`. `previous` and `current` are the two rows: `previous[j]` holds the distance from the first `i - 1` characters of `a` to the first `j` characters of `b`. `Array.from({ length: b.length + 1 }, (_, j) => j)` builds the array `[0, 1, 2, ...]`, and `a[i - 1]` is one character of `a`. Each cell takes the cheapest of insert, delete, or substitute (`Math.min`), and `previous = current` makes the row just filled the one the next pass reads:
+
+   ```typescript
+   function editDistance(a: string, b: string): number {
+     let previous = Array.from({ length: b.length + 1 }, (_, j) => j);
+     for (let i = 1; i <= a.length; i++) {
+       const current = [i];
+       for (let j = 1; j <= b.length; j++) {
+         const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+         current[j] = Math.min(current[j - 1] + 1, previous[j] + 1, previous[j - 1] + cost);
+       }
+       previous = current;
+     }
+     return previous[b.length];
+   }
+   ```
+
 2. After every review decision, append one JSON object per line to `decisions.jsonl`: `at` (UTC ISO 8601), `inquiryId`, `category`, `lane`, `decision`, `reviewer` (OS username), `draft`, `final` (null when nothing queued), `editDistance` (distance from draft to final, or to empty string when there's no final text). Match the key names exactly.
+
+   Add one import at the top of the file, with the other imports. `userInfo().username` is the OS username:
+
+   ```typescript
+   import { userInfo } from "node:os";
+   ```
+
+   Declare a `Decision` type with the lab's exact key names, directly below the `type Inquiry = ...` line:
+
+   ```typescript
+   type Decision = { at: string; inquiryId: string; category: string; lane: string; decision: string; reviewer: string; draft: string | null; final: string | null; editDistance: number };
+   ```
+
+   Set the reviewer above the loop, directly below `const client = ...`. `complete/` picks the name from the `--auto-approve-dry-run` stretch flag, which is why it reads `autoApprove` from step 4:
+
+   ```typescript
+   const reviewer = autoApprove ? "auto-approve-dry-run" : userInfo().username;
+   ```
+
+   Two helpers, above the loop with the others (directly below `const rel = ...` is fine). `record` builds a `Decision` object; `new Date().toISOString()` is the UTC timestamp, and writing `lane,` alone is short for `lane: lane,`. `log` turns the object into one line of JSON with `JSON.stringify` (which writes `null` as JSON `null`) and `appendFileSync` adds it to the end of the file, creating the file on first use:
+
+   ```typescript
+   const log = (d: Decision) => appendFileSync(decisionsPath, JSON.stringify(d) + "\n");
+   const record = (inquiry: Inquiry, lane: string, decision: string, draft: string | null, final: string | null, editDistance: number): Decision =>
+     ({ at: new Date().toISOString(), inquiryId: inquiry.id, category: inquiry.category, lane, decision, reviewer, draft, final, editDistance });
+   ```
+
+   Inside the loop, directly below the outbox `if`/`else` from step 4, log the decision. `final ?? ""` measures against an empty string when `final` is `null`:
+
+   ```typescript
+     log(record(inquiry, lane, decision, draft, final, editDistance(draft, final ?? "")));
+   ```
+
 3. In the step 3 gate, before moving on, append the same shape with `decision: "escalated"`, `draft`/`final` both null, `editDistance` 0.
+
+   Inside the step 3 `if (lane === "human-only") {` block, between the `NO DRAFT` line and `continue;`, at the same 4-space indent:
+
+   ```typescript
+       log(record(inquiry, lane, "escalated", null, null, 0));
+   ```
+
 4. Count decisions by name. After the loop print 72 equals signs, then `Queue done: ` plus the counts (e.g. `1 escalated, 3 approved, 1 edited, 1 rejected`), then `Audit trail: decisions.jsonl   ·   Outbox: outbox/` (both paths relative to the folder you ran from, as in step 4).
 
-A `Decision` type with the lab's exact key names, a two-row Levenshtein, a `record` builder, and a `log` that appends one JSON line. `userInfo().username` is the OS username and `new Date().toISOString()` is the UTC timestamp. `JSON.stringify` writes `null` for `final` when nothing was queued.
+   A `Record<string, number>` object counts each decision name. Declare it above the loop, directly below the `const reviewer` line:
 
-```typescript
-type Decision = { at: string; inquiryId: string; category: string; lane: string; decision: string; reviewer: string; draft: string | null; final: string | null; editDistance: number };
+   ```typescript
+   const counts: Record<string, number> = {};
+   ```
 
-const reviewer = userInfo().username;
-const counts: Record<string, number> = {};
+   `bump` is one more helper, directly below `const record`. `counts[key] ?? 0` is 0 for a name not seen yet:
 
-const log = (d: Decision) => appendFileSync(decisionsPath, JSON.stringify(d) + "\n");
-const record = (inquiry: Inquiry, lane: string, decision: string, draft: string | null, final: string | null, editDistance: number): Decision =>
-  ({ at: new Date().toISOString(), inquiryId: inquiry.id, category: inquiry.category, lane, decision, reviewer, draft, final, editDistance });
-const bump = (key: string) => { counts[key] = (counts[key] ?? 0) + 1; };
+   ```typescript
+   const bump = (key: string) => { counts[key] = (counts[key] ?? 0) + 1; };
+   ```
 
-function editDistance(a: string, b: string): number {
-  let previous = Array.from({ length: b.length + 1 }, (_, j) => j);
-  for (let i = 1; i <= a.length; i++) {
-    const current = [i];
-    for (let j = 1; j <= b.length; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      current[j] = Math.min(current[j - 1] + 1, previous[j] + 1, previous[j - 1] + cost);
-    }
-    previous = current;
-  }
-  return previous[b.length];
-}
-```
+   Call it right below each `log(...)` call. In the gate, above `continue;`:
 
-Two call sites. Inside the step 3 gate, before `continue`:
+   ```typescript
+       bump("escalated");
+   ```
 
-```typescript
-    log(record(inquiry, lane, "escalated", null, null, 0));
-    bump("escalated");
-```
+   At the bottom of the loop, below the other `log(...)`:
 
-After the outbox write at the bottom of the loop:
+   ```typescript
+     bump(decision);
+   ```
 
-```typescript
-  log(record(inquiry, lane, decision, draft, final, editDistance(draft, final ?? "")));
-  bump(decision);
-```
+   Replace the starter's closing `All replies sent` line (below `rl?.close();`) with the summary. `Object.entries(counts)` gives each `[name, count]` pair, `.map` turns each pair into text like `3 approved`, and `.join(", ")` puts `, ` between them:
 
-Replace the starter's closing `All replies sent` line with the summary (after `rl.close()`):
+   ```typescript
+   console.log("=".repeat(72));
+   console.log("Queue done: " + Object.entries(counts).map(([k, v]) => `${v} ${k}`).join(", "));
+   console.log(`Audit trail: ${rel(decisionsPath)}   ·   Outbox: ${rel(outboxDir)}/`);
+   ```
 
-```typescript
-console.log("=".repeat(72));
-console.log("Queue done: " + Object.entries(counts).map(([k, v]) => `${v} ${k}`).join(", "));
-console.log(`Audit trail: ${rel(decisionsPath)}   ·   Outbox: ${rel(outboxDir)}/`);
+```bash
+npm run starter
 ```
 
 **Check:** one full run adds six lines to `decisions.jsonl`. One is `inq-0013` with `"decision":"escalated"` and `"draft":null`. Approved lines have `"editDistance":0`. A rejected line's `editDistance` equals its draft's length. (`decisions.jsonl` and `outbox/` are run artifacts. Delete them between runs for a clean take.)
@@ -349,11 +543,88 @@ Pick any. Each one is already built in `complete/`, with the measured reason for
   npm run starter -- ../data/inquiries-miscategorized.jsonl
   ```
 
-  **Check:** on the copy, `inq-0013` prints `ESCALATE:` and then the reply anyway, 3 runs out of 3 in the record, and the reply invents an active search. Under the same prompt the model also escalated `inq-0002` and `inq-0005`, which are routine mail. Tightening the prompt trades one failure for the other. Put the original prompt back.
-- **Add the ESCALATE backstop.** After the model call and before the review prompt, test whether the draft starts with `ESCALATE` (case-insensitive). If it does, print `  Model asked to escalate. Draft discarded, routing to a human.`, log a line with `decision: "escalated"`, draft kept, `final` null, `editDistance` 0, then move on. **Why:** this catches an emergency that arrived under the wrong category. It runs after the model has already answered, so it's a backup, never the main control. **Check:** run against `data/inquiries-miscategorized.jsonl`, the copy from the previous stretch goal with `inq-0013` labeled `general` (make it now if you skipped that goal). Most runs offer Diane's warm reply for approval, because the model doesn't escalate. On a run where it does, the backstop line prints and the reviewer never sees the draft. That gap is why step 3 exists.
-- **Add the flags `complete/` supports.** `--policy` prints the routing table and exits without reading the queue. `--auto-approve-dry-run` sets the reviewer to `auto-approve-dry-run`, approves every draft without asking, and prints `--auto-approve-dry-run: approving every draft unread. Testing only, never a shipping mode.` under the table. `--outbox <dir>` and `--decisions <file>` move the run artifacts. Any other argument is the path to a queue file. **Check:** `--policy` prints six rows and nothing else. `--auto-approve-dry-run` writes six lines to `decisions.jsonl`, five `approved` and one `escalated`, and five files to `outbox/`.
+  **Check:** on the copy, `inq-0013` usually prints `ESCALATE:` and then the reply anyway (3 runs out of 3 in the record), and the reply invents an active search; some runs skip the `ESCALATE:` line and just invent the search. Under the same prompt the model also escalates a routine message or two, such as `inq-0002`, `inq-0003`, or `inq-0005`; which ones changes from run to run. Tightening the prompt trades one failure for the other. Put the original prompt back.
 
-  `complete/index.ts` shows the argument loop over `process.argv.slice(2)`. Pass the flags after `--`, as in `npm run complete -- --policy`.
+  The system message is the `SYSTEM_PROMPT` string at the top of index.ts. A backtick string keeps every line between the opening and closing backticks, so replace only the text inside them, and keep the two lines of the new prompt on two lines. The prompt text has no backticks in it, so it can be pasted as is. Keep the original somewhere (a copy of the file is fine) so you can put it back:
+
+  ```typescript
+  // Hint:
+  const SYSTEM_PROMPT = `FIRST, before anything else, ... Write nothing after that line.
+  Otherwise, you are drafting a reply ... Never invent dates, fees, policies, or phone numbers.`;
+  ```
+
+  `npm run starter -- <file>` passes the file to the program, and the path is relative to `typescript/`, where npm runs. The starter still reads that first argument as the queue file.
+
+- **Add the ESCALATE backstop.** After the model call and before the review prompt, test whether the draft starts with `ESCALATE` (case-insensitive). If it does, print `  Model asked to escalate. Draft discarded, routing to a human.`, log a line with `decision: "escalated"`, draft kept, `final` null, `editDistance` 0, then move on. **Why:** this catches an emergency that arrived under the wrong category. It runs after the model has already answered, so it's a backup, never the main control. **Check:** run against `data/inquiries-miscategorized.jsonl`, the copy from the previous stretch goal with `inq-0013` labeled `general` (make it now if you skipped that goal). Most runs offer Diane's warm reply for approval, because the model doesn't escalate. On a run where it does, the backstop line prints and the reviewer never sees the draft. That gap is why step 3 exists.
+
+  The test goes directly below the draft display from step 4 (below the `console.log(indent(draft));` and `console.log();` lines) and above `const key = ...`. It looks like the step 3 gate, with the draft passed to `record` instead of `null`. `draft.toUpperCase()` makes the test case-insensitive:
+
+  ```typescript
+    if (draft.toUpperCase().startsWith("ESCALATE")) {
+      console.log("  Model asked to escalate. Draft discarded, routing to a human.\n");
+      log(record(inquiry, lane, "escalated", draft, null, 0));
+      bump("escalated");
+      continue;
+    }
+  ```
+
+  To run against the copy, from `typescript/` (the starter still reads its first argument as the queue file):
+
+  ```bash
+  npm run starter -- ../data/inquiries-miscategorized.jsonl
+  ```
+
+- **Add the flags `complete/` supports.** `--policy` prints the routing table and exits without reading the queue. `--auto-approve-dry-run` sets the reviewer to `auto-approve-dry-run`, approves every draft without asking, and prints `--auto-approve-dry-run: approving every draft unread. Testing only, never a shipping mode.` under the table. `--outbox <dir>` and `--decisions <file>` move the run artifacts. Any other argument is the path to a queue file. **Check:** `--policy` prints six rows and nothing else. `--auto-approve-dry-run` writes six lines to `decisions.jsonl`, five `approved` and one `escalated` (or four and two, if you added the backstop and `llama3.2` wrote a spurious `ESCALATE` on a routine message), and one file in `outbox/` for each approved draft.
+
+  `complete/index.ts` shows the argument loop over `process.argv.slice(2)`. First change the starter's `inquiriesPath` line so it no longer reads `process.argv[2]`, and make it `let` so the loop can change it:
+
+  ```typescript
+  let inquiriesPath = resolve(DATA, "inquiries.jsonl");
+  ```
+
+  The loop has to come after the four names it sets exist and before `const dataDir` and `mkdirSync(...)`, which use them. Check that `inquiriesPath`, `HERE`, `outboxDir`, `decisionsPath`, and `autoApprove` sit together above `const dataDir` (move `let autoApprove = false;` up there), then put the loop directly below them. `process.argv.slice(2)` is the list of arguments after `npm run starter --`, `args[++i]` moves on to the value after the flag and reads it, and `process.exit(0)` ends the program:
+
+  ```typescript
+  const args = process.argv.slice(2);
+  for (let i = 0; i < args.length; i++) {
+    switch (args[i]) {
+      case "--auto-approve-dry-run": autoApprove = true; break;
+      case "--outbox": outboxDir = resolve(args[++i]); break;
+      case "--decisions": decisionsPath = resolve(args[++i]); break;
+      case "--policy": printPolicy(); process.exit(0);
+      default: inquiriesPath = resolve(args[i]); break;
+    }
+  }
+  ```
+
+  For `--auto-approve-dry-run`, print the warning directly below the `printPolicy();` call above the queue loop:
+
+  ```typescript
+  if (autoApprove) console.log("--auto-approve-dry-run: approving every draft unread. Testing only, never a shipping mode.\n");
+  ```
+
+  Then wrap step 4's prompt and `switch` in an `if`/`else`, so the reviewer is only asked when the flag is off. Everything that was there moves one level (2 spaces) to the right under `else {`, and the `let decision` and `let final` lines move up above the new `if`:
+
+  ```typescript
+    let decision: string;
+    let final: string | null = null;
+    if (autoApprove) {
+      decision = "approved";
+      final = draft;
+      console.log("  [auto] approved\n");
+    } else {
+      const key = (await rl!.question("  [a]pprove  [e]dit  [r]eject  [s]kip > ")).trim().toLowerCase();
+      console.log();
+      switch (key) {
+        case "a": decision = "approved"; final = draft; break;
+        case "e": decision = "edited"; final = await readEdited(draft); break;
+        case "r": decision = "rejected"; break;
+        default: decision = "skipped"; break;
+      }
+    }
+  ```
+
+  Run it with `npm run starter -- --policy` or `npm run starter -- --auto-approve-dry-run`.
 
 - **Use edit distance as the promotion signal.** Approve, edit, and reject a few drafts, then read `editDistance` in `decisions.jsonl` and argue for a threshold that would move a category from `draft-for-approval` to `auto-send`. **Check:** you name numbers. The reference gate in `expected-output.md` is 90 days of review, at least 200 reviewed messages, a median edit distance under 5 percent of draft length, and zero decisions tagged as factual corrections. Edit distance can't tell a comma from a lawsuit, so that last gate needs a field the review UI asks for.
 
