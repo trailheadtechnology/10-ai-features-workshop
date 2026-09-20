@@ -267,7 +267,7 @@ uv run main.py an easy hike to a great view
 
 **Why:** these come from `data/queries.json`, which holds all three test queries with `id`, `query`, `why` (what that query proves), and `success_check`. Look at the scores themselves, not just the order. When the whole top 5 is low and close together, nothing in the catalog is a strong match, and the order is mostly noise.
 
-**Check:** query 2 puts Taft Point (`trail-0020`) first at `0.4876` (correct, and still a cliff edge), with short family-friendly trails filling the rest of the top 5, all between 0.43 and 0.49; query 3 puts `trail-0058` Panorama Cliffs Bypass at or near the top (`0.6481`), top score `0.77` on query 1. `trail-0074` Easy Creek Trail in query 3's top 5 means you are matching words, not meaning.
+**Check:** query 2 puts Taft Point (`trail-0020`) first at `0.4876` (correct, and still a cliff edge), with short family-friendly trails filling the rest of the top 5, all between 0.43 and 0.49; query 3 puts `trail-0058` Panorama Cliffs Bypass in the top 3 (`0.6481`, first when I ran it), top score `0.77` on query 1. `trail-0074` Easy Creek Trail in query 3's top 5 means you are matching words, not meaning.
 
 ### Stretch goals
 

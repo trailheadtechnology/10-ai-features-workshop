@@ -134,7 +134,7 @@ The rest of the lab exists because of that last draft.
 
 ### Step 1: Fill in policy-worksheet.md
 
-**Do:** open `policy-worksheet.md`. It has one row per feature 07 category (`permit`, `conditions`, `complaint`, `lost-and-found`, `general`, `emergency`; `unsure` has no row), five columns: Category, Lane, Worst plausible error, Reversible?, Justification.
+**Do:** open `policy-worksheet.md`. It has one row per feature 07 category (`permit`, `trail-condition`, `complaint`, `lost-and-found`, `general`, `emergency`; `unsure` has no row), five columns: Category, Lane, Worst plausible error, Reversible?, Justification.
 
 1. For each row, pick a lane: `auto-send`, `draft-for-approval`, or `human-only`.
 2. Write the worst plausible wrong reply for that category.

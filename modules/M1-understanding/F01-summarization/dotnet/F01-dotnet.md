@@ -135,7 +135,7 @@ Step 2 only changes the instruction string. Reading the file, stripping the fron
    var response = await client.GetResponseAsync(prompt);
    ```
 
-2. Run it on `data/tr-0001.md` four or five times, not once. The check below has to hold on every run.
+2. Run it on `data/tr-0001.md` four or five times, not once. When I ran it 20 times, every run gave me three bullets, but only about half held to everything in the check below: 4 runs invented a closure outright, 3 more filed the bear as a hazard, and 4 dropped the mud patches. The grounding lines cut that a lot, and they do not eliminate it. If every run invents a closure, those lines did not make it into your prompt.
 
    From `starter/`, with no path so the default `tr-0001.md` is used:
 
@@ -143,7 +143,7 @@ Step 2 only changes the instruction string. Reading the file, stripping the fron
    dotnet run
    ```
 
-**Why:** keep the line breaks where they are; the prompt behaves differently once you reflow it. The `Report only what the trip report states.` sentence and the one after it are there because a prompt that demands a hazards bullet will invent a hazard when the report has none, promoting a bear sighting or the word "avalanche" in the trail name into a closure. Those two lines give the model a legal way to say nothing instead. Without them, `tr-0001.md` came back with an invented hazard or closure in 11 of 24 runs; with them, 1 of 24, and the full measurement is in [`expected-output.md`](../expected-output.md).
+**Why:** keep the line breaks where they are; the prompt behaves differently once you reflow it. The `Report only what the trip report states.` sentence and the one after it are there because a prompt that demands a hazards bullet will invent a hazard when the report has none, promoting a bear sighting or the word "avalanche" in the trail name into a closure. Those two lines give the model a legal way to say nothing instead. Without them, `tr-0001.md` came back with an invented hazard or closure in 11 of 24 runs; with them, 1 of 24, and the full measurement is in [`expected-output.md`](../expected-output.md). A later 20-run measurement on a newer `llama3.2` pull came in higher, 4 of 20 inventing a closure outright, so treat the lines as a large reduction rather than a fix.
 
 **Check:** three bullets. A one-line lead-in such as "Here are three bullets" is normal for `llama3.2`; anything more than that is not. The gear debrief is gone. Mud patches and the 10am crowds are in. The hazards bullet says "no closures or hazards reported". The only bear in `tr-0001.md` is a ranger's remark about a road near Lake McDonald; keeping it as a plain sighting is fine, closing the trail over it is the failure the grounding lines exist to stop.
 

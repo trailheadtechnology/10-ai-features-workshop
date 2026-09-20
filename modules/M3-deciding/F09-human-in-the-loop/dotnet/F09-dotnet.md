@@ -142,7 +142,7 @@ The rest of the lab exists because of that last draft.
 
 ### Step 1: Fill in policy-worksheet.md
 
-**Do:** open `policy-worksheet.md`. It has one row per feature 07 category (`permit`, `conditions`, `complaint`, `lost-and-found`, `general`, `emergency`; `unsure` has no row), five columns: Category, Lane, Worst plausible error, Reversible?, Justification.
+**Do:** open `policy-worksheet.md`. It has one row per feature 07 category (`permit`, `trail-condition`, `complaint`, `lost-and-found`, `general`, `emergency`; `unsure` has no row), five columns: Category, Lane, Worst plausible error, Reversible?, Justification.
 
 1. For each row, pick a lane: `auto-send`, `draft-for-approval`, or `human-only`.
 2. Write the worst plausible wrong reply for that category.
@@ -522,10 +522,9 @@ The file is `starter/outbox/inq-0051.txt`.
 
 ```bash
 dotnet run
-dotnet run -- --auto-approve-dry-run   # non-interactive, for a quick check
 ```
 
-The second command works once you add the `--auto-approve-dry-run` stretch goal below, or run it from `complete/`.
+For a non-interactive pass, `complete/` has `--auto-approve-dry-run`. Your own program gets that flag only if you take the stretch goal below, so it is not something to run yet.
 
 **Check:** `inq-0013` prints `NO DRAFT. Policy routes this straight to a human. Paging dispatch.` with no model call; every other draft offers `[a]pprove [e]dit [r]eject [s]kip`, logs to `decisions.jsonl`, and queues approved text in `outbox/`. Your lanes may differ from `expected-output.md`. Your justifications are what count.
 

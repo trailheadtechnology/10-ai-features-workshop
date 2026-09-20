@@ -272,7 +272,7 @@ uv run main.py trail-0003
 uv run main.py trail-0008
 ```
 
-**Check:** for `trail-0003`, Grotto Falls (`trail-0027`) is #1 at `0.7858`, and at least two of {`trail-0068`, `trail-0131`, `trail-0039`, `trail-0070`, `trail-0150`} appear. For `trail-0008`, any five scores in the 0.71-0.75 band pass. The failure on `trail-0008` is not noticing the band is low.
+**Check:** these numbers are from the shipped vectors; embedding live gives you scores a few thousandths off and can reorder near-ties. For `trail-0003`, Grotto Falls (`trail-0027`) is #1 at `0.7858`, and at least two of {`trail-0068`, `trail-0131`, `trail-0039`, `trail-0070`, `trail-0150`} appear. For `trail-0008`, any five scores in the 0.71-0.75 band pass. The failure on `trail-0008` is not noticing the band is low.
 
 ### Step 6: Read the three lists and decide whether to ship
 

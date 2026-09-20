@@ -410,7 +410,7 @@ The last three lines of each run are the answer, a blank line, and the `[citatio
 
 **Why:** the answer to this question varies run to run, so one run tells you what the program did once, not how often it does it. Looping twenty times turns "it worked when I tried it" into a rate you can quote, which is what the Check below asks you to count.
 
-**Check:** every run says no and cites a real id. Count how many open with "Yes" before getting to the ban; the measured rate for `llama3.2` is about 40 percent, and it is not a retrieval bug. The failure to watch for: `campfires are permitted at Sperry Chalet area (site code SPE) when the posted fire danger rating is below Very High`.
+**Check:** the answer lands on no, and the citation is a real id. Count how many open with "Yes" before getting to the ban; when I measured it on `llama3.2` the rate was about 40 percent, and it is not a retrieval bug. Expect a run here and there to cite nothing usable, too (your numbers will move around; the model is non-deterministic). What fails is a run that never reaches the ban at all. The failure to watch for: `campfires are permitted at Sperry Chalet area (site code SPE) when the posted fire danger rating is below Very High`.
 
 ### Stretch goals
 
