@@ -261,7 +261,7 @@ uv run main.py
 
 **Why:** "more like this" is feature 04's search with the query vector replaced by the target trail's own vector. Difficulty is not in the description text, so the embedding cannot see it.
 
-**Check:** `trail-0086` Gunsight Lake Approach is #1 at `0.7849`, and at least three of your top 5 are in {`trail-0086`, `trail-0168`, `trail-0100`, `trail-0091`, `trail-0080`, `trail-0186`, `trail-0196`, `trail-0141`}. Ranks 6-8 sit within 0.01 of rank 5, so a slightly different order is not a bug. If the target appears in its own list at `1.0000`, step 2 of this list is missing.
+**Check:** `trail-0086` Gunsight Lake Approach is #1 at `0.7849`, and at least three of your top 5 are in this set. Your program prints names, so both are here: `trail-0086` Gunsight Lake Approach, `trail-0168` Black Lake via Glacier Gorge, `trail-0100` Piegan Pass Trail, `trail-0091` Otokomi Lake Trail, `trail-0080` Chasm Lake Trail, `trail-0186` Snyder Lake Trail, `trail-0196` Fern Lake Trail, `trail-0141` Akaiyan Falls via Sperry Junction. Ranks 6-8 sit within 0.01 of rank 5, so a slightly different order is not a bug. If the target appears in its own list at `1.0000`, step 2 of this list is missing.
 
 ### Step 5: Rank the neighbors of trail-0003 and trail-0008
 
@@ -272,7 +272,7 @@ uv run main.py trail-0003
 uv run main.py trail-0008
 ```
 
-**Check:** these numbers are from the shipped vectors; embedding live gives you scores a few thousandths off and can reorder near-ties. For `trail-0003`, Grotto Falls (`trail-0027`) is #1 at `0.7858`, and at least two of {`trail-0068`, `trail-0131`, `trail-0039`, `trail-0070`, `trail-0150`} appear. For `trail-0008`, any five scores in the 0.71-0.75 band pass. The failure on `trail-0008` is not noticing the band is low.
+**Check:** these numbers are from the shipped vectors; embedding live gives you scores a few thousandths off and can reorder near-ties. For `trail-0003`, Grotto Falls (`trail-0027`) is #1 at `0.7858`, and at least two of these appear: `trail-0068` Carlon Falls Trail, `trail-0131` Gatlinburg Gateway Greenway, `trail-0039` Ship Harbor Nature Trail, `trail-0070` Oconaluftee River Trail, `trail-0150` Lily Lake Loop. For `trail-0008`, any five scores in the 0.71-0.75 band pass. The failure on `trail-0008` is not noticing the band is low.
 
 ### Step 6: Read the three lists and decide whether to ship
 

@@ -149,6 +149,7 @@ Your lanes may differ. The reasoning is what counts.
 | trail-condition | draft-for-approval | The inq-0002 result settles this. The model reversed an open and closed status on the easiest question in the queue, and a wrong "yes it is open" sends a family toward a washed-out bridge. |
 | complaint | draft-for-approval | Low physical risk, high institutional risk. An auto-sent apology that commits to a refund is a commitment, and an angry visitor with a screenshot is a public story. |
 | lost-and-found | draft-for-approval, closest to promotion | Cheap and reversible. "We have not found a green water bottle" is wrong in a way you can fix with a second email. This is the first lane that earns auto-send, and only after the log shows a long stretch of near-zero edits. |
+| general | draft-for-approval | `inq-0051` is the draft that makes the business case, and the one that makes people want to auto-send this category. Resist it. A wrong policy detail carried by a correct-looking document number and section is the hardest kind of wrong for a visitor to catch, and they may act on it before any correction reaches them. Lost-and-found earns promotion before this does. |
 | emergency | human-only, enforced in code | Irreversible, life-safety, and demonstrated: the model drafted a reassuring reply to an overdue-hiker report three times out of three when told not to. No draft is generated. No prompt is trusted with this. |
 
 ## Stretch Goal

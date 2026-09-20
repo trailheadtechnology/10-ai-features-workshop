@@ -67,7 +67,7 @@ print(f"{inquiry['id']}: {response.choices[0].message.content}")
 ### Step 1: Load the 20 inquiries and the reference labels
 
 **Do:**
-1. Open `../../data/inquiries-slice.jsonl`. Every line is one JSON object with `id`, `channel`, `received`, `text`. Read it line by line, skip blanks, parse each line, keep the results in a list. The starter already resolves that `data/` folder into a constant; reuse it for both files.
+1. Open `../../data/inquiries-slice.jsonl`. Every line is one JSON object with `id`, `channel`, `received`, `text`. Read it line by line, skip blanks, parse each line, keep the results in a list. Your track's block below says how to point at that `data/` folder; use the same way for both files.
 
    The starter resolves the data folder as `DATA` (a `Path`), and `DATA / "inquiries-slice.jsonl"` is the file inside it. This one line reads the file, splits it into lines, skips blank ones (`if l.strip()`), and parses each with `json.loads`, giving a list of dictionaries. Put it right below the `DATA = ...` line. Leave the starter's `wanted`/`inquiry` lines in place for now; step 3 removes them.
 
@@ -214,7 +214,7 @@ uv run main.py inq-0035
 
 **Why:** `inq-0035` now lands in `unsure`, while step 0's free-text version called it `conditions`. The enum made `unsure` a real choice for the model.
 
-**Check:** the parsed result's `category` is `conditions` for `inq-0005`, `emergency` for `inq-0041`, and `unsure` for `inq-0035`. Serialize the result back to JSON to see the wire form, `{"category": "conditions"}`. The value is always one of the seven strings.
+**Check:** the parsed result's `category` is `conditions` for `inq-0005`, `emergency` for `inq-0041`, and `unsure` for `inq-0035`. Serialize the result back to JSON to see the wire form. How the key is spelled and spaced differs by track, and your track's block above says which you get; the value is the part to check, and it is always one of the seven strings.
 
 ### Step 3: Classify all 20 in a loop
 

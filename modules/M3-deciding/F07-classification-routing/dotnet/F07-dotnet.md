@@ -65,7 +65,7 @@ Console.WriteLine($"{inquiry.id}: {response.Text}");
 ### Step 1: Load the 20 inquiries and the reference labels
 
 **Do:**
-1. Open `../../data/inquiries-slice.jsonl`. Every line is one JSON object with `id`, `channel`, `received`, `text`. Read it line by line, skip blanks, parse each line, keep the results in a list. The starter already resolves that `data/` folder into a constant; reuse it for both files.
+1. Open `../../data/inquiries-slice.jsonl`. Every line is one JSON object with `id`, `channel`, `received`, `text`. Read it line by line, skip blanks, parse each line, keep the results in a list. Your track's block below says how to point at that `data/` folder; use the same way for both files.
 2. Open `../../data/reference-labels.json` and parse it: an object with `routing` (category to queue name), `labels` (id to correct category), and `notes` (why `inq-0013`/`inq-0041` are emergencies and why `inq-0035` is `unsure`). Keep the `routing` and `labels` dictionaries.
 
 Load `../../data/inquiries-slice.jsonl` line by line into a list of `Inquiry` records (the starter already declares `Inquiry`) and deserialize `../../data/reference-labels.json` into a record with `Routing` and `Labels` dictionaries. `[JsonPropertyName]` maps the lowercase JSON keys; it needs `using System.Text.Json.Serialization;`, which the starter does not have. Add that `using` line under `using System.Text.Json;` at the top.
@@ -216,7 +216,7 @@ dotnet run -- inq-0035
 
 **Why:** `inq-0035` now lands in `unsure`, while step 0's free-text version called it `conditions`. The enum made `unsure` a real choice for the model.
 
-**Check:** the parsed result's `category` is `conditions` for `inq-0005`, `emergency` for `inq-0041`, and `unsure` for `inq-0035`. Serialize the result back to JSON to see the wire form, `{"category": "conditions"}`. The value is always one of the seven strings.
+**Check:** the parsed result's `category` is `conditions` for `inq-0005`, `emergency` for `inq-0041`, and `unsure` for `inq-0035`. Serialize the result back to JSON to see the wire form. How the key is spelled and spaced differs by track, and your track's block above says which you get; the value is the part to check, and it is always one of the seven strings.
 
 ### Step 3: Classify all 20 in a loop
 

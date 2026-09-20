@@ -66,7 +66,7 @@ console.log(`${inquiry.id}: ${response.choices[0].message.content}`);
 ### Step 1: Load the 20 inquiries and the reference labels
 
 **Do:**
-1. Open `../../data/inquiries-slice.jsonl`. Every line is one JSON object with `id`, `channel`, `received`, `text`. Read it line by line, skip blanks, parse each line, keep the results in a list. The starter already resolves that `data/` folder into a constant; reuse it for both files.
+1. Open `../../data/inquiries-slice.jsonl`. Every line is one JSON object with `id`, `channel`, `received`, `text`. Read it line by line, skip blanks, parse each line, keep the results in a list. Your track's block below says how to point at that `data/` folder; use the same way for both files.
 
    The starter resolves the data folder as `DATA`, and `resolve(DATA, "inquiries-slice.jsonl")` is the file inside it. This one line reads the whole file as text, `.split("\n")` cuts it into lines, `.filter((l) => l.trim())` drops blank lines, and `.map((l) => JSON.parse(l))` turns each line into an object, giving an array of `Inquiry`. Put it right below the starter's `const inquiry: Inquiry = ...` lookup (the two lines ending in `.find(...)`). Leave the starter's `wanted`/`inquiry` lines in place for now; step 3 removes them.
 
@@ -208,7 +208,7 @@ npm run starter -- inq-0035
 
 **Why:** `inq-0035` now lands in `unsure`, while step 0's free-text version called it `conditions`. The enum made `unsure` a real choice for the model.
 
-**Check:** the parsed result's `category` is `conditions` for `inq-0005`, `emergency` for `inq-0041`, and `unsure` for `inq-0035`. Serialize the result back to JSON to see the wire form, `{"category": "conditions"}`. The value is always one of the seven strings.
+**Check:** the parsed result's `category` is `conditions` for `inq-0005`, `emergency` for `inq-0041`, and `unsure` for `inq-0035`. Serialize the result back to JSON to see the wire form. How the key is spelled and spaced differs by track, and your track's block above says which you get; the value is the part to check, and it is always one of the seven strings.
 
 ### Step 3: Classify all 20 in a loop
 

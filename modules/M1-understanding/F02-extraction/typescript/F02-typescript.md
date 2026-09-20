@@ -164,7 +164,7 @@ console.log(response.choices[0].message.content);
 
 6. Print a heading with the file name, then, under a `-- what the model gave us --` line, the eight fields labelled `trail:`, `park:`, `date:`, `distance: N mi`, `elev gain: N ft`, `wildlife: [...]`, `conditions: [...]`, `hazards: [...]`, as in the complete-demo block of `expected-output.md`. Print `null` for a null.
 
-   `complete/`'s `show()` has the eight labelled lines; `${value ?? "null"}` prints `null` for a null and `basename(reportPath)` gives the `== tr-0007.md ==` heading.
+   A `show()` function gives you the eight labelled lines; `${value ?? "null"}` prints `null` for a null and `basename(reportPath)` gives the `== tr-0007.md ==` heading.
 
    First, add `basename` to the `node:path` import at the top of `index.ts`, so the line reads:
 
@@ -230,7 +230,7 @@ npm run starter
 
 ### Step 3: Tighten the two number descriptions
 
-**Do:** change the `distance_mi` and `elevation_gain_ft` descriptions to add `, never 0,` before their `null` clause:
+**Do:** the `distance_mi` and `elevation_gain_ft` descriptions need `, never 0,` before their `null` clause. Step 1's code already carries those two words, so unless you left them out to watch step 2 invent numbers, this step is a read rather than an edit:
 
 ```text
 Round-trip distance in miles, as stated in the report. null, never 0, if the report gives no distance. Never estimate.

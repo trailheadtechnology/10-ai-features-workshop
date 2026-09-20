@@ -206,7 +206,7 @@ dotnet run
 2. Build a list of strings, one per report in list order: `"classification: "` followed by the report's `text`.
 3. Embed all 40 strings in **one call** with model `nomic-embed-text`. Ollama listens on `http://localhost:11434`.
 
-   The starter project references no packages, so add the two `complete/` uses first, from the `starter/` directory:
+   The starter project references no packages, so add the two the embedding client needs, from the `starter/` directory:
 
    ```bash
    dotnet add package Microsoft.Extensions.AI

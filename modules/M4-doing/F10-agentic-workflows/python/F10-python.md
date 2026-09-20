@@ -365,7 +365,7 @@ The finished order in `main.py`, top to bottom: imports, `create_chat_client`, `
 uv run main.py
 ```
 
-**Check:** one `[tool]` line prints for each of the two tools, then the itinerary. The plan should name trails that came back from `search_trails`, such as Trail of the Cedars, Iceberg Lake Trail, or Bowman Lake Shoreline Trail. An itinerary with no `[tool]` lines means the model never saw your tools; an itinerary naming trails you cannot find in `data/trails.json` means the tool result never reached the model.
+**Check:** one `[tool]` line prints for each of the two tools, then the itinerary. That count belongs to this step only: step 3 adds a third tool and step 4 a fourth, so once you move on you will see more `[tool]` lines and cannot re-run this check from the finished program. The plan should name trails that came back from `search_trails`, such as Trail of the Cedars, Iceberg Lake Trail, or Bowman Lake Shoreline Trail. An itinerary with no `[tool]` lines means the model never saw your tools; an itinerary naming trails you cannot find in `data/trails.json` means the tool result never reached the model.
 
 ### Step 3: Add get_weather and plan around the rain day
 
