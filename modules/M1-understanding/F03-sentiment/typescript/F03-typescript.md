@@ -334,7 +334,7 @@ for (const set of sets) {
 console.log();
 ```
 
-**Check:** `gr-0034` comes back `negative` from both models. On `gr-0013`, `phi3` says `mixed`, big model says `negative` (the reference label). Recorded: `phi3` 9/10 easy, 7/10 hard; `gpt-4.1` 10/10 both; `llama3.2` stand-in 9/10 and 8/10.
+**Check:** `gr-0034` comes back `negative` from both models. On `gr-0013`, `phi3` says `mixed`, big model says `negative` (the reference label). Your numbers will not be mine. When I ran it: `phi3` 9/10 easy and 7/10 hard, `gpt-4.1` 10/10 on both, `llama3.2` stand-in 9/10 and 8/10. What has to hold is the shape, the big model ahead of `phi3` on the hard set, not the digits.
 
 ### Step 5: Print the disagreement list
 

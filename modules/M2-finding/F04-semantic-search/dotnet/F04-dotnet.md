@@ -173,7 +173,7 @@ Console.WriteLine($"{trails.Count} trails, first is {trails[0].Id}");
 
 **Why:** `embeddings.json` is a cache your program creates, not a shipped data file. It is gitignored so the first run always embeds live. It is keyed only by `id`, so delete it whenever a description or the model changes, or every later query ranks against vectors for text that no longer exists.
 
-**Check:** 30 keys, each holding 768 floats. The first run takes a few seconds while the model embeds; the second run is instant and prints that it loaded 30 cached vectors. Fewer than 30 vectors, or one not 768 long, means the batch did not go through.
+**Check:** 30 keys, each holding 768 floats. The first run is the slower one, since the model is embedding; the second is instant and prints that it loaded 30 cached vectors. Fewer than 30 vectors, or one not 768 long, means the batch did not go through.
 
 `vectors.Count` is 30 and `vectors["trail-0003"].Length` is 768. Print one vector and look at it: it is just numbers. The cache lands next to the binary (`bin/Debug/net10.0/embeddings.json`), not in the project folder; delete it there if the text or the model changes. A temporary check, placed after the `else { ... }` block:
 

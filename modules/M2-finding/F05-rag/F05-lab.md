@@ -26,7 +26,7 @@ Every track has a `complete/` next to its `starter/`, which is the answer key.
 
 - `data/park-docs/`: the corpus, 25 fictional park documents across six parks, described at step 0.
 - `data/chunks.jsonl`: those documents cut into 250 chunks, one per line, each with `chunk_id`, `source`, and `text`. The chunking rule is spelled out at step 1.
-- `data/chunk-embeddings.json`: the 250 `nomic-embed-text` vectors from step 2, keyed by `chunk_id`, in case you want to skip the 40 seconds.
+- `data/chunk-embeddings.json`: the 250 `nomic-embed-text` vectors from step 2, keyed by `chunk_id`, in case you want to skip the embedding wait.
 - `data/questions.json`: the four test questions, with an `answerable` flag and where each answer lives.
 - `data/build-chunks.py`: the script that made `chunks.jsonl`. Not needed for the lab. Run it with a different word ceiling or floor (`python3 build-chunks.py out.jsonl 400 0`, for example) to change the chunking and see what breaks; the outcomes are already measured.
 - `expected-output.md`: real retrieval scores and real answers for all four questions, plus the measurements behind every choice above: chunk size, the keyword blend, citation checking, and why the date is in the prompt.

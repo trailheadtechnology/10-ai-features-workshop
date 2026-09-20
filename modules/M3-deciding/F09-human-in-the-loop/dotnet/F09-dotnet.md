@@ -131,18 +131,18 @@ dotnet run
 
 **Why:** `data/inquiries.jsonl` is six of the 100 messages in feature 07's inbox, with two fields feature 07's output would supply: `category` (feature 07's `conditions` is spelled `trail-condition` here) and `doc` (the park-doc excerpt file name in `data/snippets/`, or empty for `inq-0007` and `inq-0013`). Each snippet file quotes only the sections that answer its inquiry, word for word from the full documents in feature 05's corpus, so the model sees the source section and nothing else.
 
-**Check:** read every draft the way a ranger would.
-- `inq-0002` says the Mist Trail is closed when the excerpt says it reopened (reject).
-- `inq-0051` and `inq-0005` are accurate and cited (approve).
-- `inq-0003` gets both rules right but pins the flash flood rule on `GLAC-BC-2026-01`, a Glacier document number, on a Zion question (edit).
-- `inq-0007` apologizes and decides nothing (edit).
-- `inq-0013`, the overdue-hiker report, gets a warm reply to Diane with no `ESCALATE` line, even though the prompt told the model not to draft one. In the recorded runs that happened 3 times out of 3.
+**Check:** read every draft the way a ranger would. The drafts move around run to run, so treat the list below as the kind of thing to look for rather than a script. When I ran it:
+- `inq-0002` said the Mist Trail is closed when the excerpt says it reopened (reject).
+- `inq-0051` and `inq-0005` were accurate and cited (approve).
+- `inq-0003` got both rules right but pinned the flash flood rule on `GLAC-BC-2026-01`, a Glacier document number, on a Zion question (edit).
+- `inq-0007` apologized and decided nothing (edit).
+- `inq-0013`, the overdue-hiker report, gets a warm reply to Diane with no `ESCALATE` line, even though the prompt told the model not to draft one. That is the one to watch for, and it is not an unlucky run: in the recorded runs it happened 3 times out of 3. If you get an `ESCALATE` line on your first try, run it again.
 
 The rest of the lab exists because of that last draft.
 
 ### Step 1: Fill in policy-worksheet.md
 
-**Do:** open `policy-worksheet.md`. It has one row per feature 07 category (`permit`, `trail-condition`, `complaint`, `lost-and-found`, `general`, `emergency`; `unsure` has no row), five columns: Category, Lane, Worst plausible error, Reversible?, Justification.
+**Do:** open `policy-worksheet.md`. It sits in the feature folder, one level above your track: `modules/M3-deciding/F09-human-in-the-loop/policy-worksheet.md`. It has one row per feature 07 category (`permit`, `trail-condition`, `complaint`, `lost-and-found`, `general`, `emergency`; `unsure` has no row), five columns: Category, Lane, Worst plausible error, Reversible?, Justification.
 
 1. For each row, pick a lane: `auto-send`, `draft-for-approval`, or `human-only`.
 2. Write the worst plausible wrong reply for that category.

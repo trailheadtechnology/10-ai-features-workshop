@@ -65,7 +65,7 @@ Console.WriteLine($"{inquiry.id}: {response.Text}");
 ### Step 1: Load the 20 inquiries and the reference labels
 
 **Do:**
-1. Open `../../data/inquiries-slice.jsonl`. Every line is one JSON object with `id`, `channel`, `received`, `text`. Read it line by line, skip blanks, parse each line, keep the results in a list. Your track's block below says how to point at that `data/` folder; use the same way for both files.
+1. Open `../../data/inquiries-slice.jsonl`. Every line is one JSON object with `id`, `channel`, `received`, `text`. Read it line by line, parse each line, keep the results in a list, and skip any blank line so a trailing newline cannot become an empty record. Your track's block below says how to point at that `data/` folder and how it handles the blank-line case; use the same way for both files.
 2. Open `../../data/reference-labels.json` and parse it: an object with `routing` (category to queue name), `labels` (id to correct category), and `notes` (why `inq-0013`/`inq-0041` are emergencies and why `inq-0035` is `unsure`). Keep the `routing` and `labels` dictionaries.
 
 Load `../../data/inquiries-slice.jsonl` line by line into a list of `Inquiry` records (the starter already declares `Inquiry`) and deserialize `../../data/reference-labels.json` into a record with `Routing` and `Labels` dictionaries. `[JsonPropertyName]` maps the lowercase JSON keys; it needs `using System.Text.Json.Serialization;`, which the starter does not have. Add that `using` line under `using System.Text.Json;` at the top.

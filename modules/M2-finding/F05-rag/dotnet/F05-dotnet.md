@@ -56,7 +56,7 @@ dotnet run                        # about 5 seconds end to end
 dotnet run -- --model qwen3:32b   # about 20
 ```
 
-The first run of `complete/` embeds all 250 chunks (roughly 40 seconds) and caches the vectors to `complete/embeddings.json`. Delete that file if you change `chunks.jsonl`. The flags shown for later steps are the ones `complete/` supports; in the starter, add the same argument parsing or hard-code the value.
+The first run of `complete/` embeds all 250 chunks, which is the slow part, and caches the vectors to `complete/embeddings.json`. Delete that file if you change `chunks.jsonl`. The flags shown for later steps are the ones `complete/` supports; in the starter, add the same argument parsing or hard-code the value.
 
 To accept a flag in the starter, replace its three `var question = ...` lines with this loop from `complete/Program.cs`. Anything that is not a flag becomes part of the question. Add one `case` line per flag you need:
 
@@ -182,9 +182,9 @@ For the shortcut in the Why below, change only the path; the `if (File.Exists(ca
 var cachePath = "../../data/chunk-embeddings.json";
 ```
 
-**Why:** re-embedding 250 chunks every run wastes ~40 seconds. `embeddings.json` is your program's own cache. Shortcut if you want to reach the RAG part faster: load `../../data/chunk-embeddings.json` instead. It is the same dictionary, already computed and shipped with the workshop.
+**Why:** re-embedding 250 chunks on every run wastes the slowest part of the program. `embeddings.json` is your program's own cache. Shortcut if you want to reach the RAG part faster: load `../../data/chunk-embeddings.json` instead. It is the same dictionary, already computed and shipped with the workshop.
 
-**Check:** 250 keys, each holding 768 numbers. The first run takes about 40 seconds; the second run is instant.
+**Check:** 250 keys, each holding 768 numbers. The first run is the slow one and the second is instant, which is the whole point of the cache. How slow depends on your machine (mine has taken anywhere from a few seconds to about 40).
 
 ### Step 3: Embed the question and rank the chunks
 
@@ -305,7 +305,7 @@ Console.WriteLine($"\n[citations: {cited.Count} valid ({string.Join(", ", cited)
 
 `.Distinct()` on both lists matters: `llama3.2` sometimes cites the same id twice, and the Check below expects `1 valid`, not `2 valid`.
 
-**Why:** the model sometimes writes an id that looks real but was never in the context, most often stapled to its own refusal; on the EV charging question it cited `glacier-bear-safety-advisory:02` in 8 of 20 runs, when the chunk you sent was `:03`. Nothing in the answer text tells you that, and only this check does.
+**Why:** the model sometimes writes an id that looks real but was never in the context, most often stapled to its own refusal; on the EV charging question it sometimes cites `glacier-bear-safety-advisory:02` when the chunk you sent was `:03` (I have seen that in as many as 8 runs out of 20, and as few as 1). Nothing in the answer text tells you that, and only this check does.
 
 **Check:** on question 1 the summary says 1 valid, 0 invalid. Run the EV charging question from step 6 a few times and you'll see the model attach an invented id to its own refusal; a made-up id reaching the output unflagged is the failure.
 
@@ -345,7 +345,7 @@ var question = args.Length > 0
 
 **Why:** these come from `data/questions.json`, four objects each with `id`, `question`, an `answerable` flag, and `answer_lives_in` (the document/section the answer sits in, or `nowhere` for question 4).
 
-**Check:** question 2 says eight and cites `[glacier-backcountry-permit-regulations:04]`. Question 3 says closed effective June 20, 2026, citing `glacier-seasonal-closures-2026:04.1` or `glacier-visitor-faq:02`. Question 4 replies `The provided documents don't say.` and claims no charger. If question 3 refuses, the date line from step 4 is missing or moved. `No, fuel is not available anywhere within the Park` on question 4 is a miss. The model answered the question next door.
+**Check:** question 2 says eight and cites `[glacier-backcountry-permit-regulations:04]`. Question 3 says closed effective June 20, 2026, citing `glacier-seasonal-closures-2026:04.1` or `glacier-visitor-faq:02`. Question 4 should refuse, usually with the exact sentence `The provided documents don't say.` The refusal is the point; wording that drifts from it still passes as long as the model does not invent a charger. If question 3 refuses, the date line from step 4 is missing or moved. `No, fuel is not available anywhere within the Park` on question 4 is a miss. The model answered the question next door.
 
 ### Step 7: Run question 1 twenty times
 
@@ -615,7 +615,7 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
 
 - `data/park-docs/`: the corpus, 25 fictional park documents across six parks, described at step 0.
 - `data/chunks.jsonl`: those documents cut into 250 chunks, one per line, each with `chunk_id`, `source`, and `text`. The chunking rule is spelled out at step 1.
-- `data/chunk-embeddings.json`: the 250 `nomic-embed-text` vectors from step 2, keyed by `chunk_id`, in case you want to skip the 40 seconds.
+- `data/chunk-embeddings.json`: the 250 `nomic-embed-text` vectors from step 2, keyed by `chunk_id`, in case you want to skip the embedding wait.
 - `data/questions.json`: the four test questions, with an `answerable` flag and where each answer lives.
 - `data/build-chunks.py`: the script that made `chunks.jsonl`. Not needed for the lab. Run it with a different word ceiling or floor (`python3 build-chunks.py out.jsonl 400 0`, for example) to change the chunking and see what breaks; the outcomes are already measured.
 - `expected-output.md`: real retrieval scores and real answers for all four questions, plus the measurements behind every choice above: chunk size, the keyword blend, citation checking, and why the date is in the prompt.

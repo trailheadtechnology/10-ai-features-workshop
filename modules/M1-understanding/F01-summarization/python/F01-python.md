@@ -148,7 +148,7 @@ Step 2 only changes the instruction string. Reading the file, stripping the fron
 
 **Why:** keep the line breaks where they are; the prompt behaves differently once you reflow it. The `Report only what the trip report states.` sentence and the one after it are there because a prompt that demands a hazards bullet will invent a hazard when the report has none, promoting a bear sighting or the word "avalanche" in the trail name into a closure. Those two lines give the model a legal way to say nothing instead. Without them, `tr-0001.md` came back with an invented hazard or closure in 11 of 24 runs; with them, 1 of 24, and the full measurement is in [`expected-output.md`](../expected-output.md). A later 20-run measurement on a newer `llama3.2` pull came in higher, 4 of 20 inventing a closure outright, so treat the lines as a large reduction rather than a fix.
 
-**Check:** three bullets. A one-line lead-in such as "Here are three bullets" is normal for `llama3.2`; anything more than that is not. The gear debrief is gone. Mud patches and the 10am crowds are in. The hazards bullet says "no closures or hazards reported". The only bear in `tr-0001.md` is a ranger's remark about a road near Lake McDonald; keeping it as a plain sighting is fine, closing the trail over it is the failure the grounding lines exist to stop.
+**Check:** three bullets, usually with a short lead-in such as "Here are three bullets" (a line or two of preamble is normal for `llama3.2`; a paragraph of it means the prompt is being treated as a suggestion). The gear debrief is gone. Most runs get the mud patches and the 10am crowds into the conditions and crowding bullets, and most say "no closures or hazards reported" for hazards (when I ran it 20 times, 9 landed all of that; 4 dropped the mud). The only bear in `tr-0001.md` is a ranger's remark about a road near Lake McDonald; keeping it as a plain sighting is fine, closing the trail over it is the failure the grounding lines exist to stop.
 
 ### Step 3: Run the same prompt on the buried-hazard report
 
@@ -200,7 +200,7 @@ Pick any. `complete/` already has each one built in, behind the flag named below
 
   Run `uv run main.py ../../data/tr-0004.md` once with `"hiker"` and once with `"ranger"`.
 
-  **Check:** the ranger version leads with the washed-out bridge as a maintenance or closure item and drops the crowding; the hiker version keeps the crowding. Identical output means the audience line is not reaching the prompt.
+  **Check:** the ranger version leads with the washed-out bridge as a maintenance or closure item and usually drops the crowding; the hiker version keeps it. What matters is that the two differ. Identical output means the audience line is not reaching the prompt.
 
 - **Shrink the summary to a headline.** Same file, same call, different instruction. Replace the whole step 2 prompt with the three lines below and run `data/tr-0004.md`. `complete/` does this with `--headline`.
 

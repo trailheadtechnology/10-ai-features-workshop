@@ -63,7 +63,7 @@ dotnet run
        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower })!;
    ```
 
-   Each JSON object becomes one `Trail`. The `record` that declares it is the last line of the file, below all the top-level code (C# requires type declarations to come after top-level statements):
+   Each JSON object becomes one `Trail`. C# requires type declarations to come after top-level statements, so the `record` goes at the very bottom of `Program.cs`, below every other line you add in this lab. If you paste it anywhere above your code, the file will not compile:
 
    ```csharp
    record Trail(string Id, string Name, string Park, double DistanceMi, int ElevationFt,

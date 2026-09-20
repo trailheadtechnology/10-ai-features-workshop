@@ -66,7 +66,7 @@ console.log(`${inquiry.id}: ${response.choices[0].message.content}`);
 ### Step 1: Load the 20 inquiries and the reference labels
 
 **Do:**
-1. Open `../../data/inquiries-slice.jsonl`. Every line is one JSON object with `id`, `channel`, `received`, `text`. Read it line by line, skip blanks, parse each line, keep the results in a list. Your track's block below says how to point at that `data/` folder; use the same way for both files.
+1. Open `../../data/inquiries-slice.jsonl`. Every line is one JSON object with `id`, `channel`, `received`, `text`. Read it line by line, parse each line, keep the results in a list, and skip any blank line so a trailing newline cannot become an empty record. Your track's block below says how to point at that `data/` folder and how it handles the blank-line case; use the same way for both files.
 
    The starter resolves the data folder as `DATA`, and `resolve(DATA, "inquiries-slice.jsonl")` is the file inside it. This one line reads the whole file as text, `.split("\n")` cuts it into lines, `.filter((l) => l.trim())` drops blank lines, and `.map((l) => JSON.parse(l))` turns each line into an object, giving an array of `Inquiry`. Put it right below the starter's `const inquiry: Inquiry = ...` lookup (the two lines ending in `.find(...)`). Leave the starter's `wanted`/`inquiry` lines in place for now; step 3 removes them.
 

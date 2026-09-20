@@ -55,7 +55,7 @@ Console.WriteLine(response.Text);
 
 **Why:** `tr-0007.md` is a note-taker's report that states every fact the schema will later ask for outright (trail name, park, date, distance, elevation, wildlife), so any gap you see here is the model's fault, not the source's.
 
-**Check:** the reply opens with a line of prose, wraps the JSON in a markdown fence, and uses a nested shape the model made up on the spot, as in the starter block of [`expected-output.md`](../expected-output.md). Run it twice and the field names change. Nothing in it is wrong about the report; it just isn't a contract, so no database insert can consume it.
+**Check:** the reply opens with a line of prose, wraps the JSON in a markdown fence, and uses a nested shape the model made up on the spot, as in the starter block of [`expected-output.md`](../expected-output.md). Run it a few times and the shape moves around, usually the field names (when I ran it, `trip_date` became `log_date` and the nesting changed). Nothing in it is wrong about the report; it just isn't a contract, so no database insert can consume it.
 
 ### Step 1: Send the schema with the request and extract from `tr-0007.md`
 
@@ -197,7 +197,7 @@ dotnet run
 
 **Why:** the field descriptions do the prompting here, not the sentence above the report. Saying "null if the report does not state" on every field is what stops the model from filling a blank with a plausible guess on a report like `tr-0011.md`, which never names the trail and gives no date or mileage. It does not get you all the way there: `llama3.2` still returns `0` for `elevation_gain_ft` on some runs, and `0` is a value a pipeline will store without complaint.
 
-**Check:** matches request 1 in [`expected-output.md`](../expected-output.md): `Sperry Chalet Trail`, `Glacier National Park`, `2026-07-04`, `12.8` (not the 6.4 one-way figure), `3400`. The wildlife list catches most of the menagerie; array phrasing wandering between runs is fine. A preamble, a fence, or field names that change between runs means the schema is not reaching the request.
+**Check:** the fields line up with request 1 in [`expected-output.md`](../expected-output.md): `Sperry Chalet Trail`, `Glacier National Park`, `2026-07-04`, `12.8` (not the 6.4 one-way figure), `3400`. Expect the odd run to miss one, most often `park` coming back null. The wildlife list catches most of the menagerie; array phrasing wandering between runs is fine. A preamble, a fence, or field names that change between runs means the schema is not reaching the request.
 
 ### Step 2: Extract from `tr-0011.md` and write down what it invented
 
