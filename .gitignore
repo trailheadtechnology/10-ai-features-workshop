@@ -17,6 +17,13 @@ decisions.jsonl
 # Instructor-only notes (contain secrets)
 *.local.md
 
+# Speaker-only sources: slide outlines, the deck builder, the lab sources, the runsheet.
+# What attendees need is the generated output, which ships in modules/: each module's
+# .pptx and each feature's FNN-lab.md and FNN-<track>.md. The closing decision framework
+# is attendee-facing, so it stays tracked.
+/docs/*
+!/docs/decision-framework.md
+
 # Python and Node
 __pycache__/
 .venv/

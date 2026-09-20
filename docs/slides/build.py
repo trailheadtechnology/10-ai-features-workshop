@@ -1,6 +1,6 @@
 """Build the themed .pptx decks from the outlines.
 
-    python3 build.py            # writes pptx/*.pptx from outlines/*.md
+    python3 build.py            # writes ../../modules/MN-theme/MN-theme.pptx from outlines/*.md
 
 Each outline is markdown; `## Title` starts a slide (an optional leading
 `N.` is ignored). A `[marker]` before the title picks the slide kind:
@@ -60,7 +60,7 @@ from pptx.util import Inches, Pt
 
 HERE = Path(__file__).parent
 OUTLINES = HERE / "outlines"
-OUT = HERE / "pptx"
+OUT = HERE.parent.parent / "modules"   # each deck ships in its own module folder
 TEMPLATE = HERE / "template.pptx"
 LOGO = HERE / "assets" / "logo.png"
 ICON_DIR = HERE / "assets" / "icons"
@@ -79,15 +79,15 @@ TPL = {"title": 0, "promise": 1, "about": 2, "thanks": 3}
 REPO_OLD, REPO_NEW = "power-of-ten", "10-ai-features-workshop"
 
 DECKS = [
-    # M0-opening.pptx and M1-understanding.pptx are hand-tuned by J; M1 is the
-    # design master the builder imitates. Diff and port any of J's edits into
-    # this script BEFORE re-enabling either line — a rebuild overwrites them.
+    # Every deck is now hand-maintained: J. edits them in PowerPoint and scripted
+    # fixes are applied in place (see slides.md). A rebuild overwrites those
+    # edits, so diff and port them into this script BEFORE re-enabling a line.
     # ("M0-opening.md", "M0-opening.pptx"),
     # ("M1-understanding.md", "M1-understanding.pptx"),
-    ("M2-finding.md", "M2-finding.pptx"),
-    ("M3-deciding.md", "M3-deciding.pptx"),
-    ("M4-doing.md", "M4-doing.pptx"),
-    ("M5-closing.md", "M5-closing.pptx"),
+    # ("M2-finding.md", "M2-finding.pptx"),
+    # ("M3-deciding.md", "M3-deciding.pptx"),
+    # ("M4-doing.md", "M4-doing.pptx"),
+    # ("M5-closing.md", "M5-closing.pptx"),
 ]
 
 
@@ -644,8 +644,9 @@ def build(outline, target):
             delete_slide(prs, slide)
     reorder(prs, ordered)
 
-    OUT.mkdir(exist_ok=True)
-    prs.save(OUT / target)
+    dest = OUT / Path(target).stem / target
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    prs.save(dest)
     return len(prs.slides)
 
 
