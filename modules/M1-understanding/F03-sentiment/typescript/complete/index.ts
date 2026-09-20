@@ -1,4 +1,4 @@
-// Finished demo, matching the demo script in docs/slides/outlines:
+// Finished demo, as shown on stage:
 //   npm run complete             both sets, both models, table + accuracy + disagreements
 //   npm run complete -- --easy   easy set only (demo steps 3 and 4)
 //   npm run complete -- --hard   hard set only (demo step 5)

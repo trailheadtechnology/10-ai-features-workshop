@@ -1,7 +1,7 @@
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Finished demo, matching the demo script in docs/slides/outlines:
+// Finished demo, as shown on stage:
 //   dotnet run                                the naive prompt (the book report)
 //   dotnet run -- --briefing                  3-bullet hiker briefing
 //   dotnet run -- --headline                  one-line trail status for a card UI

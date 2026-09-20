@@ -6,7 +6,7 @@ using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Finished demo, matching the demo script in docs/slides/outlines:
+// Finished demo, as shown on stage:
 //   dotnet run                                    the Sperry Chalet question, grounded
 //   dotnet run -- "Is the Avalanche Lake Trail open right now?"
 //   dotnet run -- --no-context                    step 1: the confident wrong answer

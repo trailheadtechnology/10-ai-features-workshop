@@ -1,4 +1,4 @@
-// Finished demo, matching the demo script in docs/slides/outlines:
+// Finished demo, as shown on stage:
 //   npm run complete -- dog-friendly waterfall hike, not too steep
 //   npm run complete -- somewhere quiet to take my kids
 // Embeds every trail description once, embeds the query, ranks by cosine

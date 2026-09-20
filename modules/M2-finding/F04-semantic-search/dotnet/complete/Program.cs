@@ -3,7 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Finished demo, matching the demo script in docs/slides/outlines:
+// Finished demo, as shown on stage:
 //   dotnet run -- dog-friendly waterfall hike, not too steep
 //   dotnet run -- somewhere quiet to take my kids
 // Embeds every trail description once, embeds the query, ranks by cosine

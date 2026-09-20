@@ -2,7 +2,7 @@ using Microsoft.Extensions.AI;
 using OllamaSharp;
 using System.Text.Json;
 
-// Finished demo, matching the demo script in docs/slides/outlines:
+// Finished demo, as shown on stage:
 //   dotnet run                          "more like this" for Avalanche Lake Trail
 //   dotnet run -- trail-0008            any trail id works
 //   dotnet run -- Trail of the Cedars   so does any name (or part of one)

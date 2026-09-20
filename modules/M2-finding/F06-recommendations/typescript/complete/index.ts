@@ -1,4 +1,4 @@
-// Finished demo, matching the demo script in docs/slides/outlines:
+// Finished demo, as shown on stage:
 //   npm run complete                          "more like this" for Avalanche Lake Trail
 //   npm run complete -- trail-0008            any trail id works
 //   npm run complete -- Trail of the Cedars   so does any name (or part of one)

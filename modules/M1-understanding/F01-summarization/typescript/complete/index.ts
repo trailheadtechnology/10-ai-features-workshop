@@ -1,4 +1,4 @@
-// Finished demo, matching the demo script in docs/slides/outlines:
+// Finished demo, as shown on stage:
 //   npm run complete                                the naive prompt (the book report)
 //   npm run complete -- --briefing                  3-bullet hiker briefing
 //   npm run complete -- --headline                  one-line trail status for a card UI

@@ -1,4 +1,4 @@
-"""Finished demo, matching the demo script in docs/slides/outlines:
+"""Finished demo, as shown on stage:
   uv run main.py                        extract both data/ reports, then validate
   uv run main.py path1.md [path2.md]    extract any report(s) instead
 The schema is the pydantic model at the bottom. Optional fields plus the

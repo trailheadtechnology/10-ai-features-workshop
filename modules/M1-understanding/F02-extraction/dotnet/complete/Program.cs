@@ -3,7 +3,7 @@ using System.Globalization;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Finished demo, matching the demo script in docs/slides/outlines:
+// Finished demo, as shown on stage:
 //   dotnet run                          extract both data/ reports, then validate
 //   dotnet run -- path1.md [path2.md]   extract any report(s) instead
 // The schema is the C# record below. Nullable fields plus the [Description]

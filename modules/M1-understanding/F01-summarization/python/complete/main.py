@@ -1,4 +1,4 @@
-"""Finished demo, matching the demo script in docs/slides/outlines:
+"""Finished demo, as shown on stage:
   uv run main.py                              the naive prompt (the book report)
   uv run main.py --briefing                   3-bullet hiker briefing
   uv run main.py --headline                   one-line trail status for a card UI

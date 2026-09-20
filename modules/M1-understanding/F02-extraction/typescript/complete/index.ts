@@ -1,4 +1,4 @@
-// Finished demo, matching the demo script in docs/slides/outlines:
+// Finished demo, as shown on stage:
 //   npm run complete                          extract both data/ reports, then validate
 //   npm run complete -- path1.md [path2.md]   extract any report(s) instead
 // The schema is the zod object below. Nullable fields plus the .describe()

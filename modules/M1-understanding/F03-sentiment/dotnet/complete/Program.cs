@@ -4,7 +4,7 @@ using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
-// Finished demo, matching the demo script in docs/slides/outlines:
+// Finished demo, as shown on stage:
 //   dotnet run                 both sets, both models, table + accuracy + disagreements
 //   dotnet run -- --easy       easy set only (demo steps 3 and 4)
 //   dotnet run -- --hard       hard set only (demo step 5)

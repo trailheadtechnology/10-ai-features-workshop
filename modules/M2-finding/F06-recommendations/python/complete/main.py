@@ -1,4 +1,4 @@
-"""Finished demo, matching the demo script in docs/slides/outlines:
+"""Finished demo, as shown on stage:
   uv run main.py                        "more like this" for Avalanche Lake Trail
   uv run main.py trail-0008             any trail id works
   uv run main.py Trail of the Cedars    so does any name (or part of one)

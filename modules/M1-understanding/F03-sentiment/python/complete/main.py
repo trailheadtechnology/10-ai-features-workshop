@@ -1,4 +1,4 @@
-"""Finished demo, matching the demo script in docs/slides/outlines:
+"""Finished demo, as shown on stage:
   uv run main.py            both sets, both models, table + accuracy + disagreements
   uv run main.py --easy     easy set only (demo steps 3 and 4)
   uv run main.py --hard     hard set only (demo step 5)

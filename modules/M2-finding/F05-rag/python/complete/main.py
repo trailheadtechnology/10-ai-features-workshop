@@ -1,4 +1,4 @@
-"""Finished demo, matching the demo script in docs/slides/outlines:
+"""Finished demo, as shown on stage:
   uv run main.py                                    the Sperry Chalet question, grounded
   uv run main.py "Is the Avalanche Lake Trail open right now?"
   uv run main.py --no-context                       step 1: the confident wrong answer

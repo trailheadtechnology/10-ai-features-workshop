@@ -1,4 +1,4 @@
-// Finished demo, matching the demo script in docs/slides/outlines:
+// Finished demo, as shown on stage:
 //   npm run complete                                       the Sperry Chalet question, grounded
 //   npm run complete -- "Is the Avalanche Lake Trail open right now?"
 //   npm run complete -- --no-context                       step 1: the confident wrong answer
