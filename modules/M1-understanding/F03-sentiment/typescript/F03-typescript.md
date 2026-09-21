@@ -197,7 +197,7 @@ console.log(`phi3 ${correct}/${total}`);
 
 **Why:** the prompt asks for one word, but a small model sometimes wraps the label in a sentence. Lowercasing the reply and keeping the first of `positive`, `negative`, or `mixed` that appears scores those replies as the label they contain, so the number you get measures the model's judgment and not its phrasing.
 
-**Check:** `gr-0003` comes back `positive`, `gr-0002` `negative`. Recorded `phi3` score 9/10, missing `gr-0074`. A 7/10 with every miss `mixed` means you reflowed the prompt onto one line.
+**Check:** `gr-0003` comes back `positive`, `gr-0002` `negative`. `phi3` should get most of the easy set (when I ran it, 9/10, missing `gr-0074`). A 7/10 with every miss `mixed` is the tell that you reflowed the prompt onto one line.
 
 ### Step 3: Add the big model and classify every review twice
 
@@ -359,7 +359,7 @@ for (const d of disagreements) {
 if (disagreements.length === 0) console.log("(none this run)");
 ```
 
-**Check:** your version of the two tables in `expected-output.md`: recorded 4 of 20 against `gpt-4.1` (`gr-0074`, `gr-0004`, `gr-0013`, `gr-0021`) and 4 of 20 against `llama3.2` (`gr-0074`, `gr-0004`, `gr-0013`, `gr-0089`). Different numbers are fine; no tables is not.
+**Check:** your version of the two tables in `expected-output.md`. A handful of disagreements per model is the normal shape (when I ran it, 4 of 20 against `gpt-4.1`, missing `gr-0074`, `gr-0004`, `gr-0013`, `gr-0021`, and 4 of 20 against `llama3.2`, missing `gr-0074`, `gr-0004`, `gr-0013`, `gr-0089`; the first three show up on both). Your numbers will differ. No tables at all is the failure.
 
 ### Stretch goals
 

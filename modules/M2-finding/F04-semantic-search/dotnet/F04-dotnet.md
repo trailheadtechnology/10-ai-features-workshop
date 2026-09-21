@@ -38,7 +38,7 @@ dotnet run -- an easy hike to a great view
 
 ### Step 0: Run the starter and watch keyword search fail
 
-**Do:** run `starter/` as it is with each of these queries. It lowercases the query, keeps words of three letters or more, and counts how many appear in each trail's name and description.
+**Do:** run `starter/` as it is with the first two queries below. The third one comes back in step 4, once there is something better to compare it against. It lowercases the query, keeps words of three letters or more, and counts how many appear in each trail's name and description.
 
 ```text
 dog-friendly waterfall hike, not too steep

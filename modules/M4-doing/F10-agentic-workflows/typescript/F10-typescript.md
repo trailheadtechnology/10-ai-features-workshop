@@ -200,7 +200,7 @@ npm run starter
 
 **Why:** the planted record is `trail-0117`, Avalanche Lake Trail, whose catalog description mentions the footbridge crossing at the gorge's mouth and says nothing about it being gone. Only the condition reports (step 4) do. Avalanche Lake Trail is the 27th Glacier trail in the catalog and none of its feature tags contain "Avalanche", so without the name match in `search_trails`, a search for it can never reach it. Similarly, `check_campsites`'s planted fact (named in the fixture's own `_comment`) is that Sperry Chalet Area Sites shows 0 open sites on the 13th, 14th, and 15th, so a plan that sleeps there those nights ignored the tool.
 
-**Check:** `search_trails` with `{"park":"Glacier National Park"}` returns 8 trails, from `trail-0003` Trail of the Cedars to `trail-0037` Bowman Lake Shoreline Trail. `check_campsites` with the same park returns 4 campgrounds, and Sperry Chalet Area Sites shows 0 open sites on September 14 and 15.
+**Check:** `search_trails` with `{"park":"Glacier National Park"}` returns 8 trails, from `trail-0003` Trail of the Cedars to `trail-0037` Bowman Lake Shoreline Trail. `check_campsites` with the same park returns 4 campgrounds, and Sperry Chalet Area Sites shows 0 open sites on September 14 and 15. The `[result]` line only prints the first 120 characters, so the campsite dates are past the cut: print the function's return value directly, or raise that 120 while you check, then put it back. The preview exists so the trace stays readable once the loop is running.
 
 ### Step 2: Write the loop and run the two-tool round-trip
 
@@ -459,7 +459,7 @@ npm run starter -- "Plan me a 3-day trip in Glacier National Park for September 
 ### Step 4: Add get_trail_conditions and ask for the washed-out bridge on trail-0117
 
 **Do:**
-1. Write `get_trail_conditions(trail_id)`. If `trail_id` is missing/blank, return `{"error": "trailId is required. Call search_trails first and use one of its ids."}` instead of throwing.
+1. Write `get_trail_conditions(trail_id)`. If `trail_id` is missing or blank, return an error object telling the model how to retry instead of throwing. Your track's block below has the exact text; use that one, since it hands the model the ids it can choose from.
 
    This version already has the forgiving stretch goal in place: a blank or `"null"` id gets an error listing the ids `searchTrails` last returned, and a trail name resolves to its id. That is why its error text says `Call this tool again with one of these ids: ...` instead of the sentence above; return the code's version, which gives the model the ids to retry with. Put the function below `getWeather`, above `TOOLS`. It opens with the `[tool]` line and the missing-id check, then the name lookup: `.find(...)` gives the first trail whose name contains the text, or `undefined`. `let id` holds the id to look up, which the lookup may change:
 

@@ -8,7 +8,7 @@
 *A Challenge lab. Do it if you finished [Module 3](../../M3-overview.md)'s Recommended lab and want another, or skip it without guilt: you will have seen this feature demonstrated either way.*
 
 - **Goal:** find the condition reports for one trail that do not look like the rest, using distance from a centroid. Then raise one alert when several of them land close together in time.
-- **Input:** `data/reports-0117.jsonl`, 40 reports for trail-0117 with the planted washout cluster; `data/embeddings-0117.json`, their `nomic-embed-text` vectors, unnormalized, `classification: ` prefixed; `data/reports-0042.jsonl`, trail-0042, for a stretch goal.
+- **Input:** `data/reports-0117.jsonl`, 40 reports for trail-0117 with the planted washout cluster; `data/embeddings-0117.json`, their `nomic-embed-text` vectors, `classification: ` prefixed; `data/reports-0042.jsonl`, trail-0042, for a stretch goal.
 - **How:** embed the reports through your track's embeddings client against local Ollama. The centroid, distances, threshold, and alert rule are plain arithmetic you write yourself.
 - **Model:** `nomic-embed-text`, local. Every track's `starter/` runs offline on the precomputed vectors. Only step 5 onward needs Ollama.
 
@@ -121,9 +121,9 @@ npm run starter
    console.log(Object.keys(vectors).length, first.length, Math.sqrt(first.reduce((s, v) => s + v * v, 0)));
    ```
 
-**Why:** the vectors were captured once from local Ollama with `nomic-embed-text`, from `"classification: " + text`, stored raw and unnormalized.
+**Why:** the vectors were captured once from local Ollama with `nomic-embed-text`, from `"classification: " + text`. `nomic-embed-text` already returns unit-length vectors, so normalizing these is a no-op and the check below passes either way. Write the function anyway: step 5 replaces this file with vectors you embed yourself, cosine distance is only 1 minus the dot product when both sides are unit length, and an embedding model that does not normalize for you is the common case.
 
-**Check:** 40 keys, each holding 768 numbers, and every stored vector now has length 1.0.
+**Check:** 40 keys, each holding 768 numbers, and every stored vector has length 1.0. It did before you normalized them too; the point is that your `normalize` works, so test it on something that is not unit length, such as `[3, 4]`, which should come back `[0.6, 0.8]`.
 
 ### Step 3: Build the centroid
 
@@ -452,7 +452,7 @@ Pick any. Each one is already built in `complete/`, and [`expected-output.md`](.
 
 - `data/reports-0117.jsonl`: the 40 trail-0117 reports, a slice of feature 10's full stream. Eight describe the footbridge washout (details in step 1).
 - `data/reports-0042.jsonl`: the 25 trail-0042 reports from the same stream, with the bear cluster, for the last stretch goal.
-- `data/embeddings-0117.json`: real `nomic-embed-text` vectors for the 40 trail-0117 reports, 768 dimensions each, keyed by `id`, unnormalized (details in step 2). The starter uses these so steps 1 through 4 run without a model.
+- `data/embeddings-0117.json`: real `nomic-embed-text` vectors for the 40 trail-0117 reports, 768 dimensions each, keyed by `id`, already unit length as `nomic-embed-text` returns them (details in step 2). The starter uses these so steps 1 through 4 run without a model.
 - `expected-output.md`: a real run's full distance ranking, the threshold, the alert output, and an honest account of how well this works on this data.
 - `dotnet/`, `python/`, `typescript/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key
 
