@@ -1,6 +1,6 @@
 # Module 0: Opening
 
-**Setup and framing.** About 30 minutes.
+**Setup and framing.** About 45 minutes.
 
 | | Feature | What it does |
 |---|---|---|
@@ -24,7 +24,7 @@ Each module leaves you able to do one thing, and each module's debrief comes bac
 
 ## How the Day Is Shaped
 
-Four working modules after this one, each 90 minutes: **Understanding**, **Finding**, **Deciding**, and **Doing**. Each one opens with 30 minutes in which I introduce the theme and demo all three features, and then gives you 60 minutes to build. The capstone module is 60 minutes: 10 of demo and 50 of building.
+Three working modules after this one, each 75 minutes: **Understanding**, **Finding**, and **Deciding**. Each one opens with about 20 minutes in which I introduce the theme and demo all three features, and then gives you the rest to build. The capstone module, **Doing**, is 60 minutes: 10 of demo and the rest building.
 
 Every module marks one feature as **Recommended** and the other two as **Challenge**. Start with the Recommended lab unless you have a reason not to. What you do after that is yours: another feature, a stretch goal, or helping the person next to you. Doing one lab properly is a good outcome, and it is the intended one for most people. Ten labs in a day is not the goal, and nobody is behind.
 

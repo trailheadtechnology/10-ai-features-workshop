@@ -1,6 +1,6 @@
 # Module 1: Understanding
 
-**Making sense of messy content.** About 90 minutes.
+**Making sense of messy content.** About 75 minutes.
 
 The three features in this module all take unstructured text and give you back something a person or a program can use, and they share a shape: one model call and one carefully written instruction, with no vector database and no training anywhere in sight. If you only remember one thing from the module, remember that the wording of the instruction does more work than the choice of model.
 
@@ -12,7 +12,7 @@ The three features in this module all take unstructured text and give you back s
 
 ## How the Hands-On Works
 
-The first 30 minutes are mine: the theme, and a demo of all three features. The remaining 60 are yours to build. **Start with the Recommended lab.** After that, take a Challenge lab if you have time, or take the Recommended lab's stretch goal if you would rather go deeper than wide; finishing one lab well beats skimming three.
+The first 20 minutes or so are mine: the theme, and a demo of all three features. The rest is yours to build. **Start with the Recommended lab.** After that, take a Challenge lab if you have time, or take the Recommended lab's stretch goal if you would rather go deeper than wide; finishing one lab well beats skimming three.
 
 Start with 01 regardless of your experience. It is the shortest path from nothing to a working AI feature, and everything else today assumes you have made one model call and seen what comes back.
 

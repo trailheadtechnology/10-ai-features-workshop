@@ -1,6 +1,6 @@
 # Module 3: Deciding
 
-**Triage and judgment.** About 90 minutes.
+**Triage and judgment.** About 75 minutes.
 
 The first two modules produced answers for a user. This one produces decisions for the people running the product: which queue does this go in, which of these 500 reports deserves attention, and what is the software allowed to send without a human reading it first.
 
@@ -14,7 +14,7 @@ The user of these three features is usually a colleague, a ranger or an ops lead
 
 ## How the Hands-On Works
 
-The first 30 minutes are mine: the theme, and a demo of all three features. The remaining 60 are yours to build. 07 is the Recommended start, and after that you pick.
+The first 20 minutes or so are mine: the theme, and a demo of all three features. The rest is yours to build. 07 is the Recommended start, and after that you pick.
 
 **Choose by energy as much as by interest.** It is mid-afternoon and you have been coding since morning. Feature 08 is the most code of the three, and feature 09 is the least, since it is mostly a policy worksheet and a decision about what your software may do unsupervised. If you are running out of gas, take 09; it is also the feature most likely to matter when you get back to work, because it is the pattern that makes the other nine shippable.
 
