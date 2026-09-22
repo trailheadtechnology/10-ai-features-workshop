@@ -26,6 +26,7 @@ Content-Type: application/json
 
 ### 3. Cloud chat (powers sentiment comparison, RAG generation, and the capstone)
 # The endpoint and deployment name are already filled in; replace <KEY FROM INSTRUCTOR> with the key handed out in the room.
+# No quotes around the key: a quoted key returns 401.
 POST https://trailhead-ai-workshop.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-10-21
 Content-Type: application/json
 api-key: <KEY FROM INSTRUCTOR>

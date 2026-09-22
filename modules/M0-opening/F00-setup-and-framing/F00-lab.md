@@ -67,7 +67,7 @@ curl http://localhost:11434/api/embed -d '{
 This request proves you can reach the Azure OpenAI deployment using the key from the room. Sentiment comparison, RAG generation, and the capstone use this model.
 
 1. Get the key from the whiteboard or the card on your table.
-2. In `http/smoke-test.http`, find request 3. Replace `<KEY FROM INSTRUCTOR>` in its `api-key` header with the key. Leave the endpoint and the deployment name `gpt-4.1` alone. They are already correct.
+2. In `http/smoke-test.http`, find request 3. Replace `<KEY FROM INSTRUCTOR>` in its `api-key` header with the key, with no quotes around it: `api-key: 1a2b3c…`, not `api-key: "1a2b3c…"`. Leave the endpoint and the deployment name `gpt-4.1` alone. They are already correct.
 3. Send request 3. It is a `POST` to `https://trailhead-ai-workshop.openai.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-10-21` with one user message.
 4. The curl version is the same request. Paste the key over `<KEY FROM INSTRUCTOR>` here too:
 
@@ -82,13 +82,13 @@ curl "https://trailhead-ai-workshop.openai.azure.com/openai/deployments/gpt-4.1/
 
 **Check:** JSON with a `choices` array whose first `message.content` contains `TRAILHEAD CLOUD OK`. The `model` field says `gpt-4.1-2025-04-14`. The `usage` object shows a handful of tokens each way.
 
-**If it fails:** a `401` means the key was typed wrong. The keys are long, so type it again and send again. A DNS error means the URL still has a placeholder in it. A timeout usually means you are on the venue guest network. Switch to the workshop network printed on your card.
+**If it fails:** a `401` means the key is wrong. Most often it has quote marks around it; in the `.http` file the header takes the bare key. Otherwise it was mistyped: the keys are long, so type it again and send again. A DNS error means the URL still has a placeholder in it. A timeout usually means you are on the venue guest network. Switch to the workshop network printed on your card.
 
 ### Step 5: Raise a hand if anything is still red
 
 1. Count your passes. You need three.
 2. If all three passed, your machine is ready for all ten features. Do a stretch goal or help the person next to you.
-3. If any request still fails after you tried its fix, flag a helper now, during the opening. We have backups ready for exactly this moment: USB copies of the models and a shared endpoint. Module 1 starts on time either way, so do not wait until then to say something.
+3. If any request still fails after you tried its fix, put your hand up now, during the opening. If the models are what's missing, start the three `ollama pull` commands from `SETUP.md` right away and pair with a neighbor while they download. Module 1 starts on time either way, so do not wait until then to say something.
 
 **Check:** three JSON responses and no red text in your editor or terminal.
 
@@ -106,7 +106,7 @@ Pick any. None of them is needed to pass this lab.
   key = "<KEY FROM INSTRUCTOR>"
   ```
 
-  In the labs that use the cloud (03, 05, and the capstone), paste the key from the room between those quotes, replacing `<KEY FROM INSTRUCTOR>`. There is nothing to set in your terminal and nothing to set again when you open a new one. **Check:** the line holds the long key from the whiteboard, and the quotes are still there.
+  In the labs that use the cloud (03, 05, and the capstone), paste the key from the room between those quotes, replacing `<KEY FROM INSTRUCTOR>`. This is the opposite of the `.http` file: code needs the quotes, the header must not have them. There is nothing to set in your terminal and nothing to set again when you open a new one. **Check:** the line holds the long key from the whiteboard, and the quotes are still there.
 
 ## Pick a Track
 
