@@ -3,8 +3,8 @@
 //   npm run complete -- --easy   easy set only (demo steps 3 and 4)
 //   npm run complete -- --hard   hard set only (demo step 5)
 //
-// The big model is Azure OpenAI when AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_KEY,
-// and AZURE_OPENAI_DEPLOYMENT are set. When they aren't, llama3.2 on Ollama
+// The big model is Azure OpenAI gpt-4.1 when AZURE_OPENAI_KEY is set.
+// When it isn\'t, llama3.2 on Ollama
 // stands in so the whole comparison runs offline. Either way, the swap is the
 // few lines building `big` below; nothing downstream changes.
 
@@ -23,14 +23,16 @@ const ollama = new OpenAI({ baseURL: "http://localhost:11434/v1", apiKey: "ollam
 const small: Target = { client: ollama, model: "phi3" };
 
 // Model 2: the big model, or its local stand-in.
-const { AZURE_OPENAI_ENDPOINT: endpoint, AZURE_OPENAI_KEY: key, AZURE_OPENAI_DEPLOYMENT: deployment } = process.env;
+const endpoint = "https://trailhead-ai-workshop.openai.azure.com";
+const key = "<KEY FROM INSTRUCTOR>";  // paste the room key between the quotes
+const deployment = "gpt-4.1";
 let big: Target;
 let bigName: string;
-if (endpoint && key && deployment) {
+if (!key.startsWith("<")) {
   big = { client: new AzureOpenAI({ endpoint, apiKey: key, apiVersion: "2024-10-21", deployment }), model: deployment };
   bigName = `azure:${deployment}`;
 } else {
-  console.log("AZURE_OPENAI_* not set; using llama3.2 on Ollama as the big-model stand-in.\n");
+  console.log("no room key pasted in; using llama3.2 on Ollama as the big-model stand-in.\n");
   big = { client: ollama, model: "llama3.2" };
   bigName = "llama3.2";
 }

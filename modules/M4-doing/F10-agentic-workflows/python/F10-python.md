@@ -10,7 +10,7 @@
 - **Goal:** run one tool-calling round-trip by hand, then extend a working agent with a new tool.
 - **Input:** `data/tool-definitions.json`, the five tools (`search_trails`, `get_weather`, `get_trail_conditions`, `check_campsites`, `request_permit`); `data/trails.json`, the trail catalog; `data/condition-reports.jsonl`, the hiker reports; `data/mock-apis/weather.json`, `campsites.json`, `permits.json`, canned results; `reference-transcript.md`, a complete run to compare against.
 - **How:** chat completions with a `tools` array, against Azure OpenAI.
-- **Model:** `gpt-5.5` on Azure. Every track reads `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` (`gpt-5.5`), else falls back to `llama3.2`, much weaker here.
+- **Model:** `gpt-5.5` on Azure. The endpoint and `gpt-5.5` are hardcoded; paste the room key over `<KEY FROM INSTRUCTOR>` in the code, else it falls back to `llama3.2`, much weaker here.
 
 ## The Concept
 
@@ -22,7 +22,7 @@ Every step below is one thing to make the program do. The `starter/` is a plain 
 
 ## Running
 
-Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` (endpoint `https://trailhead-ai-workshop.openai.azure.com`, the deployment name the feature uses, and the key handed out in the room) and the program uses Azure OpenAI. Leave them unset and it prints a note and falls back to Ollama `llama3.2`, which is how the transcript in [`reference-transcript.md`](../reference-transcript.md) was captured.
+The endpoint (`https://trailhead-ai-workshop.openai.azure.com`) and the deployment (`gpt-5.5`) are written into the code. Paste the key handed out in the room over `<KEY FROM INSTRUCTOR>` and the program uses Azure OpenAI. Leave the placeholder and it prints a note and falls back to Ollama `llama3.2`, which is how the transcript in [`reference-transcript.md`](../reference-transcript.md) was captured.
 
 Two scripts, both using the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), or at Azure through the SDK's `AzureOpenAI` client when the variables are set:
 
@@ -37,27 +37,20 @@ uv run main.py Plan me a trip on Avalanche Lake Trail in September
 uv run main.py --yes <request>                       # auto-approve the permit gate
 ```
 
-Without the Azure variables it runs on `llama3.2`, which is much weaker at sequencing five tools; the `[nudge]` lines are the app compensating, and [`dotnet/F10-dotnet.md`](../dotnet/F10-dotnet.md) has the measured failure counts before judging a local run.
+Without a pasted key it runs on `llama3.2`, which is much weaker at sequencing five tools; the `[nudge]` lines are the app compensating, and [`dotnet/F10-dotnet.md`](../dotnet/F10-dotnet.md) has the measured failure counts before judging a local run.
 
-Set the three variables in the same terminal you run from (macOS or Linux shown; the values come from the room):
+Paste the key from the room over `<KEY FROM INSTRUCTOR>` in the code, between the quotes:
 
-```bash
-# Hint: fill in the key and deployment, then run uv run main.py in this same terminal
-export AZURE_OPENAI_ENDPOINT=https://trailhead-ai-workshop.openai.azure.com
-export AZURE_OPENAI_KEY=<key handed out in the room>
-export AZURE_OPENAI_DEPLOYMENT=gpt-5.5
-```
-
-The starter already reads them. `os.environ.get` returns the variable's value, or `None` when it is not set, and the `if` picks Azure only when all three are there:
+The starter already has the line. Until you paste, the placeholder starts with `<`, and the `if` picks Azure only once a real key is there:
 
 ```python
 def create_chat_client() -> tuple[OpenAI, str]:
-    endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-    key = os.environ.get("AZURE_OPENAI_KEY")
-    deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
-    if endpoint and key and deployment:
+    endpoint = "https://trailhead-ai-workshop.openai.azure.com"
+    key = "<KEY FROM INSTRUCTOR>"  # paste the room key between the quotes
+    deployment = "gpt-5.5"
+    if not key.startswith("<"):
         return AzureOpenAI(azure_endpoint=endpoint, api_key=key, api_version="2024-10-21"), deployment
-    print("[note] AZURE_OPENAI_* not set; falling back to Ollama llama3.2.")
+    print("[note] no room key pasted in; falling back to Ollama llama3.2.")
     return OpenAI(base_url="http://localhost:11434/v1", api_key="ollama"), "llama3.2"
 ```
 

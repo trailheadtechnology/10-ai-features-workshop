@@ -15,8 +15,8 @@
 // that were actually retrieved.
 //
 // Retrieval always runs locally (nomic-embed-text). Generation uses Azure OpenAI
-// when AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_KEY / AZURE_OPENAI_DEPLOYMENT are set,
-// and falls back to the local model chosen just below when they are not.
+// (gpt-4.1) when AZURE_OPENAI_KEY is set, and falls back to the local model
+// chosen just below when it is not.
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -74,17 +74,19 @@ const ollama = new OpenAI({ baseURL: "http://localhost:11434/v1", apiKey: "ollam
 
 // Generation: Azure OpenAI if configured, local llama3.2 otherwise. This is the
 // one-line client swap from step 9 of the demo; everything downstream is identical.
-const { AZURE_OPENAI_ENDPOINT: endpoint, AZURE_OPENAI_KEY: key, AZURE_OPENAI_DEPLOYMENT: deployment } = process.env;
+const endpoint = "https://trailhead-ai-workshop.openai.azure.com";
+const key = "<KEY FROM INSTRUCTOR>";  // paste the room key between the quotes
+const deployment = "gpt-4.1";
 let chatClient: OpenAI;
 let chatModel: string;
-if (endpoint && key && deployment) {
+if (!key.startsWith("<")) {
   chatClient = new AzureOpenAI({ endpoint, apiKey: key, apiVersion: "2024-10-21", deployment });
   chatModel = deployment;
   console.log(`[generation: Azure OpenAI, deployment '${deployment}']`);
 } else {
   chatClient = ollama;
   chatModel = localModel;
-  console.log(`[generation: AZURE_OPENAI_* not set, falling back to local ${localModel}]`);
+  console.log(`[generation: no room key pasted in, falling back to local ${localModel}]`);
 }
 
 async function generate(prompt: string): Promise<string> {

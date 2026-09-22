@@ -15,8 +15,8 @@ Every generated answer's [chunk-id] citations are validated against the chunks
 that were actually retrieved.
 
 Retrieval always runs locally (nomic-embed-text). Generation uses Azure OpenAI
-when AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_KEY / AZURE_OPENAI_DEPLOYMENT are set,
-and falls back to the local model chosen just below when they are not.
+(gpt-4.1) when AZURE_OPENAI_KEY is set, and falls back to the local model
+chosen just below when it is not.
 """
 
 import json
@@ -90,15 +90,15 @@ ollama = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
 
 # Generation: Azure OpenAI if configured, local llama3.2 otherwise. This is the
 # one-line client swap from step 9 of the demo; everything downstream is identical.
-endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-key = os.environ.get("AZURE_OPENAI_KEY")
-deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
-if endpoint and key and deployment:
+endpoint = "https://trailhead-ai-workshop.openai.azure.com"
+key = "<KEY FROM INSTRUCTOR>"  # paste the room key between the quotes
+deployment = "gpt-4.1"
+if not key.startswith("<"):
     chat_client, chat_model = AzureOpenAI(azure_endpoint=endpoint, api_key=key, api_version="2024-10-21"), deployment
     print(f"[generation: Azure OpenAI, deployment '{deployment}']")
 else:
     chat_client, chat_model = ollama, local_model
-    print(f"[generation: AZURE_OPENAI_* not set, falling back to local {local_model}]")
+    print(f"[generation: no room key pasted in, falling back to local {local_model}]")
 
 
 def generate(prompt: str) -> str:

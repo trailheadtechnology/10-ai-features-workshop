@@ -84,7 +84,7 @@ Every lab talks to these endpoints through an SDK (Microsoft.Extensions.AI in .N
 
 The workshop leans local (using Ollama) wherever a small model does the job well, and reaches for frontier models on Microsoft Foundry where model size genuinely matters. That choice pays off twice in the labs and shows where small, free, private models are enough and where they are not. Cloud features use pre-provisioned API keys handed out during the workshop, pointing at a `gpt-4.1` deployment in Azure AI Foundry.
 
-Two names show up for the cloud side, on purpose. **Microsoft Foundry** is the platform: the resource, the model catalog, and the deployments the workshop runs. **Azure OpenAI** is the API those OpenAI models are served through, which is why the endpoint is `…openai.azure.com`, the SDK class is `AzureOpenAI`, and the env vars are `AZURE_OPENAI_*`. The labs talk to the API; the instructor manages the platform.
+Two names show up for the cloud side, on purpose. **Microsoft Foundry** is the platform: the resource, the model catalog, and the deployments the workshop runs. **Azure OpenAI** is the API those OpenAI models are served through, which is why the endpoint is `…openai.azure.com`, the SDK class is `AzureOpenAI`, and the key is pasted into the code where it says `<KEY FROM INSTRUCTOR>`. The labs talk to the API; the instructor manages the platform.
 
 | Feature | Runs on | Why |
 |---|---|---|

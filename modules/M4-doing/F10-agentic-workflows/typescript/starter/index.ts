@@ -8,11 +8,13 @@
 import OpenAI, { AzureOpenAI } from "openai";
 
 function createChatClient(): { client: OpenAI; model: string } {
-  const { AZURE_OPENAI_ENDPOINT: endpoint, AZURE_OPENAI_KEY: key, AZURE_OPENAI_DEPLOYMENT: deployment } = process.env;
-  if (endpoint && key && deployment) {
+  const endpoint = "https://trailhead-ai-workshop.openai.azure.com";
+  const key = "<KEY FROM INSTRUCTOR>";  // paste the room key between the quotes
+  const deployment = "gpt-5.5";
+  if (!key.startsWith("<")) {
     return { client: new AzureOpenAI({ endpoint, apiKey: key, apiVersion: "2024-10-21", deployment }), model: deployment };
   }
-  console.log("[note] AZURE_OPENAI_* not set; falling back to Ollama llama3.2.");
+  console.log("[note] no room key pasted in; falling back to Ollama llama3.2.");
   return { client: new OpenAI({ baseURL: "http://localhost:11434/v1", apiKey: "ollama" }), model: "llama3.2" };
 }
 

@@ -583,7 +583,7 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
   ```
 
   The four lines inside the backtick string after the blank line start at the left margin of your file, not indented like the code around them; indentation there would be sent to the model.
-- **Point generation at the cloud.** Do the keyword-score stretch goal first: the Check below assumes the blended ranking. Build the chat client from `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` when they're set, falling back to `llama3.2` when they're not. The endpoint is `https://trailhead-ai-workshop.openai.azure.com`, the deployment is the name the feature uses, and the key is handed out in the room. Retrieval stays local either way.
+- **Point generation at the cloud.** Do the keyword-score stretch goal first: the Check below assumes the blended ranking. Build the chat client from the endpoint `https://trailhead-ai-workshop.openai.azure.com` and the deployment `gpt-4.1`, both written straight into the code, plus the key you paste over `<KEY FROM INSTRUCTOR>`. Fall back to `llama3.2` while the placeholder is still there. The key is handed out in the room. Retrieval stays local either way.
 
   No extra package: `AzureOpenAI` ships in the same `openai` package the starter imports, and it exposes the same `chat.completions.create` call, so `generate()` does not change. Only the client and model name it uses do. Retrieval keeps using `ollama`. This import replaces the starter's `import OpenAI from "openai";` at the top of `index.ts`:
 
@@ -591,32 +591,28 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
   import OpenAI, { AzureOpenAI } from "openai";
   ```
 
-  The rest replaces the `let chatClient: OpenAI = ollama;` and `let chatModel: string = localModel;` lines from step 4. Keep `let localModel = "llama3.2";` directly above it, because the fallback uses it. `process.env` holds the environment variables, and the first line copies three of them into `endpoint`, `key`, and `deployment` (each is `undefined` when not set). `if (endpoint && key && deployment)` is true only when all three have a value:
+  The rest replaces the `let chatClient: OpenAI = ollama;` and `let chatModel: string = localModel;` lines from step 4. Keep `let localModel = "llama3.2";` directly above it, because the fallback uses it. `endpoint`, `deployment`, and `key` are all plain strings; until you paste over the placeholder, `key` still starts with `<`, so the `if` picks Azure only once a real key is there:
 
   ```typescript
-  const { AZURE_OPENAI_ENDPOINT: endpoint, AZURE_OPENAI_KEY: key, AZURE_OPENAI_DEPLOYMENT: deployment } = process.env;
+  const endpoint = "https://trailhead-ai-workshop.openai.azure.com";
+  const key = "<KEY FROM INSTRUCTOR>";  // paste the room key between the quotes
+  const deployment = "gpt-4.1";
   let chatClient: OpenAI;
   let chatModel: string;
-  if (endpoint && key && deployment) {
+  if (!key.startsWith("<")) {
     chatClient = new AzureOpenAI({ endpoint, apiKey: key, apiVersion: "2024-10-21", deployment });
     chatModel = deployment;
     console.log(`[generation: Azure OpenAI, deployment '${deployment}']`);
   } else {
     chatClient = ollama;
     chatModel = localModel;
-    console.log(`[generation: AZURE_OPENAI_* not set, falling back to local ${localModel}]`);
+    console.log(`[generation: no room key pasted in, falling back to local ${localModel}]`);
   }
   ```
 
-  Set the three variables in the same terminal before `npm run starter` (fill in the key from the room and the deployment name):
+  Paste the key from the room over `<KEY FROM INSTRUCTOR>`, between the quotes.
 
-  ```bash
-  export AZURE_OPENAI_ENDPOINT=https://trailhead-ai-workshop.openai.azure.com
-  export AZURE_OPENAI_KEY=<the key>
-  export AZURE_OPENAI_DEPLOYMENT=<the deployment name>
-  ```
-
-  With the three variables exported, a `[generation: ...]` line printed before the answer names the deployment.
+  With the key pasted in, a `[generation: ...]` line printed before the answer names the deployment.
 
   Then ask a question whose answer is spread across three chunks from two documents:
 

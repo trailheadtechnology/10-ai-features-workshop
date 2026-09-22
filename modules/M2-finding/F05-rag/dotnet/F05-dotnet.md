@@ -535,7 +535,7 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
           answer = answer.Replace(c, "invalid-citation-removed");
   }
   ```
-- **Point generation at the cloud.** Do the keyword-score stretch goal first: the Check below assumes the blended ranking. Build the chat client from `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` when they're set, falling back to `llama3.2` when they're not. The endpoint is `https://trailhead-ai-workshop.openai.azure.com`, the deployment is the name the feature uses, and the key is handed out in the room. Retrieval stays local either way.
+- **Point generation at the cloud.** Do the keyword-score stretch goal first: the Check below assumes the blended ranking. Build the chat client from the endpoint `https://trailhead-ai-workshop.openai.azure.com` and the deployment `gpt-4.1`, both written straight into the code, plus the key you paste over `<KEY FROM INSTRUCTOR>`. Fall back to `llama3.2` while the placeholder is still there. The key is handed out in the room. Retrieval stays local either way.
 
   `starter/Rag.csproj` references only `Microsoft.Extensions.AI` and `OllamaSharp`. Add the two packages `complete/Rag.csproj` carries, inside the existing `<ItemGroup>` next to the other `PackageReference` lines:
 
@@ -544,17 +544,17 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
   <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.8.1" />
   ```
 
-  Then build the chat client from the three environment variables, falling back to Ollama. `AsIChatClient()` is the adapter that makes the vendor client satisfy the same `IChatClient` the starter already calls, so nothing downstream changes. This replaces the `IChatClient chatClient;` and `chatClient = ...` lines from step 4; `localModel` stays. The two `using` lines go at the top of `Program.cs` with the others:
+  Then build the chat client from the hardcoded endpoint and deployment plus the pasted key, falling back to Ollama. `AsIChatClient()` is the adapter that makes the vendor client satisfy the same `IChatClient` the starter already calls, so nothing downstream changes. This replaces the `IChatClient chatClient;` and `chatClient = ...` lines from step 4; `localModel` stays. The two `using` lines go at the top of `Program.cs` with the others:
 
   ```csharp
   using System.ClientModel;
   using Azure.AI.OpenAI;
 
-  var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT");
-  var key = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY");
-  var deployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT");
+  var endpoint = "https://trailhead-ai-workshop.openai.azure.com";
+  var key = "<KEY FROM INSTRUCTOR>";  // paste the room key between the quotes
+  var deployment = "gpt-4.1";
   IChatClient chatClient;
-  if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(deployment))
+  if (!key.StartsWith("<"))
   {
       chatClient = new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(key))
           .GetChatClient(deployment)
@@ -564,19 +564,13 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
   else
   {
       chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), localModel);
-      Console.WriteLine($"[generation: AZURE_OPENAI_* not set, falling back to local {localModel}]");
+      Console.WriteLine($"[generation: no room key pasted in, falling back to local {localModel}]");
   }
   ```
 
-  Set the three variables in the same terminal before `dotnet run` (fill in the key from the room and the deployment name):
+  Paste the key from the room over `<KEY FROM INSTRUCTOR>`, between the quotes.
 
-  ```bash
-  export AZURE_OPENAI_ENDPOINT=https://trailhead-ai-workshop.openai.azure.com
-  export AZURE_OPENAI_KEY=<the key>
-  export AZURE_OPENAI_DEPLOYMENT=<the deployment name>
-  ```
-
-  With the three variables exported, a `[generation: ...]` line printed before the answer names the deployment.
+  With the key pasted in, a `[generation: ...]` line printed before the answer names the deployment.
 
   Then ask a question whose answer is spread across three chunks from two documents:
 

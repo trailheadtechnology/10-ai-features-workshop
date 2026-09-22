@@ -12,7 +12,7 @@ The user in this feature is the product team, not the hiker, and that's delibera
 - **Goal:** classify gear reviews as `positive | negative | mixed` with two models, score both, and list where they disagree.
 - **Input:** `data/easy.jsonl`, 10 reviews where text and stars agree; `data/hard.jsonl`, 10 where they fight; `data/reference-labels.json`, hand labels for all 20. All three are hand-picked from feature 06's `data/gear-reviews.jsonl`; no script builds them.
 - **How:** send one prompt per review through your track's chat client. Keep the one-word label that comes back. Compare it with the hand label. Same prompt bytes everywhere, temperature 0.
-- **Model:** `phi3` is the small model. The big model is `gpt-4.1` on Azure. Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` to use it. With no key, `llama3.2` on Ollama fills in for the big model, and the whole lab runs offline.
+- **Model:** `phi3` is the small model. The big model is `gpt-4.1` on Azure. Paste the room key into the code where it says `<KEY FROM INSTRUCTOR>`; the endpoint and deployment are already there. With no key, `llama3.2` on Ollama fills in for the big model, and the whole lab runs offline.
 
 ## The Concept
 
@@ -202,21 +202,15 @@ console.log(`phi3 ${correct}/${total}`);
 ### Step 3: Add the big model and classify every review twice
 
 **Do:**
-1. Read `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, `AZURE_OPENAI_DEPLOYMENT`.
+1. Paste the room key into the code, over `<KEY FROM INSTRUCTOR>`. The endpoint and deployment are already there as fixed values.
 
-   The endpoint is `https://trailhead-ai-workshop.openai.azure.com`, the deployment is `gpt-4.1`, and the key is handed out in the room.
+   The endpoint is `https://trailhead-ai-workshop.openai.azure.com` and the deployment is `gpt-4.1`; both go straight into the code. The key is handed out in the room.
 
-   Set them in the terminal you run `npm run starter` from (they last until you close it; skip this to use the `llama3.2` fallback):
+   Paste the key over `<KEY FROM INSTRUCTOR>` in the code, between the quotes. Leave the placeholder alone to use the `llama3.2` fallback.
 
-   ```bash
-   export AZURE_OPENAI_ENDPOINT=https://trailhead-ai-workshop.openai.azure.com
-   export AZURE_OPENAI_KEY=<KEY FROM INSTRUCTOR>
-   export AZURE_OPENAI_DEPLOYMENT=gpt-4.1
-   ```
+   Until you paste, the placeholder still starts with `<`, which is how the code knows to fall back. The code under item 2 does that check.
 
-   In Node, `process.env.NAME` reads one of them and is `undefined` when it is not set. The code under item 2 does the reading.
-
-2. Build a second chat client from those three variables, falling back to `llama3.2` when any is missing; name it `azure:<deployment>` or `llama3.2` for printing.
+2. Build a second chat client from the endpoint, the deployment, and the key, falling back to `llama3.2` when the key is missing; name it `azure:<deployment>` or `llama3.2` for printing.
 
    The starter imports only the default `OpenAI` export. The Azure client is a named export of the same `openai` package (already in `package.json`, nothing to install), so change the import. At the top of `index.ts`, replace `import OpenAI from "openai";` with:
 
@@ -224,7 +218,7 @@ console.log(`phi3 ${correct}/${total}`);
    import OpenAI, { AzureOpenAI } from "openai";
    ```
 
-   Rename the starter's `client` to `ollama`, then build the second client from the three env vars. The block below replaces the starter's `const client = new OpenAI(...)` line, so your step 2 call `classify(client, "phi3", review.text)` no longer works; item 5 replaces it. `Target` is a type for a pair of client and model name. `AzureOpenAI` takes `endpoint`, `apiKey`, `apiVersion` (a REST API date, not a model version), and `deployment`; the deployment name is also what you pass as `model` on each call, which is why the `Target` below carries it. The `const { AZURE_OPENAI_ENDPOINT: endpoint, ... } = process.env` line reads the three variables into `endpoint`, `key`, and `deployment` (each `undefined` when not set). `let big: Target;` declares a variable that the `if` or the `else` fills in. This also covers item 3:
+   Rename the starter's `client` to `ollama`, then build the second client from the hardcoded endpoint and deployment plus the pasted key. The block below replaces the starter's `const client = new OpenAI(...)` line, so your step 2 call `classify(client, "phi3", review.text)` no longer works; item 5 replaces it. `Target` is a type for a pair of client and model name. `AzureOpenAI` takes `endpoint`, `apiKey`, `apiVersion` (a REST API date, not a model version), and `deployment`; the deployment name is also what you pass as `model` on each call, which is why the `Target` below carries it. `endpoint` and `deployment` are plain strings; `key` comes from `"<KEY FROM INSTRUCTOR>" /* paste the room key between the quotes */` and is `undefined` when not set. `let big: Target;` declares a variable that the `if` or the `else` fills in. This also covers item 3:
 
    ```typescript
    type Target = { client: OpenAI; model: string };
@@ -232,20 +226,24 @@ console.log(`phi3 ${correct}/${total}`);
    const ollama = new OpenAI({ baseURL: "http://localhost:11434/v1", apiKey: "ollama" });
    const small: Target = { client: ollama, model: "phi3" };
 
-   const { AZURE_OPENAI_ENDPOINT: endpoint, AZURE_OPENAI_KEY: key, AZURE_OPENAI_DEPLOYMENT: deployment } = process.env;
+   const endpoint = "https://trailhead-ai-workshop.openai.azure.com";
+
+   const key = "<KEY FROM INSTRUCTOR>";  // paste the room key between the quotes
+
+   const deployment = "gpt-4.1";
    let big: Target;
    let bigName: string;
-   if (endpoint && key && deployment) {
+   if (!key.startsWith("<")) {
      big = { client: new AzureOpenAI({ endpoint, apiKey: key, apiVersion: "2024-10-21", deployment }), model: deployment };
      bigName = `azure:${deployment}`;
    } else {
-     console.log("AZURE_OPENAI_* not set; using llama3.2 on Ollama as the big-model stand-in.\n");
+     console.log("no room key pasted in; using llama3.2 on Ollama as the big-model stand-in.\n");
      big = { client: ollama, model: "llama3.2" };
      bigName = "llama3.2";
    }
    ```
 
-3. When falling back, print `AZURE_OPENAI_* not set; using llama3.2 on Ollama as the big-model stand-in.`
+3. When falling back, print `no room key pasted in; using llama3.2 on Ollama as the big-model stand-in.`
 4. Change nothing in the body of classify. The second model is just a different client; some tracks pass that client in as a parameter, so its signature line may change.
 
    Call it as `classify(small.client, small.model, text)`. `complete/` instead changes the signature to destructure a `Target`, and the body is identical either way.
@@ -277,7 +275,7 @@ console.log(`phi3 ${correct}/${total}`);
    console.log(`${review.id.padEnd(9)} ${reference.padEnd(10)} ${s.padEnd(10)} ${b.padEnd(10)}${flag}`);
    ```
 
-**Why:** the swap is one extra client, built from `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT`, plus one extra `classify` call per review. The prompt, the body of `classify`, and the scoring all stay as they were, so whatever differs between the two label columns came from the model.
+**Why:** the swap is one extra client, built from the endpoint, the deployment, and the pasted key, plus one extra `classify` call per review. The prompt, the body of `classify`, and the scoring all stay as they were, so whatever differs between the two label columns came from the model.
 
 **Check:** the easy table has four columns, and `gr-0074` is flagged `<- disagree`: reference `positive`, `phi3` says `mixed`, and the big-model column (headed `azure:gpt-4.1`) says `positive`. On the `llama3.2` stand-in the row is still flagged, big label `negative`.
 

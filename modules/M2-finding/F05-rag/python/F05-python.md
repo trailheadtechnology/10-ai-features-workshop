@@ -592,7 +592,7 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
   ```
 
   The four lines inside the triple-quoted string start at the left margin of your file, not indented like the code around them; indentation there would be sent to the model.
-- **Point generation at the cloud.** Do the keyword-score stretch goal first: the Check below assumes the blended ranking. Build the chat client from `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` when they're set, falling back to `llama3.2` when they're not. The endpoint is `https://trailhead-ai-workshop.openai.azure.com`, the deployment is the name the feature uses, and the key is handed out in the room. Retrieval stays local either way.
+- **Point generation at the cloud.** Do the keyword-score stretch goal first: the Check below assumes the blended ranking. Build the chat client from the endpoint `https://trailhead-ai-workshop.openai.azure.com` and the deployment `gpt-4.1`, both written straight into the code, plus the key you paste over `<KEY FROM INSTRUCTOR>`. Fall back to `llama3.2` while the placeholder is still there. The key is handed out in the room. Retrieval stays local either way.
 
   No extra package: `AzureOpenAI` ships in the same `openai` package the starter imports, and it exposes the same `chat.completions.create` call, so `generate()` does not change. Only the client and model name it uses do. Retrieval keeps using `ollama`. Both imports go at the very top of `main.py`; the second one replaces the starter's `from openai import OpenAI` line:
 
@@ -602,29 +602,23 @@ Pick any. Each one is already built in `complete/`, and the measurements that ju
   from openai import AzureOpenAI, OpenAI
   ```
 
-  The rest replaces the `chat_client, chat_model = ollama, local_model` line from step 4. Keep `local_model = "llama3.2"` directly above it, because the fallback uses it. `os.environ.get` returns `None` when a variable is not set, and `if endpoint and key and deployment:` is true only when all three have a value:
+  The rest replaces the `chat_client, chat_model = ollama, local_model` line from step 4. Keep `local_model = "llama3.2"` directly above it, because the fallback uses it. the placeholder still starts with `<` until you paste over it, so the `if` picks Azure only once a real key is there:
 
   ```python
-  endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-  key = os.environ.get("AZURE_OPENAI_KEY")
-  deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
-  if endpoint and key and deployment:
+  endpoint = "https://trailhead-ai-workshop.openai.azure.com"
+  key = "<KEY FROM INSTRUCTOR>"  # paste the room key between the quotes
+  deployment = "gpt-4.1"
+  if not key.startswith("<"):
       chat_client, chat_model = AzureOpenAI(azure_endpoint=endpoint, api_key=key, api_version="2024-10-21"), deployment
       print(f"[generation: Azure OpenAI, deployment '{deployment}']")
   else:
       chat_client, chat_model = ollama, local_model
-      print(f"[generation: AZURE_OPENAI_* not set, falling back to local {local_model}]")
+      print(f"[generation: no room key pasted in, falling back to local {local_model}]")
   ```
 
-  Set the three variables in the same terminal before `uv run` (fill in the key from the room and the deployment name):
+  Paste the key from the room over `<KEY FROM INSTRUCTOR>`, between the quotes.
 
-  ```bash
-  export AZURE_OPENAI_ENDPOINT=https://trailhead-ai-workshop.openai.azure.com
-  export AZURE_OPENAI_KEY=<the key>
-  export AZURE_OPENAI_DEPLOYMENT=<the deployment name>
-  ```
-
-  With the three variables exported, the `[generation: ...]` line printed above the answer names the deployment.
+  With the key pasted in, the `[generation: ...]` line printed above the answer names the deployment.
 
   Then ask a question whose answer is spread across three chunks from two documents:
 

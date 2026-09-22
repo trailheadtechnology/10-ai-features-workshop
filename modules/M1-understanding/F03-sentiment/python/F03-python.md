@@ -12,7 +12,7 @@ The user in this feature is the product team, not the hiker, and that's delibera
 - **Goal:** classify gear reviews as `positive | negative | mixed` with two models, score both, and list where they disagree.
 - **Input:** `data/easy.jsonl`, 10 reviews where text and stars agree; `data/hard.jsonl`, 10 where they fight; `data/reference-labels.json`, hand labels for all 20. All three are hand-picked from feature 06's `data/gear-reviews.jsonl`; no script builds them.
 - **How:** send one prompt per review through your track's chat client. Keep the one-word label that comes back. Compare it with the hand label. Same prompt bytes everywhere, temperature 0.
-- **Model:** `phi3` is the small model. The big model is `gpt-4.1` on Azure. Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` to use it. With no key, `llama3.2` on Ollama fills in for the big model, and the whole lab runs offline.
+- **Model:** `phi3` is the small model. The big model is `gpt-4.1` on Azure. Paste the room key into the code where it says `<KEY FROM INSTRUCTOR>`; the endpoint and deployment are already there. With no key, `llama3.2` on Ollama fills in for the big model, and the whole lab runs offline.
 
 ## The Concept
 
@@ -187,21 +187,15 @@ print(f"phi3 {correct}/{total}")
 ### Step 3: Add the big model and classify every review twice
 
 **Do:**
-1. Read `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, `AZURE_OPENAI_DEPLOYMENT`.
+1. Paste the room key into the code, over `<KEY FROM INSTRUCTOR>`. The endpoint and deployment are already there as fixed values.
 
-   The endpoint is `https://trailhead-ai-workshop.openai.azure.com`, the deployment is `gpt-4.1`, and the key is handed out in the room.
+   The endpoint is `https://trailhead-ai-workshop.openai.azure.com` and the deployment is `gpt-4.1`; both go straight into the code. The key is handed out in the room.
 
-   Set them in the terminal you run `uv run` from (they last until you close it; skip this to use the `llama3.2` fallback):
+   Paste the key over `<KEY FROM INSTRUCTOR>` in the code, between the quotes. Leave the placeholder alone to use the `llama3.2` fallback.
 
-   ```bash
-   export AZURE_OPENAI_ENDPOINT=https://trailhead-ai-workshop.openai.azure.com
-   export AZURE_OPENAI_KEY=<KEY FROM INSTRUCTOR>
-   export AZURE_OPENAI_DEPLOYMENT=gpt-4.1
-   ```
+   Until you paste, the placeholder still starts with `<`, which is how the code knows to fall back. The code under item 2 does that check.
 
-   In Python, `os.environ.get("NAME")` reads one of them and returns `None` when it is not set. The code under item 2 does the reading.
-
-2. Build a second chat client from those three variables, falling back to `llama3.2` when any is missing; name it `azure:<deployment>` or `llama3.2` for printing.
+2. Build a second chat client from the endpoint, the deployment, and the key, falling back to `llama3.2` when the key is missing; name it `azure:<deployment>` or `llama3.2` for printing.
 
    The starter imports only `OpenAI`. The Azure client is a second class in the same `openai` package (already in the root `pyproject.toml`, nothing to install), so change the import and add `os` and `dataclass`. At the top of `main.py`, put `import os` below `import json`, put `from dataclasses import dataclass` below `import sys`, and replace `from openai import OpenAI` with the last line:
 
@@ -212,25 +206,25 @@ print(f"phi3 {correct}/{total}")
    from openai import AzureOpenAI, OpenAI
    ```
 
-   Rename the starter's `client` to `ollama`, then build the second client from the three env vars. The block below replaces the starter's `client = OpenAI(...)` line, so your step 2 call `classify(client, "phi3", review["text"])` no longer works; item 5 replaces it. `small` and `big` are each a pair (a tuple) of client and model name. `AzureOpenAI` takes `azure_endpoint`, `api_key`, and `api_version` (a REST API date, not a model version); the deployment name is what you pass as `model` on each call, which is why the pair below carries it. This also covers item 3:
+   Rename the starter's `client` to `ollama`, then build the second client from the hardcoded endpoint and deployment plus the pasted key. The block below replaces the starter's `client = OpenAI(...)` line, so your step 2 call `classify(client, "phi3", review["text"])` no longer works; item 5 replaces it. `small` and `big` are each a pair (a tuple) of client and model name. `AzureOpenAI` takes `azure_endpoint`, `api_key`, and `api_version` (a REST API date, not a model version); the deployment name is what you pass as `model` on each call, which is why the pair below carries it. This also covers item 3:
 
    ```python
    ollama = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
    small = (ollama, "phi3")
 
-   endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-   key = os.environ.get("AZURE_OPENAI_KEY")
-   deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
-   if endpoint and key and deployment:
+   endpoint = "https://trailhead-ai-workshop.openai.azure.com"
+   key = "<KEY FROM INSTRUCTOR>"  # paste the room key between the quotes
+   deployment = "gpt-4.1"
+   if not key.startswith("<"):
        big = (AzureOpenAI(azure_endpoint=endpoint, api_key=key, api_version="2024-10-21"), deployment)
        big_name = f"azure:{deployment}"
    else:
-       print("AZURE_OPENAI_* not set; using llama3.2 on Ollama as the big-model stand-in.\n")
+       print("no room key pasted in; using llama3.2 on Ollama as the big-model stand-in.\n")
        big = (ollama, "llama3.2")
        big_name = "llama3.2"
    ```
 
-3. When falling back, print `AZURE_OPENAI_* not set; using llama3.2 on Ollama as the big-model stand-in.`
+3. When falling back, print `no room key pasted in; using llama3.2 on Ollama as the big-model stand-in.`
 4. Change nothing in the body of classify. The second model is just a different client; some tracks pass that client in as a parameter, so its signature line may change.
 
    `classify(*small, text)` unpacks the pair into the starter's `(client, model, text)` signature; `complete/` instead changes the signature to take the pair, and the body is identical either way.
@@ -267,7 +261,7 @@ print(f"phi3 {correct}/{total}")
    print(f"{review['id']:<9} {reference:<10} {s:<10} {b:<10}{flag}")
    ```
 
-**Why:** the swap is one extra client, built from `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT`, plus one extra `classify` call per review. The prompt, the body of `classify`, and the scoring all stay as they were, so whatever differs between the two label columns came from the model.
+**Why:** the swap is one extra client, built from the endpoint, the deployment, and the pasted key, plus one extra `classify` call per review. The prompt, the body of `classify`, and the scoring all stay as they were, so whatever differs between the two label columns came from the model.
 
 **Check:** the easy table has four columns, and `gr-0074` is flagged `<- disagree`: reference `positive`, `phi3` says `mixed`, and the big-model column (headed `azure:gpt-4.1`) says `positive`. On the `llama3.2` stand-in the row is still flagged, big label `negative`.
 

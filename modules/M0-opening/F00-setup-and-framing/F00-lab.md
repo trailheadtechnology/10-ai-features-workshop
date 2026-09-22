@@ -100,7 +100,13 @@ Pick any. None of them is needed to pass this lab.
 
 - **Read one trip report.** Open `../../M1-understanding/F01-summarization/data/` and read one `tr-*.md` file from start to finish, granola recipes and all. That folder holds 40 fictional trip reports for Trailhead Guides, the made-up park app every feature today uses. Each file is a short YAML front matter block (`id`, `author`, `date`, `park`) followed by a rambling Markdown trip diary of about a thousand words. They ship with the workshop corpus; there is no script that builds them. Feature 01 exists because nobody wants to read forty of those. **Check:** you can say in one sentence what a hiker needs to know from it, and you can say how long it took you to find that sentence.
 - **Confirm the third model.** `SETUP.md` also asks you to pull `phi3`. Feature 03 compares it against `llama3.2` and `gpt-4.1`. Run `ollama list` in a terminal. **Check:** `llama3.2`, `nomic-embed-text`, and `phi3` all appear. If `phi3` is missing, run `ollama pull phi3` now, while the workshop wifi is still quiet.
-- **Set the Azure environment variables.** Every lab after this one has you write code in .NET, Python, or TypeScript, and those tracks read the cloud settings from environment variables, not from the `.http` file. Set `AZURE_OPENAI_ENDPOINT` to `https://trailhead-ai-workshop.openai.azure.com`, `AZURE_OPENAI_DEPLOYMENT` to `gpt-4.1`, and `AZURE_OPENAI_KEY` to the key from the room. **Check:** printing each variable in a new terminal shows the value you set.
+- **Paste the Azure key into the code.** Every lab after this one has you write code in .NET, Python, or TypeScript. The endpoint and model names are already in that code, and so is a line holding the key:
+
+  ```
+  key = "<KEY FROM INSTRUCTOR>"
+  ```
+
+  In the labs that use the cloud (03, 05, and the capstone), paste the key from the room between those quotes, replacing `<KEY FROM INSTRUCTOR>`. There is nothing to set in your terminal and nothing to set again when you open a new one. **Check:** the line holds the long key from the whiteboard, and the quotes are still there.
 
 ## Pick a Track
 

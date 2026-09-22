@@ -3,8 +3,8 @@
   uv run main.py --easy     easy set only (demo steps 3 and 4)
   uv run main.py --hard     hard set only (demo step 5)
 
-The big model is Azure OpenAI when AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_KEY,
-and AZURE_OPENAI_DEPLOYMENT are set. When they aren't, llama3.2 on Ollama
+The big model is Azure OpenAI gpt-4.1 when AZURE_OPENAI_KEY is set.
+When it isn\'t, llama3.2 on Ollama
 stands in so the whole comparison runs offline. Either way, the swap is the
 few lines building `big` below; nothing downstream changes.
 """
@@ -26,14 +26,14 @@ ollama = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
 small = (ollama, "phi3")
 
 # Model 2: the big model, or its local stand-in.
-endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-key = os.environ.get("AZURE_OPENAI_KEY")
-deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
-if endpoint and key and deployment:
+endpoint = "https://trailhead-ai-workshop.openai.azure.com"
+key = "<KEY FROM INSTRUCTOR>"  # paste the room key between the quotes
+deployment = "gpt-4.1"
+if not key.startswith("<"):
     big = (AzureOpenAI(azure_endpoint=endpoint, api_key=key, api_version="2024-10-21"), deployment)
     big_name = f"azure:{deployment}"
 else:
-    print("AZURE_OPENAI_* not set; using llama3.2 on Ollama as the big-model stand-in.\n")
+    print("no room key pasted in; using llama3.2 on Ollama as the big-model stand-in.\n")
     big = (ollama, "llama3.2")
     big_name = "llama3.2"
 

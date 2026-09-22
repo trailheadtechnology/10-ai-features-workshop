@@ -15,8 +15,8 @@ using OllamaSharp;
 //   dotnet run -- Plan me a trip on Avalanche Lake Trail in September
 //   dotnet run -- --yes <request>                auto-approve the permit gate
 //
-// Model: Azure OpenAI when AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_KEY /
-// AZURE_OPENAI_DEPLOYMENT are set; otherwise Ollama llama3.2, which is much
+// Model: Azure OpenAI gpt-5.5 when AZURE_OPENAI_KEY is set;
+// otherwise Ollama llama3.2, which is much
 // weaker at sequencing five tools. See ../README.md before judging a local run.
 
 var autoApprove = args.Contains("--yes");
@@ -124,18 +124,18 @@ Console.WriteLine(response.Text);
 
 static IChatClient CreateChatClient()
 {
-    var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT");
-    var key = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY");
-    var deployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT");
+    var endpoint = "https://trailhead-ai-workshop.openai.azure.com";
+    var key = "<KEY FROM INSTRUCTOR>";  // paste the room key between the quotes
+    var deployment = "gpt-5.5";
 
-    if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(deployment))
+    if (!key.StartsWith("<"))
     {
         return new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(key))
             .GetChatClient(deployment)
             .AsIChatClient();
     }
 
-    Console.WriteLine("[note] AZURE_OPENAI_* not set; falling back to Ollama llama3.2.");
+    Console.WriteLine("[note] no room key pasted in; falling back to Ollama llama3.2.");
     return new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
 }
 

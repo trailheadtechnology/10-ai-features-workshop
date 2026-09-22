@@ -10,7 +10,7 @@
 - **Goal:** run one tool-calling round-trip by hand, then extend a working agent with a new tool.
 - **Input:** `data/tool-definitions.json`, the five tools (`search_trails`, `get_weather`, `get_trail_conditions`, `check_campsites`, `request_permit`); `data/trails.json`, the trail catalog; `data/condition-reports.jsonl`, the hiker reports; `data/mock-apis/weather.json`, `campsites.json`, `permits.json`, canned results; `reference-transcript.md`, a complete run to compare against.
 - **How:** chat completions with a `tools` array, against Azure OpenAI.
-- **Model:** `gpt-5.5` on Azure. Every track reads `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` (`gpt-5.5`), else falls back to `llama3.2`, much weaker here.
+- **Model:** `gpt-5.5` on Azure. The endpoint and `gpt-5.5` are hardcoded; paste the room key over `<KEY FROM INSTRUCTOR>` in the code, else it falls back to `llama3.2`, much weaker here.
 
 ## The Concept
 
@@ -22,9 +22,9 @@ Every step below is one thing to make the program do. The `starter/` is a plain 
 
 ## Running
 
-Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` (endpoint `https://trailhead-ai-workshop.openai.azure.com`, the deployment name the feature uses, and the key handed out in the room) and the program uses Azure OpenAI. Leave them unset and it prints a note and falls back to Ollama `llama3.2`, which is how the transcript in [`reference-transcript.md`](../reference-transcript.md) was captured.
+The endpoint (`https://trailhead-ai-workshop.openai.azure.com`) and the deployment (`gpt-5.5`) are written into the code. Paste the key handed out in the room over `<KEY FROM INSTRUCTOR>` and the program uses Azure OpenAI. Leave the placeholder and it prints a note and falls back to Ollama `llama3.2`, which is how the transcript in [`reference-transcript.md`](../reference-transcript.md) was captured.
 
-Two scripts, both using the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), or at Azure through the SDK's `AzureOpenAI` client when the variables are set. `tsx` runs the `.ts` files directly, so there is no build step.
+Two scripts, both using the official `openai` package pointed at Ollama's OpenAI-compatible endpoint (`http://localhost:11434/v1`), or at Azure through the SDK's `AzureOpenAI` client once the key is pasted in. `tsx` runs the `.ts` files directly, so there is no build step.
 
 - `starter/index.ts`: the trip request as a plain chat completion, no tools, no loop.
 - `complete/index.ts`: the finished demo as shown on stage. Five tools as ordinary functions over `data/`, their definitions loaded from `data/tool-definitions.json` so the model sees exactly the definitions this lab prints, a hand-written tool-calling loop with a step budget of 12, the permit gate that waits for a human yes, and the nudge logic for a model that stops early.
@@ -37,26 +37,21 @@ npm run complete -- Plan me a trip on Avalanche Lake Trail in September
 npm run complete -- --yes <request>                         # auto-approve the permit gate
 ```
 
-Without the Azure variables it runs on `llama3.2`, which is much weaker at sequencing five tools; the `[nudge]` lines are the app compensating, and [`dotnet/F10-dotnet.md`](../dotnet/F10-dotnet.md) has the measured failure counts before judging a local run.
+Without a pasted key it runs on `llama3.2`, which is much weaker at sequencing five tools; the `[nudge]` lines are the app compensating, and [`dotnet/F10-dotnet.md`](../dotnet/F10-dotnet.md) has the measured failure counts before judging a local run.
 
-Set the three variables in the same terminal you run from (macOS or Linux shown; the values come from the room):
+Paste the key from the room over `<KEY FROM INSTRUCTOR>` in the code, between the quotes:
 
-```bash
-# Hint: fill in the key, then run npm run starter in this same terminal
-export AZURE_OPENAI_ENDPOINT=https://trailhead-ai-workshop.openai.azure.com
-export AZURE_OPENAI_KEY=<key handed out in the room>
-export AZURE_OPENAI_DEPLOYMENT=gpt-5.5
-```
-
-The starter already reads them. `process.env` holds every environment variable by name; the `const { ... } = process.env` line copies three of them into `endpoint`, `key`, and `deployment` (each is `undefined` when not set), and the `if` picks Azure only when all three are there:
+The starter already has the line. `endpoint`, `deployment`, and `key` are all plain strings; until you paste, `key` still starts with `<`, and the `if` picks Azure only once a real key is there:
 
 ```typescript
 function createChatClient(): { client: OpenAI; model: string } {
-  const { AZURE_OPENAI_ENDPOINT: endpoint, AZURE_OPENAI_KEY: key, AZURE_OPENAI_DEPLOYMENT: deployment } = process.env;
-  if (endpoint && key && deployment) {
+  const endpoint = "https://trailhead-ai-workshop.openai.azure.com";
+  const key = "<KEY FROM INSTRUCTOR>";  // paste the room key between the quotes
+  const deployment = "gpt-5.5";
+  if (!key.startsWith("<")) {
     return { client: new AzureOpenAI({ endpoint, apiKey: key, apiVersion: "2024-10-21", deployment }), model: deployment };
   }
-  console.log("[note] AZURE_OPENAI_* not set; falling back to Ollama llama3.2.");
+  console.log("[note] no room key pasted in; falling back to Ollama llama3.2.");
   return { client: new OpenAI({ baseURL: "http://localhost:11434/v1", apiKey: "ollama" }), model: "llama3.2" };
 }
 ```

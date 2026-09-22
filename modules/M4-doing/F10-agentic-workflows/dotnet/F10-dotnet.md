@@ -10,7 +10,7 @@
 - **Goal:** run one tool-calling round-trip by hand, then extend a working agent with a new tool.
 - **Input:** `data/tool-definitions.json`, the five tools (`search_trails`, `get_weather`, `get_trail_conditions`, `check_campsites`, `request_permit`); `data/trails.json`, the trail catalog; `data/condition-reports.jsonl`, the hiker reports; `data/mock-apis/weather.json`, `campsites.json`, `permits.json`, canned results; `reference-transcript.md`, a complete run to compare against.
 - **How:** chat completions with a `tools` array, against Azure OpenAI.
-- **Model:** `gpt-5.5` on Azure. Every track reads `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` (`gpt-5.5`), else falls back to `llama3.2`, much weaker here.
+- **Model:** `gpt-5.5` on Azure. The endpoint and `gpt-5.5` are hardcoded; paste the room key over `<KEY FROM INSTRUCTOR>` in the code, else it falls back to `llama3.2`, much weaker here.
 
 ## The Concept
 
@@ -22,7 +22,7 @@ Every step below is one thing to make the program do. The `starter/` is a plain 
 
 ## Running
 
-Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` (endpoint `https://trailhead-ai-workshop.openai.azure.com`, the deployment name the feature uses, and the key handed out in the room) and the program uses Azure OpenAI. Leave them unset and it prints a note and falls back to Ollama `llama3.2`, which is how the transcript in [`reference-transcript.md`](../reference-transcript.md) was captured.
+The endpoint (`https://trailhead-ai-workshop.openai.azure.com`) and the deployment (`gpt-5.5`) are written into the code. Paste the key handed out in the room over `<KEY FROM INSTRUCTOR>` and the program uses Azure OpenAI. Leave the placeholder and it prints a note and falls back to Ollama `llama3.2`, which is how the transcript in [`reference-transcript.md`](../reference-transcript.md) was captured.
 
 Two console projects, both named `TripAgent`, both built on Microsoft.Extensions.AI, matching the demo from the module's slides:
 

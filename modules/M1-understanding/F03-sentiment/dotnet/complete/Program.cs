@@ -9,8 +9,8 @@ using OllamaSharp;
 //   dotnet run -- --easy       easy set only (demo steps 3 and 4)
 //   dotnet run -- --hard       hard set only (demo step 5)
 //
-// The big model is Azure OpenAI when AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_KEY,
-// and AZURE_OPENAI_DEPLOYMENT are set. When they aren't, llama3.2 on Ollama
+// The big model is Azure OpenAI gpt-4.1 when AZURE_OPENAI_KEY is set.
+// When it isn\'t, llama3.2 on Ollama
 // stands in so the whole comparison runs offline. Either way, the swap is the
 // one line building `bigModel` below; nothing downstream changes.
 
@@ -22,13 +22,13 @@ var sets = args.Contains("--easy") ? new[] { "easy" }
 IChatClient phi3 = new OllamaApiClient(new Uri("http://localhost:11434"), "phi3");
 
 // Model 2: the big model, or its local stand-in.
-var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT");
-var key = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY");
-var deployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT");
+var endpoint = "https://trailhead-ai-workshop.openai.azure.com";
+var key = "<KEY FROM INSTRUCTOR>";  // paste the room key between the quotes
+var deployment = "gpt-4.1";
 
 IChatClient bigModel;
 string bigName;
-if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(deployment))
+if (!key.StartsWith("<"))
 {
     bigModel = new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(key))
         .GetChatClient(deployment)
@@ -37,7 +37,7 @@ if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(key) && !string.IsN
 }
 else
 {
-    Console.WriteLine("AZURE_OPENAI_* not set; using llama3.2 on Ollama as the big-model stand-in.");
+    Console.WriteLine("no room key pasted in; using llama3.2 on Ollama as the big-model stand-in.");
     Console.WriteLine();
     bigModel = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
     bigName = "llama3.2";

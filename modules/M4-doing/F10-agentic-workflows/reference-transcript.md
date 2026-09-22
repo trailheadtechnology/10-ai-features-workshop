@@ -11,7 +11,7 @@ The `[nudge]` lines are the app talking, not the model. They are the small-model
 ## The Run
 
 ```
-[note] AZURE_OPENAI_* not set; falling back to Ollama llama3.2.
+[note] no room key pasted in; falling back to Ollama llama3.2.
 Request: Plan me a 3-day trip in Glacier National Park for September 14-16.
 ============================================================
 [tool] search_trails {"park":"Glacier National Park","features":null,"max_difficulty":null}

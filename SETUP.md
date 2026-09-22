@@ -62,13 +62,13 @@ If you'd rather use curl, that works too; the smoke test's requests are plain en
 
 ## 4. Azure OpenAI: Nothing to Do
 
-Three features (sentiment comparison, RAG generation, and the agent capstone) use frontier models on Microsoft Foundry, through a deployment the instructor runs; the requests go to the Azure OpenAI API, which is why the endpoint below ends in `openai.azure.com`. There is nothing to sign up for and nothing to pay for. The endpoint and deployment names are already in the lab files; the one thing you get in the room is the API key, which goes wherever a file says `<KEY FROM INSTRUCTOR>`:
+Three features (sentiment comparison, RAG generation, and the agent capstone) use frontier models on Microsoft Foundry, through a deployment the instructor runs; the requests go to the Azure OpenAI API, which is why the endpoint below ends in `openai.azure.com`. There is nothing to sign up for and nothing to pay for. The endpoint and deployment names are already in the lab files; the one thing you get in the room is the API key, which you paste wherever a file says `<KEY FROM INSTRUCTOR>`:
 
 - Endpoint: `https://trailhead-ai-workshop.openai.azure.com`
 - Deployments: `gpt-4.1` (features 03, 05, and 07's cloud steps) and `gpt-5.5` (feature 10, the capstone)
 - Key: `<KEY FROM INSTRUCTOR>`, handed out on the day and revoked afterward
 
-If you are working from the .NET, Python, or TypeScript starters, the same three values go in `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, and `AZURE_OPENAI_KEY`.
+The .NET, Python, and TypeScript code already has the endpoint and deployment names in it, plus a `key = "<KEY FROM INSTRUCTOR>"` line. Paste the key from the room between those quotes. Nothing goes in your environment.
 
 ## 5. Pick a Language: .NET, Python, or TypeScript
 

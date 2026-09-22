@@ -8,7 +8,7 @@
 - **Goal:** run one tool-calling round-trip by hand, then extend a working agent with a new tool.
 - **Input:** `data/tool-definitions.json`, the five tools (`search_trails`, `get_weather`, `get_trail_conditions`, `check_campsites`, `request_permit`); `data/trails.json`, the trail catalog; `data/condition-reports.jsonl`, the hiker reports; `data/mock-apis/weather.json`, `campsites.json`, `permits.json`, canned results; `reference-transcript.md`, a complete run to compare against.
 - **How:** chat completions with a `tools` array, against Azure OpenAI.
-- **Model:** `gpt-5.5` on Azure. Every track reads `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` (`gpt-5.5`), else falls back to `llama3.2`, much weaker here.
+- **Model:** `gpt-5.5` on Azure. The endpoint and `gpt-5.5` are hardcoded; paste the room key over `<KEY FROM INSTRUCTOR>` in the code, else it falls back to `llama3.2`, much weaker here.
 
 ## Pick a Track
 

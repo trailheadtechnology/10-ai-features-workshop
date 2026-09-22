@@ -10,7 +10,7 @@ The user in this feature is the product team, not the hiker, and that's delibera
 - **Goal:** classify gear reviews as `positive | negative | mixed` with two models, score both, and list where they disagree.
 - **Input:** `data/easy.jsonl`, 10 reviews where text and stars agree; `data/hard.jsonl`, 10 where they fight; `data/reference-labels.json`, hand labels for all 20. All three are hand-picked from feature 06's `data/gear-reviews.jsonl`; no script builds them.
 - **How:** send one prompt per review through your track's chat client. Keep the one-word label that comes back. Compare it with the hand label. Same prompt bytes everywhere, temperature 0.
-- **Model:** `phi3` is the small model. The big model is `gpt-4.1` on Azure. Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` to use it. With no key, `llama3.2` on Ollama fills in for the big model, and the whole lab runs offline.
+- **Model:** `phi3` is the small model. The big model is `gpt-4.1` on Azure. Paste the room key into the code where it says `<KEY FROM INSTRUCTOR>`; the endpoint and deployment are already there. With no key, `llama3.2` on Ollama fills in for the big model, and the whole lab runs offline.
 
 ## Pick a Track
 

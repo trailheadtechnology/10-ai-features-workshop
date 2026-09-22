@@ -6,8 +6,8 @@ yes, and a step budget bounds the loop.
   uv run main.py Plan me a trip on Avalanche Lake Trail in September
   uv run main.py --yes <request>                       auto-approve the permit gate
 
-Model: Azure OpenAI when AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_KEY /
-AZURE_OPENAI_DEPLOYMENT are set; otherwise Ollama llama3.2, which is much
+Model: Azure OpenAI gpt-5.5 when AZURE_OPENAI_KEY is set;
+otherwise Ollama llama3.2, which is much
 weaker at sequencing five tools. See ../F10-python.md before judging a local run.
 
 There is no agent framework here on purpose. The loop is the same one the lab's
@@ -26,12 +26,12 @@ DATA = Path(__file__).resolve().parents[2] / "data"
 
 
 def create_chat_client() -> tuple[OpenAI, str]:
-    endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-    key = os.environ.get("AZURE_OPENAI_KEY")
-    deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
-    if endpoint and key and deployment:
+    endpoint = "https://trailhead-ai-workshop.openai.azure.com"
+    key = "<KEY FROM INSTRUCTOR>"  # paste the room key between the quotes
+    deployment = "gpt-5.5"
+    if not key.startswith("<"):
         return AzureOpenAI(azure_endpoint=endpoint, api_key=key, api_version="2024-10-21"), deployment
-    print("[note] AZURE_OPENAI_* not set; falling back to Ollama llama3.2.")
+    print("[note] no room key pasted in; falling back to Ollama llama3.2.")
     return OpenAI(base_url="http://localhost:11434/v1", api_key="ollama"), "llama3.2"
 
 

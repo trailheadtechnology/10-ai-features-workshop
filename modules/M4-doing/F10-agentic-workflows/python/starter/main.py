@@ -13,12 +13,12 @@ from openai import AzureOpenAI, OpenAI
 
 
 def create_chat_client() -> tuple[OpenAI, str]:
-    endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-    key = os.environ.get("AZURE_OPENAI_KEY")
-    deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT")
-    if endpoint and key and deployment:
+    endpoint = "https://trailhead-ai-workshop.openai.azure.com"
+    key = "<KEY FROM INSTRUCTOR>"  # paste the room key between the quotes
+    deployment = "gpt-5.5"
+    if not key.startswith("<"):
         return AzureOpenAI(azure_endpoint=endpoint, api_key=key, api_version="2024-10-21"), deployment
-    print("[note] AZURE_OPENAI_* not set; falling back to Ollama llama3.2.")
+    print("[note] no room key pasted in; falling back to Ollama llama3.2.")
     return OpenAI(base_url="http://localhost:11434/v1", api_key="ollama"), "llama3.2"
 
 

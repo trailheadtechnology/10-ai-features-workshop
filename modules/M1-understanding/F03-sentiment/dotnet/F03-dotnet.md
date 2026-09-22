@@ -12,7 +12,7 @@ The user in this feature is the product team, not the hiker, and that's delibera
 - **Goal:** classify gear reviews as `positive | negative | mixed` with two models, score both, and list where they disagree.
 - **Input:** `data/easy.jsonl`, 10 reviews where text and stars agree; `data/hard.jsonl`, 10 where they fight; `data/reference-labels.json`, hand labels for all 20. All three are hand-picked from feature 06's `data/gear-reviews.jsonl`; no script builds them.
 - **How:** send one prompt per review through your track's chat client. Keep the one-word label that comes back. Compare it with the hand label. Same prompt bytes everywhere, temperature 0.
-- **Model:** `phi3` is the small model. The big model is `gpt-4.1` on Azure. Set `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT` to use it. With no key, `llama3.2` on Ollama fills in for the big model, and the whole lab runs offline.
+- **Model:** `phi3` is the small model. The big model is `gpt-4.1` on Azure. Paste the room key into the code where it says `<KEY FROM INSTRUCTOR>`; the endpoint and deployment are already there. With no key, `llama3.2` on Ollama fills in for the big model, and the whole lab runs offline.
 
 ## The Concept
 
@@ -214,15 +214,9 @@ Console.WriteLine($"phi3 {correct}/{total}");
 ### Step 3: Add the big model and classify every review twice
 
 **Do:**
-1. Read `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, `AZURE_OPENAI_DEPLOYMENT`.
+1. Paste the room key into the code, over `<KEY FROM INSTRUCTOR>`. The endpoint and deployment are already there as fixed values.
 
-   ```bash
-   export AZURE_OPENAI_ENDPOINT=https://trailhead-ai-workshop.openai.azure.com
-   export AZURE_OPENAI_KEY=<KEY FROM INSTRUCTOR>
-   export AZURE_OPENAI_DEPLOYMENT=gpt-4.1
-   ```
-
-2. Build a second chat client from those three variables, falling back to `llama3.2` when any is missing; name it `azure:<deployment>` or `llama3.2` for printing.
+2. Build a second chat client from the endpoint, the deployment, and the key, falling back to `llama3.2` when the key is missing; name it `azure:<deployment>` or `llama3.2` for printing.
 
    The starter project only references `Microsoft.Extensions.AI` and `OllamaSharp`. The Azure client needs two more packages, and `AsIChatClient()` on the OpenAI client is marked experimental, so the build fails with `OPENAI001` unless you suppress it. Add these to `starter/Sentiment.csproj` just above the closing `</Project>` line (they match `complete/Sentiment.csproj`, which puts the `NoWarn` line in its first `PropertyGroup` and the two packages in its existing `ItemGroup`; either layout builds). `dotnet run` downloads the packages on the next build:
 
@@ -243,18 +237,18 @@ Console.WriteLine($"phi3 {correct}/{total}");
    using Azure.AI.OpenAI;      // AzureOpenAIClient
    ```
 
-   Rename the starter's `client` to `phi3`, as `complete/` does, then build the second client from the three env vars. The block below replaces the starter's `IChatClient client = ...` line, so your step 2 call `Classify(client, review.text)` must become `Classify(phi3, review.text)`. `Environment.GetEnvironmentVariable` returns `null` when a variable is not set. This also covers item 3:
+   Rename the starter's `client` to `phi3`, as `complete/` does, then build the second client from the hardcoded endpoint and deployment plus the pasted key. The block below replaces the starter's `IChatClient client = ...` line, so your step 2 call `Classify(client, review.text)` must become `Classify(phi3, review.text)`. `Environment.GetEnvironmentVariable` returns `null` when the key is not set. This also covers item 3:
 
    ```csharp
    IChatClient phi3 = new OllamaApiClient(new Uri("http://localhost:11434"), "phi3");
 
-   var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT");
-   var key = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY");
-   var deployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT");
+   var endpoint = "https://trailhead-ai-workshop.openai.azure.com";
+   var key = "<KEY FROM INSTRUCTOR>";  // paste the room key between the quotes
+   var deployment = "gpt-4.1";
 
    IChatClient bigModel;
    string bigName;
-   if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(deployment))
+   if (!key.StartsWith("<"))
    {
        bigModel = new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(key))
            .GetChatClient(deployment)
@@ -263,14 +257,14 @@ Console.WriteLine($"phi3 {correct}/{total}");
    }
    else
    {
-       Console.WriteLine("AZURE_OPENAI_* not set; using llama3.2 on Ollama as the big-model stand-in.");
+       Console.WriteLine("no room key pasted in; using llama3.2 on Ollama as the big-model stand-in.");
        Console.WriteLine();
        bigModel = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2");
        bigName = "llama3.2";
    }
    ```
 
-3. When falling back, print `AZURE_OPENAI_* not set; using llama3.2 on Ollama as the big-model stand-in.`
+3. When falling back, print `no room key pasted in; using llama3.2 on Ollama as the big-model stand-in.`
 4. Change nothing in the body of classify. The second model is just a different client; some tracks pass that client in as a parameter, so its signature line may change.
 
 5. In the step 2 loop, classify each review with both `phi3` and the big model; store a record with the review, set name, reference label, small label, big label.
@@ -303,7 +297,7 @@ Console.WriteLine($"phi3 {correct}/{total}");
    Console.WriteLine($"{review.id,-9} {reference,-10} {small,-10} {big,-10}{flag}");
    ```
 
-**Why:** the swap is one extra client, built from `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_KEY`, and `AZURE_OPENAI_DEPLOYMENT`, plus one extra `classify` call per review. The prompt, the body of `classify`, and the scoring all stay as they were, so whatever differs between the two label columns came from the model.
+**Why:** the swap is one extra client, built from the endpoint, the deployment, and the pasted key, plus one extra `classify` call per review. The prompt, the body of `classify`, and the scoring all stay as they were, so whatever differs between the two label columns came from the model.
 
 **Check:** the easy table has four columns, and `gr-0074` is flagged `<- disagree`: reference `positive`, `phi3` says `mixed`, and the big-model column (headed `azure:gpt-4.1`) says `positive`. On the `llama3.2` stand-in the row is still flagged, big label `negative`.
 

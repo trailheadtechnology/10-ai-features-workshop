@@ -6,8 +6,8 @@
 //   npm run complete -- Plan me a trip on Avalanche Lake Trail in September
 //   npm run complete -- --yes <request>                         auto-approve the permit gate
 //
-// Model: Azure OpenAI when AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_KEY /
-// AZURE_OPENAI_DEPLOYMENT are set; otherwise Ollama llama3.2, which is much
+// Model: Azure OpenAI gpt-5.5 when AZURE_OPENAI_KEY is set;
+// otherwise Ollama llama3.2, which is much
 // weaker at sequencing five tools. See ../F10-typescript.md before judging a local run.
 //
 // There is no agent framework here on purpose. The loop is the same one the lab's
@@ -23,11 +23,13 @@ import type { ChatCompletionMessageParam, ChatCompletionTool } from "openai/reso
 const DATA = resolve(import.meta.dirname, "../../data");
 
 function createChatClient(): { client: OpenAI; model: string } {
-  const { AZURE_OPENAI_ENDPOINT: endpoint, AZURE_OPENAI_KEY: key, AZURE_OPENAI_DEPLOYMENT: deployment } = process.env;
-  if (endpoint && key && deployment) {
+  const endpoint = "https://trailhead-ai-workshop.openai.azure.com";
+  const key = "<KEY FROM INSTRUCTOR>";  // paste the room key between the quotes
+  const deployment = "gpt-5.5";
+  if (!key.startsWith("<")) {
     return { client: new AzureOpenAI({ endpoint, apiKey: key, apiVersion: "2024-10-21", deployment }), model: deployment };
   }
-  console.log("[note] AZURE_OPENAI_* not set; falling back to Ollama llama3.2.");
+  console.log("[note] no room key pasted in; falling back to Ollama llama3.2.");
   return { client: new OpenAI({ baseURL: "http://localhost:11434/v1", apiKey: "ollama" }), model: "llama3.2" };
 }
 

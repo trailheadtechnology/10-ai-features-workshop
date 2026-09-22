@@ -23,8 +23,8 @@ using OllamaSharp;
 // that were actually retrieved.
 //
 // Retrieval always runs locally (nomic-embed-text). Generation uses Azure OpenAI
-// when AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_KEY / AZURE_OPENAI_DEPLOYMENT are set,
-// and falls back to the local model chosen just below when they are not.
+// (gpt-4.1) when AZURE_OPENAI_KEY is set, and falls back to the local model
+// chosen just below when it is not.
 
 // ---------------------------------------------------------------------------
 // Which local model generates the answer.
@@ -79,11 +79,11 @@ var question = questionParts.Count > 0
 
 // Generation: Azure OpenAI if configured, local llama3.2 otherwise. This is the
 // one-line client swap from step 7 of the demo; everything downstream is identical.
-var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT");
-var key = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY");
-var deployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT");
+var endpoint = "https://trailhead-ai-workshop.openai.azure.com";
+var key = "<KEY FROM INSTRUCTOR>";  // paste the room key between the quotes
+var deployment = "gpt-4.1";
 IChatClient chatClient;
-if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(deployment))
+if (!key.StartsWith("<"))
 {
     chatClient = new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(key))
         .GetChatClient(deployment)
@@ -93,7 +93,7 @@ if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(key) && !string.IsN
 else
 {
     chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), localModel);
-    Console.WriteLine($"[generation: AZURE_OPENAI_* not set, falling back to local {localModel}]");
+    Console.WriteLine($"[generation: no room key pasted in, falling back to local {localModel}]");
 }
 
 Console.WriteLine($"Q: {question}\n");
