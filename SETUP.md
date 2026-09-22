@@ -82,4 +82,4 @@ The Python and TypeScript versions use the official `openai` package against Oll
 
 ## If You Did None of This Before Arriving
 
-You'll still be fine. We bring the Ollama models on USB drives for local copying, and the venue keys are handed out either way. You'll just spend the first coffee break copying models instead of chatting, which is a fate we'd like to help you avoid. You will still need one of the three language setups from section 5 to do the labs.
+You'll still be fine. We bring the Ollama models on USB drives for local copying, and the key is handed out in the room either way. You'll just spend the opening module copying models instead of listening, which is a fate we'd like to help you avoid. You will still need one of the three language setups from section 5 to do the labs.

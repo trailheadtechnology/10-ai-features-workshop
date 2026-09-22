@@ -1,6 +1,6 @@
 # Module 3: Deciding
 
-**Triage and judgment.** About 75 minutes.
+**Triage and judgment.** About 70 minutes, split by the 3:00 coffee break, which lands in the middle of the lab.
 
 The first two modules produced answers for a user. This one produces decisions for the people running the product: which queue does this go in, which of these 500 reports deserves attention, and what is the software allowed to send without a human reading it first.
 

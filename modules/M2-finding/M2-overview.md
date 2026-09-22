@@ -1,6 +1,6 @@
 # Module 2: Finding
 
-**Surfacing the right thing.** About 75 minutes.
+**Surfacing the right thing.** About 65 minutes, split by lunch: the demos run 12:00 to 12:30, and the lab picks up again at 1:30.
 
 The three features in this module are built on one idea. Embeddings turn text into vectors, and distance between vectors means similarity of meaning; once you have that, search is ranking a catalog against a query, RAG is retrieving passages and handing them to a model to answer from, and recommendations are ranking a catalog against an item instead of a query. It is the same math three times over, and it is the point in the day where the work stops being about prompts.
 
