@@ -108,3 +108,6 @@ The .NET demos use [Microsoft.Extensions.AI](https://learn.microsoft.com/en-us/d
 ## About the Instructor
 
 J. Tower is the owner and a principal consultant at [Trailhead Technology Partners](https://trailheadtechnology.com), a Microsoft MVP, and a .NET Foundation board member. He demos in .NET/C#, but the labs are for everyone.
+
+## Schedule Time With Me
+https://trailheadtechnology.com/connect/?t=10-ai-features-workshop
