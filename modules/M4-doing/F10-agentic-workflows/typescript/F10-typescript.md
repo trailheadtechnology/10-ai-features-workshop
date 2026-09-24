@@ -1,7 +1,7 @@
 <!-- Generated file: built from the lab source by build_labs.py. Edit the source and rerun; hand edits to this file are overwritten. -->
 # Lab 10: Agentic Workflows (TypeScript)
 
-*You are on the TypeScript track. Other tracks: [.NET](../dotnet/F10-dotnet.md), [Python](../python/F10-python.md). Lab overview: [F10-lab.md](../F10-lab.md).*
+*You are on the TypeScript track. Other tracks: [.NET](../dotnet/F10-dotnet.md), [Python](../python/F10-python.md), [Go](../go/F10-go.md). Lab overview: [F10-lab.md](../F10-lab.md).*
 
 **The User Problem:** A Trailhead Guides user types: "Plan me a 3-day trip in Glacier for mid-September." Fulfilling that today means the user does everything themselves: check the weather forecast, search for trails, cross-reference current conditions, check campsite availability, and file a permit request in a separate system. That is five tools and one afternoon, and the app helped with exactly one step. The user didn't want search results; they wanted the trip planned.
 

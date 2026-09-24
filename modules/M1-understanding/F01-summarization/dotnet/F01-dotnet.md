@@ -1,7 +1,7 @@
 <!-- Generated file: built from the lab source by build_labs.py. Edit the source and rerun; hand edits to this file are overwritten. -->
 # Lab 01: Summarization (.NET)
 
-*You are on the .NET track. Other tracks: [Python](../python/F01-python.md), [TypeScript](../typescript/F01-typescript.md). Lab overview: [F01-lab.md](../F01-lab.md).*
+*You are on the .NET track. Other tracks: [Python](../python/F01-python.md), [TypeScript](../typescript/F01-typescript.md), [Go](../go/F01-go.md). Lab overview: [F01-lab.md](../F01-lab.md).*
 
 **The User Problem:** A hiker planning this weekend's trip opens Trailhead Guides and finds forty trip reports for Avalanche Lake Trail, each one 1,200 words of trail diary, gear opinions, and granola recipes. Somewhere in there is the one thing they need to know: is the bridge out, and are the mosquitoes bad? Nobody reads forty essays; they skim three, miss the warning in the fourth, and have a bad Saturday.
 

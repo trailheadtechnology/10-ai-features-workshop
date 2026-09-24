@@ -19,6 +19,7 @@ Every track does the same steps against the same data and checks against the sam
 | .NET | [`dotnet/F06-dotnet.md`](dotnet/F06-dotnet.md) | `dotnet/starter/Program.cs` |
 | Python | [`python/F06-python.md`](python/F06-python.md) | `python/starter/main.py` |
 | TypeScript | [`typescript/F06-typescript.md`](typescript/F06-typescript.md) | `typescript/starter/index.ts` |
+| Go | [`go/F06-go.md`](go/F06-go.md) | `go/starter/main.go` |
 
 Every track has a `complete/` next to its `starter/`, which is the answer key.
 
@@ -29,6 +30,6 @@ Every track has a `complete/` next to its `starter/`, which is the answer key.
 - `data/gear-reviews.jsonl`: 300 reviews across 25 products, one JSON object per line, from the shared Trailhead Guides corpus, for the gear stretch goal.
 - `complete/embeddings.json` and `complete/gear-embeddings.json` (inside each track's `complete/`): vector caches the finished program writes on its first run. Delete them to re-embed.
 - `expected-output.md`: real top-5 neighbor lists with scores for all three targets, the acceptable sets to grade yourself against, the gear result, and an honest accounting of which recommendations are bad and why.
-- `dotnet/`, `python/`, `typescript/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key
+- `dotnet/`, `python/`, `typescript/`, `go/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key
 
 The three targets: `trail-0117` Avalanche Lake Trail (the demo's trail), `trail-0003` Trail of the Cedars (the easy end of the catalog), and `trail-0008` Highline Trail (where the whole approach struggles).

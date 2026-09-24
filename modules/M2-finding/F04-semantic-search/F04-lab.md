@@ -21,6 +21,7 @@ Every track does the same steps against the same data and checks against the sam
 | .NET | [`dotnet/F04-dotnet.md`](dotnet/F04-dotnet.md) | `dotnet/starter/Program.cs` |
 | Python | [`python/F04-python.md`](python/F04-python.md) | `python/starter/main.py` |
 | TypeScript | [`typescript/F04-typescript.md`](typescript/F04-typescript.md) | `typescript/starter/index.ts` |
+| Go | [`go/F04-go.md`](go/F04-go.md) | `go/starter/main.go` |
 
 Every track has a `complete/` next to its `starter/`, which is the answer key.
 
@@ -30,4 +31,4 @@ Every track has a `complete/` next to its `starter/`, which is the answer key.
 - `data/queries.json`: the three test queries, why each one is in the set, and the success check for each. Step 4 describes the record shape.
 - `embeddings.json`: not in the folder until you run the program. Step 2 explains the cache.
 - `expected-output.md`: real `nomic-embed-text` rankings for all three queries, the keyword baseline they beat, cosine-similarity pseudocode, and two results that are honestly wrong and worth talking about.
-- `dotnet/`, `python/`, `typescript/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key
+- `dotnet/`, `python/`, `typescript/`, `go/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key

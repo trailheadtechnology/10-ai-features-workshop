@@ -19,6 +19,7 @@ Every track does the same steps against the same data and checks against the sam
 | .NET | [`dotnet/F05-dotnet.md`](dotnet/F05-dotnet.md) | `dotnet/starter/Program.cs` |
 | Python | [`python/F05-python.md`](python/F05-python.md) | `python/starter/main.py` |
 | TypeScript | [`typescript/F05-typescript.md`](typescript/F05-typescript.md) | `typescript/starter/index.ts` |
+| Go | [`go/F05-go.md`](go/F05-go.md) | `go/starter/main.go` |
 
 Every track has a `complete/` next to its `starter/`, which is the answer key.
 
@@ -30,4 +31,4 @@ Every track has a `complete/` next to its `starter/`, which is the answer key.
 - `data/questions.json`: the four test questions, with an `answerable` flag and where each answer lives.
 - `data/build-chunks.py`: the script that made `chunks.jsonl`. Not needed for the lab. Run it with a different word ceiling or floor (`python3 build-chunks.py out.jsonl 400 0`, for example) to change the chunking and see what breaks; the outcomes are already measured.
 - `expected-output.md`: real retrieval scores and real answers for all four questions, plus the measurements behind every choice above: chunk size, the keyword blend, citation checking, and why the date is in the prompt.
-- `dotnet/`, `python/`, `typescript/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key
+- `dotnet/`, `python/`, `typescript/`, `go/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key

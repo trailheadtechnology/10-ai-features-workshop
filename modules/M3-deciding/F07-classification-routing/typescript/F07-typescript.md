@@ -1,7 +1,7 @@
 <!-- Generated file: built from the lab source by build_labs.py. Edit the source and rerun; hand edits to this file are overwritten. -->
 # Lab 07: Classification & Routing (TypeScript)
 
-*You are on the TypeScript track. Other tracks: [.NET](../dotnet/F07-dotnet.md), [Python](../python/F07-python.md). Lab overview: [F07-lab.md](../F07-lab.md).*
+*You are on the TypeScript track. Other tracks: [.NET](../dotnet/F07-dotnet.md), [Python](../python/F07-python.md), [Go](../go/F07-go.md). Lab overview: [F07-lab.md](../F07-lab.md).*
 
 **The User Problem:** Every message to Trailhead Guides lands in one inbox: permit requests, trail-condition questions, complaints, lost-and-found reports, and, occasionally, someone reporting an actual emergency. A ranger triages the pile by hand once or twice a day. The permit request waits behind the granola questions, the complaint goes to the wrong person twice, and the emergency sits unread for four hours. The users' real problem is that their message goes into a hole, and how fast it comes out depends on luck.
 

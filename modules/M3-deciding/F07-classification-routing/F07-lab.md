@@ -19,6 +19,7 @@ Every track does the same steps against the same data and checks against the sam
 | .NET | [`dotnet/F07-dotnet.md`](dotnet/F07-dotnet.md) | `dotnet/starter/Program.cs` |
 | Python | [`python/F07-python.md`](python/F07-python.md) | `python/starter/main.py` |
 | TypeScript | [`typescript/F07-typescript.md`](typescript/F07-typescript.md) | `typescript/starter/index.ts` |
+| Go | [`go/F07-go.md`](go/F07-go.md) | `go/starter/main.go` |
 
 Every track has a `complete/` next to its `starter/`, which is the answer key.
 
@@ -28,4 +29,4 @@ Every track has a `complete/` next to its `starter/`, which is the answer key.
 - `data/reference-labels.json`: the hand-assigned category for each id from the taxonomy the feature uses (`permit | conditions | complaint | lost-and-found | emergency | general | unsure`), the queue each category routes to, and notes on the two emergencies and on why `inq-0035` is labeled `unsure`.
 - `expected-output.md`: a real `llama3.2` run over all 20, scored against the reference labels, with the accuracy it got, the emergency recall, what it did with the ambiguous message, and the success checks.
 - `answer-key.md`: instructor notes on the full 100-message corpus, the source the reference labels were drawn from. Not for handout.
-- `dotnet/`, `python/`, `typescript/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key
+- `dotnet/`, `python/`, `typescript/`, `go/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key

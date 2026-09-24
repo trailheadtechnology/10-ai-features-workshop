@@ -19,6 +19,7 @@ Every track does the same steps against the same data and checks against the sam
 | .NET | [`dotnet/F01-dotnet.md`](dotnet/F01-dotnet.md) | `dotnet/starter/Program.cs` |
 | Python | [`python/F01-python.md`](python/F01-python.md) | `python/starter/main.py` |
 | TypeScript | [`typescript/F01-typescript.md`](typescript/F01-typescript.md) | `typescript/starter/index.ts` |
+| Go | [`go/F01-go.md`](go/F01-go.md) | `go/starter/main.go` |
 
 Every track has a `complete/` next to its `starter/`, which is the answer key.
 
@@ -28,4 +29,4 @@ Every track has a `complete/` next to its `starter/`, which is the answer key.
 - `data/tr-0004.md`: the buried-hazard report (June 2026; the washed-out footbridge hides mid-report between airport sandwiches and huckleberry ice cream)
 - `data/tr-*.md`: all 40 Avalanche Lake trip reports, synthetic Markdown with a four-field front matter and a prose body; `tr-0001` and `tr-0004` are the lab's two named inputs
 - `expected-output.md`: real `llama3.2` outputs for all three requests, plus the success checks
-- `dotnet/`, `python/`, `typescript/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key
+- `dotnet/`, `python/`, `typescript/`, `go/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key

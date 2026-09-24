@@ -19,6 +19,7 @@ Every track does the same steps against the same data and checks against the sam
 | .NET | [`dotnet/F09-dotnet.md`](dotnet/F09-dotnet.md) | `dotnet/starter/Program.cs` |
 | Python | [`python/F09-python.md`](python/F09-python.md) | `python/starter/main.py` |
 | TypeScript | [`typescript/F09-typescript.md`](typescript/F09-typescript.md) | `typescript/starter/index.ts` |
+| Go | [`go/F09-go.md`](go/F09-go.md) | `go/starter/main.go` |
 
 Every track has a `complete/` next to its `starter/`, which is the answer key.
 
@@ -28,4 +29,4 @@ Every track has a `complete/` next to its `starter/`, which is the answer key.
 - `data/snippets/`: the four park-doc excerpts, one file per document number, each holding only the sections that answer its inquiry, taken from the full park documents in feature 05's `data/park-docs/` and quoted with document and section numbers so a draft can cite its source.
 - `policy-worksheet.md`: the lane table to fill in, one row per feature 07 category.
 - `expected-output.md`: real `llama3.2` drafts for all six inquiries, annotated with what a ranger should approve, edit, or reject and why, plus the reference policy. It also carries the emergency result, which is the point of the lab: told plainly not to draft a reply to an overdue-hiker report, the model drafted a reassuring one three times out of three.
-- `dotnet/`, `python/`, `typescript/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key
+- `dotnet/`, `python/`, `typescript/`, `go/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key

@@ -19,6 +19,7 @@ Every track does the same steps against the same data and checks against the sam
 | .NET | [`dotnet/F08-dotnet.md`](dotnet/F08-dotnet.md) | `dotnet/starter/Program.cs` |
 | Python | [`python/F08-python.md`](python/F08-python.md) | `python/starter/main.py` |
 | TypeScript | [`typescript/F08-typescript.md`](typescript/F08-typescript.md) | `typescript/starter/index.ts` |
+| Go | [`go/F08-go.md`](go/F08-go.md) | `go/starter/main.go` |
 
 Every track has a `complete/` next to its `starter/`, which is the answer key.
 
@@ -28,4 +29,4 @@ Every track has a `complete/` next to its `starter/`, which is the answer key.
 - `data/reports-0042.jsonl`: the 25 trail-0042 reports from the same stream, with the bear cluster, for the last stretch goal.
 - `data/embeddings-0117.json`: real `nomic-embed-text` vectors for the 40 trail-0117 reports, 768 dimensions each, keyed by `id`, already unit length as `nomic-embed-text` returns them (details in step 2). The starter uses these so steps 1 through 4 run without a model.
 - `expected-output.md`: a real run's full distance ranking, the threshold, the alert output, and an honest account of how well this works on this data.
-- `dotnet/`, `python/`, `typescript/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key
+- `dotnet/`, `python/`, `typescript/`, `go/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key

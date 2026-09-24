@@ -1,7 +1,7 @@
 <!-- Generated file: built from the lab source by build_labs.py. Edit the source and rerun; hand edits to this file are overwritten. -->
 # Lab 05: RAG (Python)
 
-*You are on the Python track. Other tracks: [.NET](../dotnet/F05-dotnet.md), [TypeScript](../typescript/F05-typescript.md). Lab overview: [F05-lab.md](../F05-lab.md).*
+*You are on the Python track. Other tracks: [.NET](../dotnet/F05-dotnet.md), [TypeScript](../typescript/F05-typescript.md), [Go](../go/F05-go.md). Lab overview: [F05-lab.md](../F05-lab.md).*
 
 **The User Problem:** A visitor asks Trailhead Guides: "Can I have a campfire at Sperry Chalet in September?" The answer exists, in paragraph four of a 12-page backcountry regulations document that nobody will ever read. Search alone returns the document, not the answer. A plain chatbot answers fluently and makes it up, and a confidently wrong answer about fire regulations is worse than no answer at all.
 

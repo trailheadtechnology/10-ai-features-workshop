@@ -1,7 +1,7 @@
 <!-- Generated file: built from the lab source by build_labs.py. Edit the source and rerun; hand edits to this file are overwritten. -->
 # Lab 08: Anomaly Detection (Python)
 
-*You are on the Python track. Other tracks: [.NET](../dotnet/F08-dotnet.md), [TypeScript](../typescript/F08-typescript.md). Lab overview: [F08-lab.md](../F08-lab.md).*
+*You are on the Python track. Other tracks: [.NET](../dotnet/F08-dotnet.md), [TypeScript](../typescript/F08-typescript.md), [Go](../go/F08-go.md). Lab overview: [F08-lab.md](../F08-lab.md).*
 
 **The User Problem:** Trail-condition reports trickle into Trailhead Guides all season, about 500 of them across 200 trails. Almost all say some version of "muddy in spots, otherwise fine." Then over one week, three separate hikers report a washed-out bridge on the same trail, and a fourth mentions aggressive bear activity two trails over. Nobody notices, because nobody reads 500 routine reports. The park finds out about the bridge from a one-star review a month later.
 

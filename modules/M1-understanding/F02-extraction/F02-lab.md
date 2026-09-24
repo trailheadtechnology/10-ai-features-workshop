@@ -19,6 +19,7 @@ Every track does the same steps against the same data and checks against the sam
 | .NET | [`dotnet/F02-dotnet.md`](dotnet/F02-dotnet.md) | `dotnet/starter/Program.cs` |
 | Python | [`python/F02-python.md`](python/F02-python.md) | `python/starter/main.py` |
 | TypeScript | [`typescript/F02-typescript.md`](typescript/F02-typescript.md) | `typescript/starter/index.ts` |
+| Go | [`go/F02-go.md`](go/F02-go.md) | `go/starter/main.go` |
 
 Every track has a `complete/` next to its `starter/`, which is the answer key.
 
@@ -27,4 +28,4 @@ Every track has a `complete/` next to its `starter/`, which is the answer key.
 - `data/tr-0007.md`: the fact-rich report (a note-taker hikes Sperry Chalet on July 4, 2026; 12.8 miles, 3,400 feet, bears, goats, and pie, all stated outright). Copied from feature 01's forty-report corpus, front matter and all.
 - `data/tr-0011.md`: the fact-sparse report (a Yosemite trip written up a month late; no trail name, no date, no mileage, no elevation, because the little book is in the car at the mechanic's).
 - `expected-output.md`: real `llama3.2` outputs for both reports and for the finished demo, the real rejections from four consecutive runs, the success checks, and an honest list of where the model still slips
-- `dotnet/`, `python/`, `typescript/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key
+- `dotnet/`, `python/`, `typescript/`, `go/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key

@@ -1,7 +1,7 @@
 <!-- Generated file: built from the lab source by build_labs.py. Edit the source and rerun; hand edits to this file are overwritten. -->
 # Lab 02: Extraction (TypeScript)
 
-*You are on the TypeScript track. Other tracks: [.NET](../dotnet/F02-dotnet.md), [Python](../python/F02-python.md). Lab overview: [F02-lab.md](../F02-lab.md).*
+*You are on the TypeScript track. Other tracks: [.NET](../dotnet/F02-dotnet.md), [Python](../python/F02-python.md), [Go](../go/F02-go.md). Lab overview: [F02-lab.md](../F02-lab.md).*
 
 **The User Problem:** Trailhead Guides wants a "trail stats" panel: which trails were hiked, when, how far, what wildlife showed up, what shape the trail was in. All of that information already exists, scattered through forty rambling trip reports as prose. Today a human would have to re-read every report and re-type the facts into a form, which is why the panel doesn't exist.
 
