@@ -21,17 +21,17 @@ We will cover ten features grouped into 4 modules.
 | Time | Segment |
 |---|---|
 | 10:00 | **[Module 0: Opening](modules/M0-opening/M0-overview.md)** · environment check, the day's thesis, a tour of the data |
-| 10:45 | **[Module 1: Understanding](modules/M1-understanding/M1-overview.md)** · making sense of messy content |
+| 10:30 | **[Module 1: Understanding](modules/M1-understanding/M1-overview.md)** · making sense of messy content |
 | | [01 Summarization](modules/M1-understanding/F01-summarization/F01-lab.md) [RECOMMENDED] |
 | | [02 Extraction](modules/M1-understanding/F02-extraction/F02-lab.md) [CHALLENGE] |
 | | [03 Sentiment](modules/M1-understanding/F03-sentiment/F03-lab.md) [CHALLENGE] |
-| 12:00 | **[Module 2: Finding](modules/M2-finding/M2-overview.md)** · surfacing the right thing (demos before lunch, lab after) |
+| 11:45 | **[Module 2: Finding](modules/M2-finding/M2-overview.md)** · surfacing the right thing (lab starts before lunch, finishes after) |
 | | [04 Semantic Search](modules/M2-finding/F04-semantic-search/F04-lab.md) [RECOMMENDED] |
 | | [05 RAG](modules/M2-finding/F05-rag/F05-lab.md) [CHALLENGE] |
 | | [06 Recommendations](modules/M2-finding/F06-recommendations/F06-lab.md) [CHALLENGE] |
 | 12:30 | Lunch |
 | 1:30 | Module 2 lab continues |
-| 2:05 | **[Module 3: Deciding](modules/M3-deciding/M3-overview.md)** · triage and judgment |
+| 2:00 | **[Module 3: Deciding](modules/M3-deciding/M3-overview.md)** · triage and judgment |
 | | [07 Classification & Routing](modules/M3-deciding/F07-classification-routing/F07-lab.md) [RECOMMENDED] |
 | | [08 Anomaly Detection](modules/M3-deciding/F08-anomaly-detection/F08-lab.md) [CHALLENGE] |
 | | [09 Human-in-the-Loop](modules/M3-deciding/F09-human-in-the-loop/F09-lab.md) [CHALLENGE] |
@@ -39,10 +39,10 @@ We will cover ten features grouped into 4 modules.
 | 3:30 | Module 3 lab continues |
 | 3:45 | **[Module 4: Doing](modules/M4-doing/M4-overview.md)** · the capstone |
 | | [10 Agentic Workflows](modules/M4-doing/F10-agentic-workflows/F10-lab.md) [EVERYONE] |
-| 4:40 | **Closing** · the [decision framework](docs/decision-framework.md), pitching AI features to leadership, and Q&A |
+| 4:45 | **Closing** · the [decision framework](docs/decision-framework.md), pitching AI features to leadership, and Q&A |
 | 5:00 | Done |
 
-**Ten features, four modules, but you are not expected to build all ten.** Each module opens with about 20 minutes in which I introduce the theme and demo all three features, and then hands you the rest to build. Lunch and the coffee break both land in the middle of a lab, so you can stop mid-step and pick it back up. Otherwise lab time is the break, so get up whenever you need to. One feature per module is marked **Recommended**, and that is the lab to start with unless you have a reason not to; the other two are **Challenge** labs for anyone with time left, and every lab has a stretch goal beyond that. The capstone is the one lab everyone does. Finishing one lab properly is the intended outcome for most people. You will see all ten features demonstrated either way.
+**Ten features, four modules, but you are not expected to build all ten.** Each module opens with about 30 minutes in which I introduce the theme and demo all three features, and then hands you 40 minutes to build. Lunch and the coffee break both land in the middle of a lab, so you can stop mid-step and pick it back up. Otherwise lab time is the break, so get up whenever you need to. One feature per module is marked **Recommended**, and that is the lab to start with unless you have a reason not to; the other two are **Challenge** labs for anyone with time left, and every lab has a stretch goal beyond that. The capstone is the one lab everyone does. Finishing one lab properly is the intended outcome for most people. You will see all ten features demonstrated either way.
 
 Each module's overview is the menu: what the three features are, which one is Recommended, what each lab costs you, and the thread that ties them together.
 

@@ -1,6 +1,6 @@
 # Module 4: Doing
 
-**The capstone.** About 55 minutes.
+**The capstone.** About 60 minutes.
 
 The last module is a single feature with a double-length slot, and it draws on everything the day has built up to this point. The user types a plain-language request, and the app works out and carries out the sequence of real actions needed to fulfill it, checking the forecast, searching for trails, reading condition reports, and filing a permit request, instead of handing back a list of links.
 
@@ -12,7 +12,7 @@ There is no Recommended-or-Challenge choice in this module; everyone attempts th
 
 ## How the Hands-On Works
 
-The first 10 minutes are mine: the feature and the agent running live. The remaining 45 are yours to build. The lab ships the five tool definitions and a transcript of a complete successful run, so when your own run goes sideways, and it will, you have a known-good reference to compare against rather than a guess.
+The first 15 minutes are mine: the feature and the agent running live. The next 40 are yours to build. The lab ships the five tool definitions and a transcript of a complete successful run, so when your own run goes sideways, and it will, you have a known-good reference to compare against rather than a guess.
 
 If you finish, the stretch goals are in [F10-lab.md](F10-agentic-workflows/F10-lab.md), and they are the good kind: add a tool, break the agent, and watch what it does when a tool it expected is missing.
 

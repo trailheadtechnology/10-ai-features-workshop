@@ -12,7 +12,7 @@ The three features in this module all take unstructured text and give you back s
 
 ## How the Hands-On Works
 
-The first 20 minutes or so are mine: the theme, and a demo of all three features. The rest is yours to build. **Start with the Recommended lab.** After that, take a Challenge lab if you have time, or take the Recommended lab's stretch goal if you would rather go deeper than wide; finishing one lab well beats skimming three.
+The first 30 minutes or so are mine: the theme, and a demo of all three features. The next 40 are yours to build. **Start with the Recommended lab.** After that, take a Challenge lab if you have time, or take the Recommended lab's stretch goal if you would rather go deeper than wide; finishing one lab well beats skimming three.
 
 Start with 01 regardless of your experience. It is the shortest path from nothing to a working AI feature, and everything else today assumes you have made one model call and seen what comes back.
 

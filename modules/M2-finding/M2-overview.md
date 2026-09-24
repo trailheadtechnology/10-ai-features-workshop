@@ -1,6 +1,6 @@
 # Module 2: Finding
 
-**Surfacing the right thing.** About 65 minutes, split by lunch: the demos run 12:00 to 12:30, and the lab picks up again at 1:30.
+**Surfacing the right thing.** About 75 minutes, split by lunch: the demos run 11:45 to 12:15, the lab starts at 12:15, and it picks up again at 1:30.
 
 The three features in this module are built on one idea. Embeddings turn text into vectors, and distance between vectors means similarity of meaning; once you have that, search is ranking a catalog against a query, RAG is retrieving passages and handing them to a model to answer from, and recommendations are ranking a catalog against an item instead of a query. It is the same math three times over, and it is the point in the day where the work stops being about prompts.
 
@@ -12,7 +12,7 @@ The three features in this module are built on one idea. Embeddings turn text in
 
 ## How the Hands-On Works
 
-The first 20 minutes or so are mine: the theme, and a demo of all three features. The rest is yours to build.
+The first 30 minutes or so are mine: the theme, and a demo of all three features. The next 40 are yours to build.
 
 **There are two honest routes through this module.** Do 04 first if embeddings are new to you, which is why it is the Recommended one: it is where the concept lands and the other two assume it. But if RAG is the reason you came to this workshop, **go straight to 05** and come back to 04 afterwards. Feature 05 ships precomputed chunk vectors, so it does not require finishing 04 first. Nobody should leave this room having never built the thing they came for.
 
