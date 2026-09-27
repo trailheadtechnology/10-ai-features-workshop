@@ -1,7 +1,7 @@
 <!-- Generated file: built from the lab source by build_labs.py. Edit the source and rerun; hand edits to this file are overwritten. -->
 # Lab 04: Semantic Search (.NET)
 
-*You are on the .NET track. Other tracks: [Python](../python/F04-python.md), [TypeScript](../typescript/F04-typescript.md). Lab overview: [F04-lab.md](../F04-lab.md).*
+*You are on the .NET track. Other tracks: [Python](../python/F04-python.md), [TypeScript](../typescript/F04-typescript.md), [Go](../go/F04-go.md). Lab overview: [F04-lab.md](../F04-lab.md).*
 
 **The User Problem:** A user types "dog-friendly waterfall hike, not too steep" into Trailhead Guides. The catalog has at least a dozen perfect matches, but keyword search returns almost nothing, because no trail description contains the phrase "not too steep." One trail says "a gentle grade shaded by cedars." Another says "easy elevation, good for families." The user gets three bad results, assumes the app has no good trails, and goes back to asking strangers on Reddit.
 

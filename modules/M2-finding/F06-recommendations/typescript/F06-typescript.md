@@ -1,7 +1,7 @@
 <!-- Generated file: built from the lab source by build_labs.py. Edit the source and rerun; hand edits to this file are overwritten. -->
 # Lab 06: Recommendations (TypeScript)
 
-*You are on the TypeScript track. Other tracks: [.NET](../dotnet/F06-dotnet.md), [Python](../python/F06-python.md). Lab overview: [F06-lab.md](../F06-lab.md).*
+*You are on the TypeScript track. Other tracks: [.NET](../dotnet/F06-dotnet.md), [Python](../python/F06-python.md), [Go](../go/F06-go.md). Lab overview: [F06-lab.md](../F06-lab.md).*
 
 **The User Problem:** A hiker just finished Avalanche Lake Trail and loved it. Trailhead Guides says nothing. The obvious next screen ("you'd probably like these three trails") never got built, because everyone assumes recommendations require a data-science team, a ratings matrix, and six months. Meanwhile the gear store has the same gap: someone who bought the Cascade 65 gets shown a random carousel instead of the products that actually go with it.
 

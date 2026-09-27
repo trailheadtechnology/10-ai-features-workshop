@@ -72,7 +72,8 @@ Before the workshop, do the pre-work in [`SETUP.md`](SETUP.md). It's mostly "ins
             ├── data/         # everything the lab and the code read
             ├── dotnet/       # FNN-dotnet.md full lab plus starter/ and complete/ projects
             ├── python/       # FNN-python.md full lab, starter/main.py, complete/main.py (uv run main.py)
-            └── typescript/   # FNN-typescript.md full lab, package.json, starter/index.ts, complete/index.ts
+            ├── typescript/   # FNN-typescript.md full lab, package.json, starter/index.ts, complete/index.ts
+            └── go/           # FNN-go.md full lab plus starter/ and complete/ modules (go run .) — all ten features (F01–F10)
 ```
 
 ## How the Models Are Called
@@ -82,7 +83,7 @@ Every model in this workshop sits behind an HTTP endpoint, and everything else i
 - **Ollama** is a local server. Once it is running, it listens on `http://localhost:11434` and answers two families of requests: its native API (`/api/chat`, `/api/embed`), and an OpenAI-compatible API under `/v1`, which is what the Python and TypeScript starters use through the official `openai` SDK. The model runs on your laptop; the request is a local HTTP call.
 - **Microsoft Foundry** serves the workshop's `gpt-4.1` and `gpt-5.5` deployments the same way, at `https://trailhead-ai-workshop.openai.azure.com/openai/deployments/<name>/chat/completions` with an `api-key` header. That is the Azure OpenAI API, and it is the same request shape as Ollama's `/v1`, which is why the SDKs need only a different constructor to switch.
 
-Every lab talks to these endpoints through an SDK (Microsoft.Extensions.AI in .NET, the `openai` package in Python and TypeScript); nothing about the underlying call changes, and swapping a feature from local to cloud is a URL and a key. Feature 00's smoke test is the one place in the workshop that sends a raw HTTP request, to confirm your environment can reach both endpoints before the day starts.
+Every lab talks to these endpoints through an SDK (Microsoft.Extensions.AI in .NET, the `openai` package in Python and TypeScript); nothing about the underlying call changes, and swapping a feature from local to cloud is a URL and a key. Feature 00's smoke test is the one place in the workshop that sends a raw HTTP request, to confirm your environment can reach both endpoints before the day starts. Every feature's Go track (`modules/M{0..4}-*/F{01..10}-*/go/`) is the other exception: it skips the SDK entirely and builds every request, including F02/F07's JSON Schema response formats, F03/F05's Azure OpenAI call, F04/F06/F08's `/v1/embeddings` calls, and F10's tool-calling loop, over the standard library's `net/http`, which is the literal version of "everything is a wrapper around a POST."
 
 ## Model Strategy
 

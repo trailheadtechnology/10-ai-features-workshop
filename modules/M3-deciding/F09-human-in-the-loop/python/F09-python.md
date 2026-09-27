@@ -1,7 +1,7 @@
 <!-- Generated file: built from the lab source by build_labs.py. Edit the source and rerun; hand edits to this file are overwritten. -->
 # Lab 09: Human-in-the-Loop (Python)
 
-*You are on the Python track. Other tracks: [.NET](../dotnet/F09-dotnet.md), [TypeScript](../typescript/F09-typescript.md). Lab overview: [F09-lab.md](../F09-lab.md).*
+*You are on the Python track. Other tracks: [.NET](../dotnet/F09-dotnet.md), [TypeScript](../typescript/F09-typescript.md), [Go](../go/F09-go.md). Lab overview: [F09-lab.md](../F09-lab.md).*
 
 **The User Problem:** Feature 07 routed the inbox, so now a ranger stares at forty messages that all need replies. Most answers are boilerplate the ranger has typed a hundred times, and typing them eats the afternoon. The obvious move is to let the AI answer, and the obvious disaster is the AI telling a visitor that campfires are fine during a burn ban, on official park letterhead. The ranger's problem is drudgery; the park's problem is that full automation of outbound communication is how you end up apologizing publicly.
 

@@ -21,6 +21,7 @@ Every track does the same steps against the same data and checks against the sam
 | .NET | [`dotnet/F03-dotnet.md`](dotnet/F03-dotnet.md) | `dotnet/starter/Program.cs` |
 | Python | [`python/F03-python.md`](python/F03-python.md) | `python/starter/main.py` |
 | TypeScript | [`typescript/F03-typescript.md`](typescript/F03-typescript.md) | `typescript/starter/index.ts` |
+| Go | [`go/F03-go.md`](go/F03-go.md) | `go/starter/main.go` |
 
 Every track has a `complete/` next to its `starter/`, which is the answer key.
 
@@ -30,6 +31,6 @@ Every track has a `complete/` next to its `starter/`, which is the answer key.
 - `data/hard.jsonl`: 10 reviews where the text and the rating fight. Sarcasm ("Absolutely love it when the mesh blew out"), five stars aimed at a return process, two stars aimed at an instruction manual, one star aimed at an ex-partner.
 - `data/reference-labels.json`: hand labels for all 20, `positive | negative | mixed`, with a one-phrase rationale on each hard case. One label (`gr-0004`) was revised after the soak test; `expected-output.md` records why.
 - `expected-output.md`: real measured accuracy for both models on both sets, the honest disagreement list, and one finding about prompt formatting that nobody went looking for.
-- `dotnet/`, `python/`, `typescript/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key
+- `dotnet/`, `python/`, `typescript/`, `go/`: each has this lab for its language, a `starter/` to edit, and a `complete/` answer key
 
 The reviews keep their original ids, so any of them can be traced back to the full corpus.

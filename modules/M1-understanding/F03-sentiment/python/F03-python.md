@@ -1,7 +1,7 @@
 <!-- Generated file: built from the lab source by build_labs.py. Edit the source and rerun; hand edits to this file are overwritten. -->
 # Lab 03: Sentiment (Python)
 
-*You are on the Python track. Other tracks: [.NET](../dotnet/F03-dotnet.md), [TypeScript](../typescript/F03-typescript.md). Lab overview: [F03-lab.md](../F03-lab.md).*
+*You are on the Python track. Other tracks: [.NET](../dotnet/F03-dotnet.md), [TypeScript](../typescript/F03-typescript.md), [Go](../go/F03-go.md). Lab overview: [F03-lab.md](../F03-lab.md).*
 
 **The User Problem:** Trailhead Guides sells gear, and the Cascade 65 backpack has 300 reviews. The product team asks a simple question: are people happy with it, and what are they mad about? Star ratings lie: "4 stars, but the hip belt broke on day two" is not a happy customer. Someone would have to read all 300, and every new product adds to the pile. The team doesn't need eloquent analysis, just a reliable happy/unhappy/mixed signal at scale.
 
